@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
-import { Archivo_Black, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const display = Archivo_Black({
-  weight: "400",
+const sans = Inter({
   subsets: ["latin"],
-  variable: "--font-archivo-black",
+  variable: "--font-sans",
   display: "swap",
 });
 
 const mono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-jetbrains",
+  variable: "--font-mono",
   display: "swap",
 });
 
@@ -25,7 +24,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="id" className={`${display.variable} ${mono.variable}`}>
+    <html lang="id" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
       <body>{children}</body>
     </html>
   );

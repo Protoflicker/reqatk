@@ -95,6 +95,12 @@ export default async function AdminLaporanPage({
         </button>
         <div className="ml-auto flex gap-2">
           <a
+            href={`/admin/laporan/export-excel?${exportQuery.toString()}`}
+            className="btn btn-solid"
+          >
+            📊 Unduh Excel
+          </a>
+          <a
             href={`/admin/laporan/export-pdf?${exportQuery.toString()}`}
             className="btn btn-solid"
           >

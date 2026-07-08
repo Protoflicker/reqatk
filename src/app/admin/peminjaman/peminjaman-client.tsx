@@ -5,6 +5,7 @@ import { setujuiPeminjaman, tolakPeminjaman } from "@/lib/actions";
 import { StatusBadge } from "@/components/status-badge";
 import { BulkApproval } from "@/components/bulk-approval";
 import { Pagination } from "@/components/pagination";
+import { ReturnForm } from "@/components/return-form";
 import { formatTanggal, type PeminjamanDetail } from "@/lib/definitions";
 
 type BarisAntrean = Pick<
@@ -31,7 +32,11 @@ type BarisRiwayat = Pick<
   | "kode_barang"
   | "nama_barang"
   | "satuan"
->;
+> & { 
+  status_return: string; 
+  tanggal_kembali: string | null;
+  barang_id: number;
+};
 
 interface PeminjamanClientProps {
   antrean: BarisAntrean[];
@@ -209,7 +214,9 @@ export function PeminjamanClient({ antrean, keputusan }: PeminjamanClientProps) 
                     <th className="pb-3">Jumlah</th>
                     <th className="pb-3">Tgl. Pinjam</th>
                     <th className="pb-3">Status</th>
+                    <th className="pb-3">Status Kembali</th>
                     <th className="pb-3">Catatan</th>
+                    <th className="pb-3">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -230,8 +237,46 @@ export function PeminjamanClient({ antrean, keputusan }: PeminjamanClientProps) 
                       <td className="py-3">
                         <StatusBadge status={r.status} />
                       </td>
+                      <td className="py-3">
+                        {r.status === "DISETUJUI" && (
+                          <span
+                            className={`inline-block rounded px-2 py-1 text-xs font-bold ${
+                              r.status_return === "DIKEMBALIKAN"
+                                ? "bg-green-100 text-green-800"
+                                : r.status_return === "TIDAK_PERLU"
+                                ? "bg-gray-100 text-gray-800"
+                                : "bg-yellow-100 text-yellow-800"
+                            }`}
+                          >
+                            {r.status_return === "DIKEMBALIKAN"
+                              ? "✓ Dikembalikan"
+                              : r.status_return === "TIDAK_PERLU"
+                              ? "⊘ Tidak Perlu"
+                              : "⏱ Belum Kembali"}
+                          </span>
+                        )}
+                        {r.status === "DITOLAK" && (
+                          <span className="text-xs text-text-muted">—</span>
+                        )}
+                        {r.tanggal_kembali && (
+                          <div className="mt-1 text-xs text-text-muted">
+                            {formatTanggal(r.tanggal_kembali)}
+                          </div>
+                        )}
+                      </td>
                       <td className="max-w-[24ch] py-3 text-dark-light">
                         {r.catatan_admin ?? "—"}
+                      </td>
+                      <td className="py-3">
+                        {r.status === "DISETUJUI" && 
+                         r.status_return === "BELUM_DIKEMBALIKAN" && (
+                          <ReturnForm
+                            peminjamanId={r.id}
+                            barangNama={r.nama_barang}
+                            jumlah={r.jumlah}
+                            satuan={r.satuan}
+                          />
+                        )}
                       </td>
                     </tr>
                   ))}

@@ -15,14 +15,18 @@ const NAV_USER: NavItem[] = [
   { href: "/barang", label: "Daftar Barang" },
   { href: "/peminjaman", label: "Form Peminjaman" },
   { href: "/laporan", label: "Laporan Peminjaman" },
+  { href: "/profile", label: "Profil Saya" },
 ];
 
 const NAV_ADMIN: NavItem[] = [
   { href: "/admin", label: "Dasbor" },
   { href: "/admin/barang", label: "Daftar Barang" },
+  { href: "/admin/barang/import", label: "Import Barang" },
   { href: "/admin/peminjaman", label: "Persetujuan" },
   { href: "/admin/laporan", label: "Laporan Peminjaman" },
   { href: "/admin/pengguna", label: "Pengguna" },
+  { href: "/admin/logs", label: "Activity Log" },
+  { href: "/admin/profile", label: "Profil Admin" },
 ];
 
 function isActive(pathname: string, href: string): boolean {

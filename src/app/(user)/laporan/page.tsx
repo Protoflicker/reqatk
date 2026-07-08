@@ -77,12 +77,20 @@ export default async function LaporanUserPage({
         <button type="submit" className="btn">
           Terapkan
         </button>
-        <a
-          href={`/laporan/export-pdf?${exportQuery.toString()}`}
-          className="btn btn-solid ml-auto"
-        >
-          Unduh PDF
-        </a>
+        <div className="ml-auto flex gap-2">
+          <a
+            href={`/laporan/export-excel?${exportQuery.toString()}`}
+            className="btn btn-solid"
+          >
+            📊 Unduh Excel
+          </a>
+          <a
+            href={`/laporan/export-pdf?${exportQuery.toString()}`}
+            className="btn btn-solid"
+          >
+            Unduh PDF
+          </a>
+        </div>
       </form>
 
       <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.12em] text-ink/70">

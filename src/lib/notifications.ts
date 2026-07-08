@@ -56,7 +56,6 @@ export async function getUnreadNotifications(userId: number): Promise<Notificati
  * Mark notification as read
  */
 export async function markAsRead(notificationId: number): Promise<void> {
-  "use server";
   const sql = db();
   
   await sql`
@@ -70,7 +69,6 @@ export async function markAsRead(notificationId: number): Promise<void> {
  * Mark all notifications as read for user
  */
 export async function markAllAsRead(userId: number): Promise<void> {
-  "use server";
   const sql = db();
   
   await sql`

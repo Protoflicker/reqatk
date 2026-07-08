@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     const filename = generateFilename("laporan_peminjaman");
 
     // Return Excel file
-    return new NextResponse(buffer, {
+    return new NextResponse(buffer as unknown as BodyInit, {
       headers: {
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

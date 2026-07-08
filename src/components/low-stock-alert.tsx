@@ -40,7 +40,7 @@ export async function LowStockAlert() {
       <div className="space-y-3">
         {lowStockItems.map((item) => {
           const percentage = (item.stok / item.min_stok) * 100;
-          const isC ritical = percentage < 50;
+          const isCritical = percentage < 50;
 
           return (
             <Link

@@ -12,6 +12,7 @@ import {
 } from "./auth";
 import type { ActionState, Role } from "./definitions";
 import type { Notification } from "./notifications";
+import { logActivity } from "./audit";
 
 /* ============================================================
    NOTIFICATIONS
@@ -175,10 +176,22 @@ export async function ajukanPeminjaman(
     
     barangNama = barang[0].nama;
 
-    await sql`
+    const result = await sql`
       INSERT INTO peminjaman (pengguna_id, barang_id, jumlah, keperluan, tanggal_pinjam)
       VALUES (${session.id}, ${barangId}, ${jumlah}, ${keperluan}, ${tanggalPinjam})
+      RETURNING id
     `;
+    
+    const newRequestId = (result[0] as { id: number }).id;
+    
+    // Log activity
+    await logActivity(
+      session.id,
+      "CREATE_REQUEST",
+      "peminjaman",
+      newRequestId,
+      { barang_id: barangId, barang_nama: barangNama, jumlah, keperluan }
+    );
   } catch (e) {
     console.error("ajukanPeminjaman gagal:", e);
     return { error: "Gagal menyimpan permintaan. Coba lagi." };
@@ -207,7 +220,7 @@ export async function setujuiPeminjaman(
   id: number,
   _formData: FormData
 ): Promise<void> {
-  await requireAdmin();
+  const session = await requireAdmin();
 
   let berhasil = false;
   try {
@@ -234,6 +247,17 @@ export async function setujuiPeminjaman(
       RETURNING p.id
     `) as { id: number }[];
     berhasil = rows.length > 0;
+    
+    // Log activity if successful
+    if (berhasil) {
+      await logActivity(
+        session.id,
+        "APPROVE_REQUEST",
+        "peminjaman",
+        id,
+        { action: "approved", status: "DISETUJUI" }
+      );
+    }
   } catch (e) {
     console.error("setujuiPeminjaman gagal:", e);
   }
@@ -269,7 +293,7 @@ export async function tolakPeminjaman(
   id: number,
   formData: FormData
 ): Promise<void> {
-  await requireAdmin();
+  const session = await requireAdmin();
 
   const catatan = String(formData.get("catatan") ?? "").trim() || null;
 
@@ -280,6 +304,15 @@ export async function tolakPeminjaman(
       SET status = 'DITOLAK', catatan_admin = ${catatan}, updated_at = now()
       WHERE id = ${id} AND status = 'MENUNGGU'
     `;
+    
+    // Log activity
+    await logActivity(
+      session.id,
+      "REJECT_REQUEST",
+      "peminjaman",
+      id,
+      { action: "rejected", status: "DITOLAK", catatan }
+    );
   } catch (e) {
     console.error("tolakPeminjaman gagal:", e);
   }
@@ -465,7 +498,7 @@ export async function simpanBarang(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireAdmin();
+  const session = await requireAdmin();
 
   const idRaw = String(formData.get("id") ?? "").trim();
   const id = idRaw ? Number(idRaw) : null;
@@ -497,11 +530,32 @@ export async function simpanBarang(
             satuan = ${satuan}, stok = ${stok}
         WHERE id = ${id}
       `;
+      
+      // Log update activity
+      await logActivity(
+        session.id,
+        "UPDATE_BARANG",
+        "barang",
+        id,
+        { kode, nama, kategori, satuan, stok }
+      );
     } else {
-      await sql`
+      const result = await sql`
         INSERT INTO barang (kode, nama, kategori, satuan, stok)
         VALUES (${kode}, ${nama}, ${kategori}, ${satuan}, ${stok})
+        RETURNING id
       `;
+      
+      const newId = (result[0] as { id: number }).id;
+      
+      // Log create activity
+      await logActivity(
+        session.id,
+        "CREATE_BARANG",
+        "barang",
+        newId,
+        { kode, nama, kategori, satuan, stok }
+      );
     }
   } catch (e: unknown) {
     if (isUniqueViolation(e)) {
@@ -571,12 +625,29 @@ export async function ubahStok(id: number, formData: FormData): Promise<void> {
 }
 
 export async function hapusBarang(id: number, _formData: FormData): Promise<void> {
-  await requireAdmin();
+  const session = await requireAdmin();
 
   let err: string | null = null;
   try {
     const sql = db();
+    
+    // Get barang info before deletion for logging
+    const barang = (await sql`
+      SELECT kode, nama FROM barang WHERE id = ${id} LIMIT 1
+    `) as { kode: string; nama: string }[];
+    
     await sql`DELETE FROM barang WHERE id = ${id}`;
+    
+    if (barang.length > 0) {
+      // Log delete activity
+      await logActivity(
+        session.id,
+        "DELETE_BARANG",
+        "barang",
+        id,
+        { kode: barang[0].kode, nama: barang[0].nama }
+      );
+    }
   } catch (e: unknown) {
     if (isForeignKeyViolation(e)) {
       err = "terpakai";
@@ -599,7 +670,7 @@ export async function simpanPengguna(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireAdmin();
+  const session = await requireAdmin();
 
   const idRaw = String(formData.get("id") ?? "").trim();
   const id = idRaw ? Number(idRaw) : null;
@@ -641,12 +712,33 @@ export async function simpanPengguna(
           WHERE id = ${id}
         `;
       }
+      
+      // Log update activity
+      await logActivity(
+        session.id,
+        "UPDATE_USER",
+        "pengguna",
+        id,
+        { nip, nama, role, password_changed: !!password }
+      );
     } else {
       const hash = await bcrypt.hash(password, 10);
-      await sql`
+      const result = await sql`
         INSERT INTO pengguna (nip, nama, password_hash, role)
         VALUES (${nip}, ${nama}, ${hash}, ${role})
+        RETURNING id
       `;
+      
+      const newId = (result[0] as { id: number }).id;
+      
+      // Log create activity
+      await logActivity(
+        session.id,
+        "CREATE_USER",
+        "pengguna",
+        newId,
+        { nip, nama, role }
+      );
     }
   } catch (e: unknown) {
     if (isUniqueViolation(e)) {
@@ -672,7 +764,24 @@ export async function hapusPengguna(
   } else {
     try {
       const sql = db();
+      
+      // Get user info before deletion for logging
+      const user = (await sql`
+        SELECT nip, nama, role FROM pengguna WHERE id = ${id} LIMIT 1
+      `) as { nip: string; nama: string; role: string }[];
+      
       await sql`DELETE FROM pengguna WHERE id = ${id}`;
+      
+      if (user.length > 0) {
+        // Log delete activity
+        await logActivity(
+          session.id,
+          "DELETE_USER",
+          "pengguna",
+          id,
+          { nip: user[0].nip, nama: user[0].nama, role: user[0].role }
+        );
+      }
     } catch (e: unknown) {
       if (isForeignKeyViolation(e)) {
         err = "terpakai";

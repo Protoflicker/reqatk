@@ -226,11 +226,11 @@ async function main() {
     const hashUser = await bcrypt.hash("user123", 10);
     await sql`
       INSERT INTO pengguna (nip, nama, password_hash, role) VALUES
-        ('123456789', 'Administrator Umum', ${hashAdmin}, 'admin'),
-        ('987654321', 'Budi Santoso', ${hashUser}, 'user')
+        ('199001012015011001', 'Administrator Umum', ${hashAdmin}, 'admin'),
+        ('199002022016012002', 'Budi Santoso', ${hashUser}, 'user')
     `;
-    console.log("    Admin — NIP: 123456789 / sandi: admin123");
-    console.log("    User  — NIP: 987654321 / sandi: user123");
+    console.log("    Admin — NIP: 199001012015011001 / sandi: admin123");
+    console.log("    User  — NIP: 199002022016012002 / sandi: user123");
     console.log("    (!) Segera ganti kedua sandi ini setelah login pertama.");
   } else {
     console.log(`>>> Lewati seed pengguna (sudah ada ${jumlahPengguna} akun).`);

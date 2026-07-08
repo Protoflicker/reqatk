@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Masuk — PINJAM/ATK",
 };
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export default function LoginPage() {
   const currentYear = new Date().getFullYear();
   

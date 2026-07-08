@@ -49,44 +49,45 @@ export function Sidebar({
   return (
     <>
       {/* ===== Desktop: sidebar tetap di kiri ===== */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r-2 border-ink bg-paper md:flex">
-        <div className="border-b-2 border-ink p-5">
-          <p className="font-display text-3xl leading-[0.9] tracking-tight">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col bg-surface border-r border-border-light md:flex" style={{
+        borderRadius: '0 0 16px 16px'
+      }}>
+        <div className="border-b border-border p-5">
+          <p className="font-display text-2xl font-extrabold leading-tight tracking-tight text-text">
             PINJAM
-            <br />
-            <span className="text-red">/ATK</span>
-            <sup className="text-xs align-super">®</sup>
+            <span className="text-primary">/ATK</span>
           </p>
-          <p className="mt-3 text-[10px] uppercase tracking-[0.14em] text-ink/70">
-            Sistem Peminjaman
-            <br />
-            Alat Tulis Kantor
+          <p className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+            Sistem Peminjaman ATK
           </p>
-          <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.14em]">
-            [ AKSES: <span className={role === "admin" ? "text-red" : ""}>{role.toUpperCase()}</span> ]
+          <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary-light px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-primary">
+            <span className={role === "admin" ? "inline-block h-1.5 w-1.5 rounded-full bg-primary" : "inline-block h-1.5 w-1.5 rounded-full bg-text-muted"}></span>
+            {role === "admin" ? "Admin" : "User"}
           </p>
         </div>
 
-        <nav className="flex-1 overflow-y-auto">
-          <ul>
-            {items.map((item, i) => {
+        <nav className="flex-1 overflow-y-auto px-3 py-3">
+          <ul className="space-y-1">
+            {items.map((item) => {
               const active = isActive(pathname, item.href);
               return (
-                <li key={item.href} className="border-b border-ink/25">
+                <li key={item.href}>
                   <Link
                     href={item.href}
                     aria-current={active ? "page" : undefined}
-                    className={`flex items-baseline gap-3 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.1em] transition-colors ${
+                    className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all ${
                       active
-                        ? "bg-ink text-paper"
-                        : "hover:bg-paper-dim"
+                        ? "bg-primary-light text-primary shadow-sm"
+                        : "text-text-muted hover:bg-bg hover:text-text hover:translate-x-1"
                     }`}
                   >
-                    <span className={active ? "text-red" : "text-ink/50"}>
-                      {String(i + 1).padStart(2, "0")}
+                    <span className={`text-xs ${active ? "text-primary" : "text-text-muted"}`}>
+                      ●
                     </span>
                     <span>{item.label}</span>
-                    {active && <span className="ml-auto text-red">&gt;&gt;</span>}
+                    {active && (
+                      <span className="ml-auto text-primary">→</span>
+                    )}
                   </Link>
                 </li>
               );
@@ -94,33 +95,35 @@ export function Sidebar({
           </ul>
         </nav>
 
-        <div className="border-t-2 border-ink p-5">
-          <p className="truncate text-[11px] font-bold uppercase tracking-[0.08em]">
-            {nama}
-          </p>
-          <p className="mt-1 text-[10px] tracking-[0.1em] text-ink/70">
-            NIP {nip}
-          </p>
-          <form action={logout} className="mt-4">
-            <button type="submit" className="btn btn-danger w-full justify-center">
-              Keluar &gt;&gt;&gt;
+        <div className="border-t border-border p-4">
+          <div className="rounded-xl bg-bg p-3">
+            <p className="truncate text-sm font-bold text-text">
+              {nama}
+            </p>
+            <p className="mt-0.5 font-mono text-xs text-text-muted">
+              {nip}
+            </p>
+          </div>
+          <form action={logout} className="mt-3">
+            <button type="submit" className="neu-btn-danger w-full justify-center text-sm">
+              Keluar →
             </button>
           </form>
         </div>
       </aside>
 
       {/* ===== Mobile: bar atas + nav gulir horizontal ===== */}
-      <header className="sticky top-0 z-40 border-b-2 border-ink bg-paper md:hidden">
-        <div className="flex items-center justify-between border-b border-ink/25 px-4 py-3">
-          <p className="font-display text-lg leading-none tracking-tight">
-            PINJAM<span className="text-red">/ATK</span>
+      <header className="sticky top-0 z-40 border-b border-border bg-surface md:hidden">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <p className="font-display text-lg font-extrabold tracking-tight text-text">
+            PINJAM<span className="text-primary">/ATK</span>
           </p>
           <div className="flex items-center gap-3">
-            <p className="text-[10px] uppercase tracking-[0.1em] text-ink/70">
-              NIP {nip}
+            <p className="font-mono text-[10px] text-text-muted">
+              {nip}
             </p>
             <form action={logout}>
-              <button type="submit" className="btn btn-danger px-2 py-1">
+              <button type="submit" className="neu-btn-danger px-3 py-1.5 text-xs">
                 Keluar
               </button>
             </form>
@@ -131,12 +134,12 @@ export function Sidebar({
             {items.map((item) => {
               const active = isActive(pathname, item.href);
               return (
-                <li key={item.href} className="border-r border-ink/25">
+                <li key={item.href} className="border-r border-border">
                   <Link
                     href={item.href}
                     aria-current={active ? "page" : undefined}
-                    className={`block px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.1em] whitespace-nowrap ${
-                      active ? "bg-ink text-paper" : ""
+                    className={`block px-4 py-2.5 text-[10px] font-bold uppercase tracking-wide whitespace-nowrap transition-colors ${
+                      active ? "bg-primary text-white" : "text-text-muted hover:text-text hover:bg-bg"
                     }`}
                   >
                     {item.label}

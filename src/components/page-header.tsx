@@ -6,12 +6,14 @@ export function PageHeader({
   description?: string;
 }) {
   return (
-    <header className="mb-8 border-b-4 border-ink pb-4">
-      <h1 className="font-display text-3xl uppercase leading-[0.95] tracking-tight md:text-5xl">
+    <header className="mb-8 pb-6">
+      <h1 className="font-display text-3xl font-extrabold leading-tight tracking-tight text-text md:text-4xl" style={{
+        letterSpacing: '-0.02em'
+      }}>
         {title}
       </h1>
       {description && (
-        <p className="mt-3 max-w-[65ch] text-sm text-ink/80">{description}</p>
+        <p className="mt-3 max-w-[65ch] text-base leading-relaxed text-text-muted">{description}</p>
       )}
     </header>
   );

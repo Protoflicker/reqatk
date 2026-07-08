@@ -11,6 +11,50 @@ import {
   requireSession,
 } from "./auth";
 import type { ActionState, Role } from "./definitions";
+import type { Notification } from "./notifications";
+
+/* ============================================================
+   NOTIFICATIONS
+   ============================================================ */
+
+export async function getNotifications(userId: number): Promise<Notification[]> {
+  const sql = db();
+  
+  const rows = await sql`
+    SELECT * FROM notifications
+    WHERE user_id = ${userId}
+    ORDER BY created_at DESC
+    LIMIT 50
+  `;
+  
+  return rows as unknown as Notification[];
+}
+
+export async function markNotificationAsRead(notificationId: number): Promise<void> {
+  const sql = db();
+  
+  await sql`
+    UPDATE notifications
+    SET read = true
+    WHERE id = ${notificationId}
+  `;
+  
+  revalidatePath("/admin");
+  revalidatePath("/dashboard");
+}
+
+export async function markAllNotificationsAsRead(userId: number): Promise<void> {
+  const sql = db();
+  
+  await sql`
+    UPDATE notifications
+    SET read = true
+    WHERE user_id = ${userId} AND read = false
+  `;
+  
+  revalidatePath("/admin");
+  revalidatePath("/dashboard");
+}
 
 /* ============================================================
    AUTENTIKASI
@@ -60,6 +104,14 @@ export async function login(
       role: user.role,
     });
     role = user.role;
+    
+    // Log login activity
+    try {
+      const { logActivity } = await import("./audit");
+      await logActivity(user.id, "LOGIN", "pengguna", user.id);
+    } catch (e) {
+      console.error("Failed to log activity:", e);
+    }
   } catch (e) {
     console.error("login gagal:", e);
     return {
@@ -104,6 +156,8 @@ export async function ajukanPeminjaman(
     return { error: "Tanggal pinjam tidak valid." };
   }
 
+  let barangNama = "";
+  
   try {
     const sql = db();
     const barang = (await sql`
@@ -118,6 +172,8 @@ export async function ajukanPeminjaman(
         error: `Stok ${barang[0].nama} tersisa ${barang[0].stok}. Kurangi jumlah permintaan.`,
       };
     }
+    
+    barangNama = barang[0].nama;
 
     await sql`
       INSERT INTO peminjaman (pengguna_id, barang_id, jumlah, keperluan, tanggal_pinjam)
@@ -131,6 +187,15 @@ export async function ajukanPeminjaman(
   revalidatePath("/laporan");
   revalidatePath("/dashboard");
   revalidatePath("/admin/peminjaman");
+  
+  // Notify admins about new request
+  try {
+    const { notifyAdminsNewRequest } = await import("./notifications");
+    await notifyAdminsNewRequest(session.nama, barangNama);
+  } catch (e) {
+    console.error("Failed to send notification:", e);
+  }
+  
   redirect("/laporan?ok=diajukan");
 }
 
@@ -179,6 +244,25 @@ export async function setujuiPeminjaman(
   if (!berhasil) {
     redirect("/admin/peminjaman?err=stok");
   }
+  
+  // Send notification to user
+  try {
+    const sql = db();
+    const [request] = (await sql`
+      SELECT p.pengguna_id, p.jumlah, b.nama as barang_nama
+      FROM peminjaman p
+      JOIN barang b ON b.id = p.barang_id
+      WHERE p.id = ${id}
+      LIMIT 1
+    `) as { pengguna_id: number; jumlah: number; barang_nama: string }[];
+    
+    if (request) {
+      const { notifyRequestApproved } = await import("./notifications");
+      await notifyRequestApproved(request.pengguna_id, request.barang_nama, request.jumlah);
+    }
+  } catch (e) {
+    console.error("Failed to send notification:", e);
+  }
 }
 
 export async function tolakPeminjaman(
@@ -198,6 +282,175 @@ export async function tolakPeminjaman(
     `;
   } catch (e) {
     console.error("tolakPeminjaman gagal:", e);
+  }
+
+  revalidatePath("/admin/peminjaman");
+  revalidatePath("/admin");
+  
+  // Send notification to user
+  try {
+    const sql = db();
+    const [request] = (await sql`
+      SELECT p.pengguna_id, p.jumlah, b.nama as barang_nama
+      FROM peminjaman p
+      JOIN barang b ON b.id = p.barang_id
+      WHERE p.id = ${id}
+      LIMIT 1
+    `) as { pengguna_id: number; jumlah: number; barang_nama: string }[];
+    
+    if (request) {
+      const { notifyRequestRejected } = await import("./notifications");
+      await notifyRequestRejected(request.pengguna_id, request.barang_nama, request.jumlah, catatan || undefined);
+    }
+  } catch (e) {
+    console.error("Failed to send notification:", e);
+  }
+}
+
+/* ============================================================
+   RETURN WORKFLOW
+   ============================================================ */
+
+export async function markAsReturned(
+  id: number,
+  formData: FormData
+): Promise<void> {
+  await requireAdmin();
+
+  const tanggalKembali = String(formData.get("tanggal_kembali") ?? "").trim();
+  const catatanKembali = String(formData.get("catatan_kembali") ?? "").trim() || null;
+
+  if (!tanggalKembali || !/^\d{4}-\d{2}-\d{2}$/.test(tanggalKembali)) {
+    redirect("/admin/peminjaman?err=tanggal");
+    return;
+  }
+
+  try {
+    const sql = db();
+    
+    // Get peminjaman details
+    const [peminjaman] = (await sql`
+      SELECT p.barang_id, p.jumlah, p.status
+      FROM peminjaman p
+      WHERE p.id = ${id} AND p.status = 'DISETUJUI' AND p.status_return = 'BELUM_DIKEMBALIKAN'
+      LIMIT 1
+    `) as { barang_id: number; jumlah: number; status: string }[];
+    
+    if (!peminjaman) {
+      redirect("/admin/peminjaman?err=not-found");
+      return;
+    }
+    
+    // Update peminjaman status and return stock
+    await sql`
+      WITH return_stock AS (
+        UPDATE barang
+        SET stok = stok + ${peminjaman.jumlah}
+        WHERE id = ${peminjaman.barang_id}
+        RETURNING id
+      )
+      UPDATE peminjaman
+      SET 
+        status_return = 'DIKEMBALIKAN',
+        tanggal_kembali = ${tanggalKembali},
+        catatan_kembali = ${catatanKembali},
+        updated_at = now()
+      FROM return_stock
+      WHERE peminjaman.id = ${id}
+    `;
+  } catch (e) {
+    console.error("markAsReturned gagal:", e);
+  }
+
+  revalidatePath("/admin/peminjaman");
+  revalidatePath("/admin/barang");
+  revalidatePath("/admin");
+}
+
+export async function markAsNotReturnable(id: number): Promise<void> {
+  await requireAdmin();
+
+  try {
+    const sql = db();
+    await sql`
+      UPDATE peminjaman
+      SET status_return = 'TIDAK_PERLU', updated_at = now()
+      WHERE id = ${id} AND status = 'DISETUJUI'
+    `;
+  } catch (e) {
+    console.error("markAsNotReturnable gagal:", e);
+  }
+
+  revalidatePath("/admin/peminjaman");
+}
+
+/* ============================================================
+   BULK OPERATIONS — PEMINJAMAN
+   ============================================================ */
+
+export async function bulkApprovePeminjaman(ids: number[]): Promise<void> {
+  await requireAdmin();
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    throw new Error("No IDs provided");
+  }
+
+  try {
+    const sql = db();
+    
+    // Process each approval with atomic stock deduction
+    for (const id of ids) {
+      await sql`
+        WITH ambil AS (
+          SELECT barang_id, jumlah
+          FROM peminjaman
+          WHERE id = ${id} AND status = 'MENUNGGU'
+        ),
+        kurangi AS (
+          UPDATE barang b
+          SET stok = b.stok - a.jumlah
+          FROM ambil a
+          WHERE b.id = a.barang_id AND b.stok >= a.jumlah
+          RETURNING b.id
+        )
+        UPDATE peminjaman p
+        SET status = 'DISETUJUI', updated_at = now()
+        FROM kurangi k
+        WHERE p.id = ${id}
+      `;
+    }
+  } catch (e) {
+    console.error("bulkApprovePeminjaman gagal:", e);
+    throw e;
+  }
+
+  revalidatePath("/admin/peminjaman");
+  revalidatePath("/admin");
+  revalidatePath("/admin/barang");
+}
+
+export async function bulkRejectPeminjaman(
+  ids: number[],
+  catatan: string | null
+): Promise<void> {
+  await requireAdmin();
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    throw new Error("No IDs provided");
+  }
+
+  try {
+    const sql = db();
+    
+    // Reject all selected items with the same note
+    await sql`
+      UPDATE peminjaman
+      SET status = 'DITOLAK', catatan_admin = ${catatan}, updated_at = now()
+      WHERE id = ANY(${ids}) AND status = 'MENUNGGU'
+    `;
+  } catch (e) {
+    console.error("bulkRejectPeminjaman gagal:", e);
+    throw e;
   }
 
   revalidatePath("/admin/peminjaman");
@@ -297,6 +550,24 @@ export async function ubahStok(id: number, formData: FormData): Promise<void> {
   revalidatePath("/admin/barang");
   revalidatePath("/barang");
   revalidatePath("/peminjaman");
+  
+  // Check for low stock and notify admins
+  try {
+    const sql = db();
+    const [barang] = (await sql`
+      SELECT id, nama, stok, min_stok
+      FROM barang
+      WHERE id = ${id} AND stok <= min_stok
+      LIMIT 1
+    `) as { id: number; nama: string; stok: number; min_stok: number }[];
+    
+    if (barang && arah === "kurang") {
+      const { notifyAdminsLowStock } = await import("./notifications");
+      await notifyAdminsLowStock(barang.nama, barang.stok, barang.min_stok);
+    }
+  } catch (e) {
+    console.error("Failed to check low stock:", e);
+  }
 }
 
 export async function hapusBarang(id: number, _formData: FormData): Promise<void> {
@@ -414,6 +685,113 @@ export async function hapusPengguna(
 
   revalidatePath("/admin/pengguna");
   if (err) redirect(`/admin/pengguna?err=${err}`);
+}
+
+/* ============================================================
+   PROFILE & PASSWORD
+   ============================================================ */
+
+export async function updateProfile(
+  _prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const session = await requireSession();
+  const userId = Number(formData.get("user_id"));
+  
+  // Security: only allow users to update their own profile
+  if (userId !== session.id) {
+    return { error: "Tidak diizinkan mengubah profil pengguna lain." };
+  }
+  
+  const nama = String(formData.get("nama") ?? "").trim();
+  
+  if (!nama || nama.length < 3) {
+    return { error: "Nama harus minimal 3 karakter." };
+  }
+  
+  try {
+    const sql = db();
+    await sql`
+      UPDATE pengguna
+      SET nama = ${nama}
+      WHERE id = ${userId}
+    `;
+    
+    // Update session with new name
+    await createSession({
+      id: session.id,
+      nip: session.nip,
+      nama: nama,
+      role: session.role,
+    });
+  } catch (e) {
+    console.error("updateProfile gagal:", e);
+    return { error: "Gagal menyimpan perubahan." };
+  }
+  
+  revalidatePath("/profile");
+  revalidatePath("/admin/profile");
+  return { success: "Profil berhasil diperbarui!" };
+}
+
+export async function changePassword(
+  _prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const session = await requireSession();
+  const userId = Number(formData.get("user_id"));
+  
+  // Security: only allow users to change their own password
+  if (userId !== session.id) {
+    return { error: "Tidak diizinkan mengubah kata sandi pengguna lain." };
+  }
+  
+  const oldPassword = String(formData.get("old_password") ?? "");
+  const newPassword = String(formData.get("new_password") ?? "");
+  const confirmPassword = String(formData.get("confirm_password") ?? "");
+  
+  if (!oldPassword || !newPassword || !confirmPassword) {
+    return { error: "Semua field wajib diisi." };
+  }
+  
+  if (newPassword.length < 6) {
+    return { error: "Kata sandi baru minimal 6 karakter." };
+  }
+  
+  if (newPassword !== confirmPassword) {
+    return { error: "Konfirmasi kata sandi tidak cocok." };
+  }
+  
+  try {
+    const sql = db();
+    
+    // Verify old password
+    const [user] = (await sql`
+      SELECT password_hash FROM pengguna WHERE id = ${userId} LIMIT 1
+    `) as { password_hash: string }[];
+    
+    if (!user) {
+      return { error: "Pengguna tidak ditemukan." };
+    }
+    
+    const isCorrect = await bcrypt.compare(oldPassword, user.password_hash);
+    if (!isCorrect) {
+      return { error: "Kata sandi lama salah." };
+    }
+    
+    // Update with new password
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await sql`
+      UPDATE pengguna
+      SET password_hash = ${newHash}
+      WHERE id = ${userId}
+    `;
+  } catch (e) {
+    console.error("changePassword gagal:", e);
+    return { error: "Gagal mengubah kata sandi." };
+  }
+  
+  return { success: "Kata sandi berhasil diubah!" };
 }
 
 /* ============================================================

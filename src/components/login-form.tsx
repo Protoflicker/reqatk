@@ -14,14 +14,14 @@ export function LoginForm() {
       {state.error && (
         <div
           role="alert"
-          className="mb-5 border-2 border-red bg-red p-3 text-xs font-bold text-paper"
+          className="mb-5 neu-inset border-2 border-red-500 p-3 text-xs font-bold text-red-600"
         >
-          !! {state.error}
+          ⚠ {state.error}
         </div>
       )}
 
       <div className="mb-5">
-        <label htmlFor="nip" className="label">
+        <label htmlFor="nip" className="mb-2 block text-xs font-bold uppercase tracking-wider text-text-muted">
           NIP — Nomor Induk Pegawai
         </label>
         <input
@@ -32,13 +32,13 @@ export function LoginForm() {
           autoComplete="username"
           required
           placeholder="cth. 199001012015011001"
-          className="input"
+          className="neu-input w-full text-sm text-dark"
         />
-        <p className="helper">Gunakan NIP yang terdaftar di bagian umum.</p>
+        <p className="mt-1 text-xs text-text-muted">Gunakan NIP yang terdaftar di bagian umum.</p>
       </div>
 
       <div className="mb-6">
-        <label htmlFor="password" className="label">
+        <label htmlFor="password" className="mb-2 block text-xs font-bold uppercase tracking-wider text-text-muted">
           Kata Sandi
         </label>
         <input
@@ -48,16 +48,16 @@ export function LoginForm() {
           autoComplete="current-password"
           required
           placeholder="••••••••"
-          className="input"
+          className="neu-input w-full text-sm text-dark"
         />
       </div>
 
       <button
         type="submit"
         disabled={pending}
-        className="btn btn-solid w-full justify-center py-3 text-sm disabled:cursor-wait disabled:opacity-60"
+        className="neu-btn-primary w-full py-3 text-sm font-bold disabled:cursor-wait disabled:opacity-60"
       >
-        {pending ? "Memverifikasi..." : "Masuk Sistem >>>"}
+        {pending ? "Memverifikasi..." : "Masuk Sistem →"}
       </button>
     </form>
   );

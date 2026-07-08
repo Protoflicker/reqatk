@@ -93,6 +93,7 @@ async function main() {
       kategori   VARCHAR(50) NOT NULL,
       satuan     VARCHAR(20) NOT NULL DEFAULT 'pcs',
       stok       INTEGER NOT NULL DEFAULT 0 CHECK (stok >= 0),
+      min_stok   INTEGER NOT NULL DEFAULT 10,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `;
@@ -107,6 +108,9 @@ async function main() {
       status          VARCHAR(15) NOT NULL DEFAULT 'MENUNGGU',
       tanggal_pinjam  DATE NOT NULL DEFAULT CURRENT_DATE,
       catatan_admin   TEXT,
+      status_return   VARCHAR(20) DEFAULT 'BELUM_DIKEMBALIKAN',
+      tanggal_kembali DATE,
+      catatan_kembali TEXT,
       created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
       updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
     )
@@ -136,8 +140,80 @@ async function main() {
     CREATE INDEX IF NOT EXISTS idx_peminjaman_status
     ON peminjaman (status, created_at DESC)
   `;
+  
+  // Add min_stok column to existing barang table if not exists
+  await sql`
+    DO $$ 
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'barang' AND column_name = 'min_stok'
+      ) THEN
+        ALTER TABLE barang ADD COLUMN min_stok INTEGER NOT NULL DEFAULT 10;
+      END IF;
+    END $$;
+  `;
+  
+  // Create notifications table
+  await sql`
+    CREATE TABLE IF NOT EXISTS notifications (
+      id         SERIAL PRIMARY KEY,
+      user_id    INTEGER NOT NULL REFERENCES pengguna(id) ON DELETE CASCADE,
+      type       VARCHAR(50) NOT NULL,
+      title      VARCHAR(200) NOT NULL,
+      message    TEXT NOT NULL,
+      link       VARCHAR(500),
+      read       BOOLEAN NOT NULL DEFAULT false,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+  
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_notifications_user
+    ON notifications (user_id, read, created_at DESC)
+  `;
+  
+  // Create activity_logs table for audit trail
+  await sql`
+    CREATE TABLE IF NOT EXISTS activity_logs (
+      id          SERIAL PRIMARY KEY,
+      user_id     INTEGER REFERENCES pengguna(id) ON DELETE SET NULL,
+      action      VARCHAR(100) NOT NULL,
+      entity_type VARCHAR(50) NOT NULL,
+      entity_id   INTEGER,
+      details     JSONB,
+      ip_address  VARCHAR(45),
+      created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+  
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_activity_logs_user
+    ON activity_logs (user_id, created_at DESC)
+  `;
+  
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_activity_logs_entity
+    ON activity_logs (entity_type, entity_id, created_at DESC)
+  `;
 
-  console.log("    Tabel siap: pengguna, barang, peminjaman");
+  // Add return workflow columns to existing peminjaman table if not exists
+  await sql`
+    DO $$ 
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'peminjaman' AND column_name = 'status_return'
+      ) THEN
+        ALTER TABLE peminjaman 
+        ADD COLUMN status_return VARCHAR(20) DEFAULT 'BELUM_DIKEMBALIKAN',
+        ADD COLUMN tanggal_kembali DATE,
+        ADD COLUMN catatan_kembali TEXT;
+      END IF;
+    END $$;
+  `;
+
+  console.log("    Tabel siap: pengguna, barang, peminjaman, notifications, activity_logs");
 
   // ---- seed pengguna ----
   const [{ n: jumlahPengguna }] = await sql`

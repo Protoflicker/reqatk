@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import { requireAdmin } from "@/lib/auth";
+import { getNotifications } from "@/lib/actions";
 
 export default async function AdminAreaLayout({
   children,
@@ -7,5 +8,7 @@ export default async function AdminAreaLayout({
   children: React.ReactNode;
 }) {
   const session = await requireAdmin();
-  return <AppShell session={session}>{children}</AppShell>;
+  const notifications = await getNotifications(session.id);
+  
+  return <AppShell session={session} notifications={notifications}>{children}</AppShell>;
 }

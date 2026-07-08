@@ -1,42 +1,48 @@
 @import "tailwindcss";
 
 /*
-  PINJAM/ATK — Swiss Industrial Print
-  Substrat  : kertas dokumentasi matte  #F4F4F0
-  Tinta     : karbon                    #111111
-  Aksen     : merah hazard              #E61919 (satu-satunya aksen)
-  Radius    : 0 di seluruh antarmuka (kunci konsistensi bentuk)
+  PINJAM/ATK — Neumorphism Design
+  Background : Clean gray-blue      #E6EBF0
+  Surface    : Light blue-white     #F0F4F8
+  Primary    : Professional blue    #2563EB
+  Dark       : Deep navy            #1E293B
+  Soft Shadow: Multiple layers for depth
 */
 
 @theme {
-  --color-paper: #f4f4f0;
-  --color-paper-dim: #eae8e3;
-  --color-ink: #111111;
-  --color-red: #e61919;
+  --color-bg: #e6ebf0;
+  --color-surface: #f0f4f8;
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-dark: #1e293b;
+  --color-dark-light: #334155;
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  
+  --shadow-raised: 8px 8px 16px #c5cdd6, -8px -8px 16px #ffffff;
+  --shadow-inset: inset 4px 4px 8px #c5cdd6, inset -4px -4px 8px #ffffff;
+  --shadow-sm: 4px 4px 8px #d1d9e0, -4px -4px 8px #ffffff;
+  --shadow-hover: 12px 12px 24px #c5cdd6, -12px -12px 24px #ffffff;
 
   --font-display: var(--font-archivo-black), "Arial Black", sans-serif;
   --font-mono: var(--font-jetbrains), "Courier New", monospace;
 }
 
 @layer base {
-  * {
-    border-radius: 0 !important;
-  }
-
   html {
-    background: var(--color-paper);
+    background: var(--color-bg);
   }
 
   body {
-    background: var(--color-paper);
-    color: var(--color-ink);
+    background: var(--color-bg);
+    color: var(--color-text);
     font-family: var(--font-mono);
     -webkit-font-smoothing: antialiased;
   }
 
   ::selection {
-    background: var(--color-red);
-    color: var(--color-paper);
+    background: var(--color-primary);
+    color: white;
   }
 
   input:focus-visible,
@@ -44,8 +50,93 @@
   textarea:focus-visible,
   button:focus-visible,
   a:focus-visible {
-    outline: 2px solid var(--color-red);
-    outline-offset: 1px;
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  /* Neumorphic raised elements */
+  .neu-raised {
+    background: var(--color-surface);
+    box-shadow: var(--shadow-raised);
+    border-radius: 20px;
+  }
+  
+  .neu-raised-sm {
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+    border-radius: 12px;
+  }
+  
+  .neu-raised:hover {
+    box-shadow: var(--shadow-hover);
+  }
+  
+  /* Neumorphic pressed/inset elements */
+  .neu-inset {
+    background: var(--color-bg);
+    box-shadow: var(--shadow-inset);
+    border-radius: 12px;
+  }
+  
+  /* Neumorphic buttons */
+  .neu-btn {
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+  }
+  
+  .neu-btn:hover:not(:disabled) {
+    box-shadow: var(--shadow-raised);
+    transform: translateY(-1px);
+  }
+  
+  .neu-btn:active:not(:disabled) {
+    box-shadow: var(--shadow-inset);
+    transform: translateY(0);
+  }
+  
+  .neu-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  /* Primary button variant */
+  .neu-btn-primary {
+    background: linear-gradient(145deg, #2563eb, #1d4ed8);
+    color: white;
+    box-shadow: 4px 4px 12px rgba(37, 99, 235, 0.3), -2px -2px 8px rgba(255, 255, 255, 0.1);
+  }
+  
+  .neu-btn-primary:hover:not(:disabled) {
+    box-shadow: 6px 6px 16px rgba(37, 99, 235, 0.4), -3px -3px 10px rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+  }
+  
+  /* Card styles */
+  .neu-card {
+    background: var(--color-surface);
+    box-shadow: var(--shadow-raised);
+    border-radius: 20px;
+    padding: 1.5rem;
+  }
+  
+  /* Input styles */
+  .neu-input {
+    background: var(--color-bg);
+    box-shadow: var(--shadow-inset);
+    border: none;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s ease;
+  }
+  
+  .neu-input:focus {
+    box-shadow: inset 6px 6px 12px #c5cdd6, inset -6px -6px 12px #ffffff;
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 }
 

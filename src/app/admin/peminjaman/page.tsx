@@ -1,10 +1,8 @@
 import { db } from "@/lib/db";
-import { setujuiPeminjaman, tolakPeminjaman } from "@/lib/actions";
 import { PageHeader } from "@/components/page-header";
-import { StatusBadge } from "@/components/status-badge";
 import { Alert } from "@/components/alert";
-import { EmptyState } from "@/components/empty-state";
-import { formatTanggal, type PeminjamanDetail } from "@/lib/definitions";
+import { PeminjamanClient } from "./peminjaman-client";
+import type { PeminjamanDetail } from "@/lib/definitions";
 
 type BarisAntrean = Pick<
   PeminjamanDetail,
@@ -60,7 +58,6 @@ export default async function AdminPeminjamanPage({
       JOIN barang b   ON b.id = p.barang_id
       WHERE p.status IN ('DISETUJUI', 'DITOLAK')
       ORDER BY p.updated_at DESC
-      LIMIT 10
     `,
   ]);
 
@@ -71,7 +68,7 @@ export default async function AdminPeminjamanPage({
     <>
       <PageHeader
         title="Persetujuan"
-        description="Proses permintaan masuk: setujui (stok langsung berkurang) atau tolak dengan catatan. Keputusan bersifat final — tidak ada alur pengembalian."
+        description="Proses permintaan masuk: setujui (stok langsung berkurang) atau tolak dengan catatan. Pilih multiple untuk bulk approval."
       />
 
       {params.err === "stok" && (
@@ -81,157 +78,7 @@ export default async function AdminPeminjamanPage({
         </Alert>
       )}
 
-      {/* ===== Antrean menunggu ===== */}
-      <section className="mb-12">
-        <h2 className="mb-4 font-display text-xl uppercase tracking-tight">
-          Menunggu Persetujuan{" "}
-          <span className={antrean.length > 0 ? "text-red" : "text-ink/50"}>
-            ({antrean.length})
-          </span>
-        </h2>
-
-        {antrean.length === 0 ? (
-          <EmptyState
-            title="Antrean kosong"
-            hint="Tidak ada permintaan yang menunggu persetujuan."
-          />
-        ) : (
-          <div className="overflow-x-auto border-2 border-ink">
-            <table className="tbl">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Pemohon</th>
-                  <th>Barang</th>
-                  <th>Jumlah</th>
-                  <th>Stok Kini</th>
-                  <th>Keperluan</th>
-                  <th>Tgl. Pinjam</th>
-                  <th>Tindakan</th>
-                </tr>
-              </thead>
-              <tbody>
-                {antrean.map((r) => (
-                  <tr key={r.id}>
-                    <td className="text-ink/60">#{String(r.id).padStart(4, "0")}</td>
-                    <td>
-                      <span className="font-bold">{r.nama_pengguna}</span>
-                      <br />
-                      <span className="text-[11px] text-ink/60">NIP {r.nip}</span>
-                    </td>
-                    <td>
-                      <span className="font-bold">{r.kode_barang}</span>{" "}
-                      {r.nama_barang}
-                    </td>
-                    <td className="whitespace-nowrap">
-                      {r.jumlah} {r.satuan}
-                    </td>
-                    <td className={r.stok < r.jumlah ? "font-bold text-red" : ""}>
-                      {r.stok}
-                      {r.stok < r.jumlah && (
-                        <span className="block text-[10px] font-bold uppercase text-red">
-                          Kurang
-                        </span>
-                      )}
-                    </td>
-                    <td className="max-w-[24ch]">{r.keperluan}</td>
-                    <td className="whitespace-nowrap">
-                      {formatTanggal(r.tanggal_pinjam)}
-                    </td>
-                    <td>
-                      <div className="flex min-w-[220px] flex-col gap-2">
-                        <form action={setujuiPeminjaman.bind(null, r.id)}>
-                          <button
-                            type="submit"
-                            className="btn btn-solid w-full justify-center px-2 py-1"
-                          >
-                            Setujui
-                          </button>
-                        </form>
-                        <form
-                          action={tolakPeminjaman.bind(null, r.id)}
-                          className="flex gap-1"
-                        >
-                          <label htmlFor={`catatan-${r.id}`} className="sr-only">
-                            Catatan penolakan
-                          </label>
-                          <input
-                            id={`catatan-${r.id}`}
-                            name="catatan"
-                            type="text"
-                            placeholder="catatan (opsional)"
-                            className="input px-2 py-1 text-xs"
-                          />
-                          <button type="submit" className="btn btn-danger px-2 py-1">
-                            Tolak
-                          </button>
-                        </form>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-
-      {/* ===== Keputusan terakhir ===== */}
-      <section>
-        <h2 className="mb-4 font-display text-xl uppercase tracking-tight">
-          Keputusan Terakhir <span className="text-ink/50">({keputusan.length})</span>
-        </h2>
-
-        {keputusan.length === 0 ? (
-          <EmptyState
-            title="Belum ada keputusan"
-            hint="Permintaan yang disetujui atau ditolak akan tampil di sini."
-          />
-        ) : (
-          <div className="overflow-x-auto border-2 border-ink">
-            <table className="tbl">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Pemohon</th>
-                  <th>Barang</th>
-                  <th>Jumlah</th>
-                  <th>Tgl. Pinjam</th>
-                  <th>Status</th>
-                  <th>Catatan</th>
-                </tr>
-              </thead>
-              <tbody>
-                {keputusan.map((r) => (
-                  <tr key={r.id}>
-                    <td className="text-ink/60">#{String(r.id).padStart(4, "0")}</td>
-                    <td className="font-bold">{r.nama_pengguna}</td>
-                    <td>
-                      <span className="font-bold">{r.kode_barang}</span>{" "}
-                      {r.nama_barang}
-                    </td>
-                    <td className="whitespace-nowrap">
-                      {r.jumlah} {r.satuan}
-                    </td>
-                    <td className="whitespace-nowrap">
-                      {formatTanggal(r.tanggal_pinjam)}
-                    </td>
-                    <td>
-                      <StatusBadge status={r.status} />
-                    </td>
-                    <td className="max-w-[24ch] text-ink/80">
-                      {r.catatan_admin ?? "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-        <p className="mt-3 text-[10px] uppercase tracking-[0.14em] text-ink/60">
-          Riwayat lengkap tersedia di menu Laporan Peminjaman
-        </p>
-      </section>
+      <PeminjamanClient antrean={antrean} keputusan={keputusan} />
     </>
   );
 }

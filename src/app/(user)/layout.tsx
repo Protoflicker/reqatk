@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { requireSession } from "@/lib/auth";
+import { getNotifications } from "@/lib/actions";
 
 export default async function UserAreaLayout({
   children,
@@ -9,5 +10,8 @@ export default async function UserAreaLayout({
 }) {
   const session = await requireSession();
   if (session.role === "admin") redirect("/admin");
-  return <AppShell session={session}>{children}</AppShell>;
+  
+  const notifications = await getNotifications(session.id);
+  
+  return <AppShell session={session} notifications={notifications}>{children}</AppShell>;
 }

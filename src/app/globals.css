@@ -356,19 +356,72 @@
 /* ===== LEGACY COMPATIBILITY ===== */
 /* Map old neumorphism classes to new SESDIAN equivalents */
 .btn {
-  @apply neu-btn;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.55rem 1.1rem;
+  color: var(--color-text);
+  transition: all 0.16s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--color-bg-mid);
+  box-shadow: var(--shadow-card);
+  transform: translateY(-1px);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .btn-solid {
-  @apply neu-btn-primary;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.btn-solid:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  box-shadow: 0 2px 10px var(--color-primary-glow);
 }
 
 .btn-danger {
-  @apply neu-btn-danger;
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #c5302f;
+  box-shadow: 0 2px 10px rgba(224, 62, 62, 0.3);
 }
 
 .input {
-  @apply neu-input;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+  padding: 0.7rem 0.85rem;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  transition: all 0.16s ease;
+  width: 100%;
+}
+
+.input:focus {
+  background: var(--color-surface);
+  border-color: rgba(0, 117, 222, 0.55);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
 }
 
 .tbl {

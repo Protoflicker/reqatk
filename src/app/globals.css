@@ -1,0 +1,173 @@
+@import "tailwindcss";
+
+/*
+  PINJAM/ATK — Swiss Industrial Print
+  Substrat  : kertas dokumentasi matte  #F4F4F0
+  Tinta     : karbon                    #111111
+  Aksen     : merah hazard              #E61919 (satu-satunya aksen)
+  Radius    : 0 di seluruh antarmuka (kunci konsistensi bentuk)
+*/
+
+@theme {
+  --color-paper: #f4f4f0;
+  --color-paper-dim: #eae8e3;
+  --color-ink: #111111;
+  --color-red: #e61919;
+
+  --font-display: var(--font-archivo-black), "Arial Black", sans-serif;
+  --font-mono: var(--font-jetbrains), "Courier New", monospace;
+}
+
+@layer base {
+  * {
+    border-radius: 0 !important;
+  }
+
+  html {
+    background: var(--color-paper);
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: var(--color-red);
+    color: var(--color-paper);
+  }
+
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  button:focus-visible,
+  a:focus-visible {
+    outline: 2px solid var(--color-red);
+    outline-offset: 1px;
+  }
+}
+
+@layer components {
+  /* ---- tombol ---- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 2px solid var(--color-ink);
+    background: var(--color-paper);
+    color: var(--color-ink);
+    padding: 0.5rem 0.875rem;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 120ms, color 120ms, border-color 120ms;
+  }
+  .btn:hover {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+
+  .btn-solid {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+  .btn-solid:hover {
+    background: var(--color-red);
+    border-color: var(--color-red);
+    color: var(--color-paper);
+  }
+
+  .btn-danger {
+    border-color: var(--color-red);
+    color: var(--color-red);
+  }
+  .btn-danger:hover {
+    background: var(--color-red);
+    border-color: var(--color-red);
+    color: var(--color-paper);
+  }
+
+  /* ---- form ---- */
+  .label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.5rem;
+  }
+
+  .input {
+    width: 100%;
+    border: 2px solid var(--color-ink);
+    background: var(--color-paper);
+    color: var(--color-ink);
+    padding: 0.5rem 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+  }
+  .input::placeholder {
+    color: color-mix(in srgb, var(--color-ink) 45%, var(--color-paper));
+  }
+
+  .helper {
+    font-size: 11px;
+    color: color-mix(in srgb, var(--color-ink) 60%, var(--color-paper));
+    margin-top: 0.375rem;
+  }
+
+  .field-error {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-red);
+    margin-top: 0.375rem;
+  }
+
+  /* ---- tabel blueprint ---- */
+  .tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+  }
+  .tbl th {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-ink);
+    white-space: nowrap;
+  }
+  .tbl td {
+    border: 1px solid color-mix(in srgb, var(--color-ink) 30%, var(--color-paper));
+    padding: 0.5rem 0.75rem;
+    vertical-align: top;
+  }
+  .tbl tbody tr:hover td {
+    background: var(--color-paper-dim);
+  }
+
+  /* ---- angka display ---- */
+  .display-num {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+  }
+}

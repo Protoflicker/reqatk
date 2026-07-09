@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Auto Commit Setiap Perubahan",
+  "description": "Otomatis commit dan push setiap kali file diubah/disimpan ke repository",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "**/*"
+    ]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "git add . && git commit -m \"Auto-commit: Update files\" && git push origin main"
+  }
+}

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modern Style Preview - SESDIAN</title>
+  <link rel="stylesheet" href="src/app/globals.css">
+  <style>
+    body {
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .section {
+      margin-bottom: 3rem;
+    }
+    
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      color: var(--color-text);
+    }
+    
+    .preview-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+    
+    .demo-buttons {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    
+    .color-swatch {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: var(--color-surface);
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--radius);
+    }
+    
+    .color-box {
+      width: 60px;
+      height: 60px;
+      border-radius: var(--radius);
+      border: 1.5px solid var(--color-border);
+    }
+    
+    .radius-demo {
+      background: var(--color-primary);
+      color: white;
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  
+  <!-- Header -->
+  <header style="margin-bottom: 3rem;">
+    <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">Modern Style Preview</h1>
+    <p style="color: var(--color-text-muted); font-size: 1.125rem;">SESDIAN Design System - Modern Edition</p>
+  </header>
+
+  <!-- Buttons Section -->
+  <section class="section">
+    <h2 class="section-title">Buttons</h2>
+    <div class="demo-buttons">
+      <button class="neu-btn">Default Button</button>
+      <button class="neu-btn-primary">Primary Button</button>
+      <button class="neu-btn-danger">Danger Button</button>
+      <button class="neu-btn" disabled>Disabled</button>
+      <button class="neu-btn-primary">
+        <span class="icon icon-sm">➕</span>
+        With Icon
+      </button>
+    </div>
+  </section>
+
+  <!-- Cards Section -->
+  <section class="section">
+    <h2 class="section-title">Cards</h2>
+    <div class="preview-grid">
+      <div class="card">
+        <h3 style="font-weight: 700; margin-bottom: 0.5rem;">Basic Card</h3>
+        <p style="color: var(--color-text-muted); font-size: 0.9375rem;">
+          Card dengan border 1.5px dan hover effect yang smooth.
+        </p>
+      </div>
+      
+      <div class="card card-compact">
+        <h3 style="font-weight: 700; margin-bottom: 0.5rem;">Compact Card</h3>
+        <p style="color: var(--color-text-muted); font-size: 0.9375rem;">
+          Padding lebih kecil untuk konten singkat.
+        </p>
+      </div>
+      
+      <div class="card-primary" style="padding: 1.5rem;">
+        <h3 style="font-weight: 700; margin-bottom: 0.5rem;">Primary Card</h3>
+        <p style="opacity: 0.9; font-size: 0.9375rem;">
+          Card dengan background primary color.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Badges Section -->
+  <section class="section">
+    <h2 class="section-title">Badges</h2>
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+      <span class="badge">Default</span>
+      <span class="badge badge-primary">Primary</span>
+      <span class="badge badge-success">Success</span>
+      <span class="badge badge-danger">Danger</span>
+      <span class="badge badge-warning">Warning</span>
+    </div>
+  </section>
+
+  <!-- Inputs Section -->
+  <section class="section">
+    <h2 class="section-title">Inputs</h2>
+    <div style="max-width: 500px;">
+      <div style="margin-bottom: 1rem;">
+        <label class="label">Username</label>
+        <input type="text" class="neu-input" placeholder="Masukkan username...">
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label class="label">Email</label>
+        <input type="email" class="neu-input" placeholder="email@example.com">
+      </div>
+      <div>
+        <label class="label">Password</label>
+        <input type="password" class="neu-input" placeholder="••••••••">
+      </div>
+    </div>
+  </section>
+
+  <!-- Status Indicators -->
+  <section class="section">
+    <h2 class="section-title">Status Indicators</h2>
+    <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+      <span class="status status-success">Active</span>
+      <span class="status status-danger">Inactive</span>
+      <span class="status status-warning">Pending</span>
+      <span class="status status-info">Processing</span>
+    </div>
+  </section>
+
+  <!-- Avatars Section -->
+  <section class="section">
+    <h2 class="section-title">Avatars</h2>
+    <div style="display: flex; gap: 1rem; align-items: center;">
+      <div class="avatar avatar-sm">AB</div>
+      <div class="avatar avatar-md">CD</div>
+      <div class="avatar avatar-lg">EF</div>
+      <div class="avatar avatar-xl">GH</div>
+    </div>
+  </section>
+
+  <!-- Grid Layouts -->
+  <section class="section">
+    <h2 class="section-title">Grid Layouts</h2>
+    
+    <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.75rem;">Responsive Grid</h3>
+    <div class="grid-responsive" style="margin-bottom: 2rem;">
+      <div class="card card-compact">Item 1</div>
+      <div class="card card-compact">Item 2</div>
+      <div class="card card-compact">Item 3</div>
+      <div class="card card-compact">Item 4</div>
+    </div>
+
+    <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.75rem;">Fixed 3 Columns</h3>
+    <div class="grid-3">
+      <div class="card card-compact">Column 1</div>
+      <div class="card card-compact">Column 2</div>
+      <div class="card card-compact">Column 3</div>
+    </div>
+  </section>
+
+  <!-- Border Radius Demo -->
+  <section class="section">
+    <h2 class="section-title">Border Radius Scale</h2>
+    <div class="preview-grid">
+      <div class="radius-demo" style="border-radius: var(--radius-input);">
+        Input (6px)
+      </div>
+      <div class="radius-demo" style="border-radius: var(--radius);">
+        Default (8px)
+      </div>
+      <div class="radius-demo" style="border-radius: var(--radius-lg);">
+        Large (12px)
+      </div>
+      <div class="radius-demo" style="border-radius: var(--radius-xl);">
+        X-Large (16px)
+      </div>
+    </div>
+  </section>
+
+  <!-- Color Palette -->
+  <section class="section">
+    <h2 class="section-title">Color Palette</h2>
+    <div class="preview-grid">
+      <div class="color-swatch">
+        <div class="color-box" style="background: var(--color-primary);"></div>
+        <div>
+          <div style="font-weight: 700;">Primary</div>
+          <div style="font-size: 0.875rem; color: var(--color-text-muted);">#0075de</div>
+        </div>
+      </div>
+      
+      <div class="color-swatch">
+        <div class="color-box" style="background: var(--color-success);"></div>
+        <div>
+          <div style="font-weight: 700;">Success</div>
+          <div style="font-size: 0.875rem; color: var(--color-text-muted);">#1aae39</div>
+        </div>
+      </div>
+      
+      <div class="color-swatch">
+        <div class="color-box" style="background: var(--color-danger);"></div>
+        <div>
+          <div style="font-weight: 700;">Danger</div>
+          <div style="font-size: 0.875rem; color: var(--color-text-muted);">#e03e3e</div>
+        </div>
+      </div>
+      
+      <div class="color-swatch">
+        <div class="color-box" style="background: var(--color-warning);"></div>
+        <div>
+          <div style="font-weight: 700;">Warning</div>
+          <div style="font-size: 0.875rem; color: var(--color-text-muted);">#dd5b00</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Animations Demo -->
+  <section class="section">
+    <h2 class="section-title">Animations</h2>
+    <div class="preview-grid">
+      <div class="card animate-fade-up">
+        <h3 style="font-weight: 700;">Fade Up</h3>
+        <p style="color: var(--color-text-muted); font-size: 0.875rem;">Smooth slide up animation</p>
+      </div>
+      
+      <div class="card animate-fade-in" style="animation-delay: 0.1s;">
+        <h3 style="font-weight: 700;">Fade In</h3>
+        <p style="color: var(--color-text-muted); font-size: 0.875rem;">Simple fade animation</p>
+      </div>
+      
+      <div class="card animate-bounce-in" style="animation-delay: 0.2s;">
+        <h3 style="font-weight: 700;">Bounce In</h3>
+        <p style="color: var(--color-text-muted); font-size: 0.875rem;">Spring-based bounce</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Table Demo -->
+  <section class="section">
+    <h2 class="section-title">Table</h2>
+    <div style="overflow-x: auto;">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Role</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>John Doe</td>
+            <td><span class="status status-success">Active</span></td>
+            <td><span class="badge badge-primary">Admin</span></td>
+            <td>
+              <button class="neu-btn neu-btn-sm">Edit</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Jane Smith</td>
+            <td><span class="status status-warning">Pending</span></td>
+            <td><span class="badge">User</span></td>
+            <td>
+              <button class="neu-btn neu-btn-sm">Edit</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Bob Johnson</td>
+            <td><span class="status status-danger">Inactive</span></td>
+            <td><span class="badge">User</span></td>
+            <td>
+              <button class="neu-btn neu-btn-sm">Edit</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Skeleton Loading -->
+  <section class="section">
+    <h2 class="section-title">Skeleton Loading</h2>
+    <div style="max-width: 600px;">
+      <div class="skeleton" style="height: 40px; margin-bottom: 0.75rem;"></div>
+      <div class="skeleton" style="height: 100px; margin-bottom: 0.75rem;"></div>
+      <div class="skeleton" style="height: 20px; width: 60%;"></div>
+    </div>
+  </section>
+
+  <!-- Glassmorphism -->
+  <section class="section">
+    <h2 class="section-title">Glassmorphism</h2>
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 3rem; border-radius: var(--radius-lg);">
+      <div class="glass card">
+        <h3 style="font-weight: 700; margin-bottom: 0.5rem;">Glass Card</h3>
+        <p style="color: var(--color-text-muted);">
+          Card dengan frosted glass effect dan backdrop blur.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="margin-top: 4rem; padding-top: 2rem; border-top: 1.5px solid var(--color-border); text-align: center; color: var(--color-text-muted);">
+    <p>SESDIAN Modern Design System v1.0</p>
+    <p style="font-size: 0.875rem; margin-top: 0.5rem;">Designed for ATKK Project</p>
+  </footer>
+
+</body>
+</html>

@@ -20,6 +20,8 @@ const OK_MSG: Record<string, string> = {
 const ERR_MSG: Record<string, string> = {
   sendiri: "Anda tidak dapat menghapus akun yang sedang dipakai.",
   "reset-sendiri": "Anda tidak dapat menonaktifkan akun yang sedang dipakai.",
+  "reset-admin":
+    "Akun admin tidak bisa dinonaktifkan (mencegah akun diambil alih). Ubah role-nya menjadi User lewat tombol Ubah bila ingin mencabut akses admin.",
   terpakai:
     "Pengguna tidak bisa dihapus karena punya riwayat peminjaman. Gunakan Reset untuk mencabut aksesnya.",
   gagal: "Operasi gagal. Coba lagi.",
@@ -148,7 +150,7 @@ export default async function AdminPenggunaPage({
                       <Icon name="pencil" />
                       Ubah
                     </Link>
-                    {u.aktif && u.id !== session.id && (
+                    {u.aktif && u.role !== "admin" && u.id !== session.id && (
                       <form action={resetAktivasi.bind(null, u.id)}>
                         <ConfirmButton
                           message={`Nonaktifkan akun ${u.nama || u.nip}? Kata sandinya dihapus dan pemilik NIP harus mendaftar ulang saat login.`}

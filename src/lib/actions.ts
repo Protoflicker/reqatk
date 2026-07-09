@@ -103,8 +103,7 @@ export async function cekNip(
   } catch (e) {
     console.error("cekNip gagal:", e);
     return {
-      error:
-        "Tidak dapat terhubung ke database. Periksa DATABASE_URL di .env.local.",
+      error: "Terjadi gangguan pada sistem. Coba lagi beberapa saat.",
       nip,
     };
   }
@@ -112,8 +111,11 @@ export async function cekNip(
 
 /**
  * Aktivasi akun: pemilik NIP yang didaftarkan admin melengkapi nama dan
- * kata sandi. Hanya berlaku selama akun belum aktif (password_hash NULL),
- * sehingga akun aktif tidak bisa diambil alih lewat jalur ini.
+ * kata sandi. Hanya berlaku selama akun belum aktif (password_hash NULL)
+ * DAN berperan 'user'. Batasan role mencegah eskalasi hak akses: akun
+ * admin tidak dapat diklaim lewat jalur aktivasi publik ini walau kata
+ * sandinya kosong — admin harus diamankan ulang lewat formulir Kelola
+ * Pengguna oleh admin lain.
  */
 export async function aktivasiAkun(
   _prevState: ActionState,
@@ -144,14 +146,14 @@ export async function aktivasiAkun(
     const rows = (await sql`
       UPDATE pengguna
       SET nama = ${nama}, password_hash = ${hash}
-      WHERE nip = ${nip} AND password_hash IS NULL
+      WHERE nip = ${nip} AND password_hash IS NULL AND role = 'user'
       RETURNING id, nip, nama, role
     `) as { id: number; nip: string; nama: string; role: Role }[];
 
     if (rows.length === 0) {
       return {
         error:
-          "Akun ini sudah aktif atau NIP tidak terdaftar. Ulangi dari langkah NIP.",
+          "Akun ini tidak dapat diaktivasi lewat halaman ini. Hubungi admin bagian umum.",
       };
     }
 
@@ -240,8 +242,7 @@ export async function login(
   } catch (e) {
     console.error("login gagal:", e);
     return {
-      error:
-        "Tidak dapat terhubung ke database. Periksa DATABASE_URL di .env.local.",
+      error: "Terjadi gangguan pada sistem. Coba lagi beberapa saat.",
     };
   }
 
@@ -835,6 +836,10 @@ export async function daftarkanNip(
 /**
  * Reset aktivasi: kata sandi dihapus sehingga akun kembali berstatus
  * belum aktif. Pemilik NIP harus mendaftar ulang (nama + sandi) saat login.
+ *
+ * Akun admin TIDAK boleh direset: menonaktifkan admin akan membuatnya bisa
+ * diklaim ulang oleh siapa pun yang tahu NIP-nya (eskalasi hak akses).
+ * Untuk mencabut akses admin, ubah role-nya jadi user lewat formulir edit.
  */
 export async function resetAktivasi(
   id: number,
@@ -848,18 +853,22 @@ export async function resetAktivasi(
   } else {
     try {
       const sql = db();
-      const rows = (await sql`
-        UPDATE pengguna
-        SET password_hash = NULL
-        WHERE id = ${id}
-        RETURNING nip
-      `) as { nip: string }[];
+      const target = (await sql`
+        SELECT nip, role FROM pengguna WHERE id = ${id} LIMIT 1
+      `) as { nip: string; role: Role }[];
 
-      if (rows.length === 0) {
+      if (target.length === 0) {
         err = "gagal";
+      } else if (target[0].role === "admin") {
+        err = "reset-admin";
       } else {
+        await sql`
+          UPDATE pengguna
+          SET password_hash = NULL
+          WHERE id = ${id} AND role = 'user'
+        `;
         await logActivity(session.id, "RESET_USER", "pengguna", id, {
-          nip: rows[0].nip,
+          nip: target[0].nip,
           status: "dinonaktifkan",
         });
       }

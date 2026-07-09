@@ -60,11 +60,11 @@
     0 4px 16px rgba(0, 0, 0, 0.08),
     0 12px 32px rgba(0, 0, 0, 0.12);
 
-  /* ===== RADIUS (Modern, sharper) ===== */
-  --radius-input: 6px;
-  --radius: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  /* ===== RADIUS (Modern, rounded) ===== */
+  --radius-input: 12px;
+  --radius: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
   --radius-pill: 9999px;
 
   /* ===== FONTS ===== */

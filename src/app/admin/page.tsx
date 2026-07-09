@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/auth";
 import { EmptyState } from "@/components/empty-state";
 import { AnalyticsChart } from "@/components/analytics-chart";
 import { LowStockAlert } from "@/components/low-stock-alert";
+import { ArrowRight } from "lucide-react";
 import { formatTanggal, type PeminjamanDetail } from "@/lib/definitions";
 
 export default async function AdminDashboardPage() {
@@ -157,7 +158,7 @@ export default async function AdminDashboardPage() {
             Antrean Persetujuan
           </h2>
           <Link href="/admin/peminjaman" className="neu-btn-primary px-6 py-2 text-sm font-bold">
-            Proses Antrean →
+            <ArrowRight className="w-4 h-4" /> Proses Antrean
           </Link>
         </div>
 

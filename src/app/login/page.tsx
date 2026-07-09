@@ -53,8 +53,8 @@ export default function LoginPage() {
       {/* ===== Panel kanan: formulir masuk ===== */}
       <section className="flex items-center p-6 md:p-10">
         <div className="w-full max-w-md">
-          <div className="rounded-xl border border-border bg-surface p-8 shadow-lg">
-            <div className="mb-6 rounded-lg bg-primary-light px-4 py-3">
+          <div className="neu-card">
+            <div className="mb-6 rounded-xl bg-primary-light px-4 py-3">
               <p className="text-xs font-bold tracking-wide text-primary">
                 Otentikasi Pegawai
               </p>

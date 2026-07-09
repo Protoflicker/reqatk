@@ -5,6 +5,7 @@ import { UserStatsCard } from "@/components/user-stats-card";
 import { ActivityTimeline } from "@/components/activity-timeline";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
+import { Clock, CheckCircle, XCircle, BarChart3, ClipboardList, Star, Plus } from "lucide-react";
 import {
   formatTanggal,
   type PeminjamanDetail,
@@ -84,25 +85,25 @@ export default async function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="mb-10 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <UserStatsCard icon="⏱" label="Menunggu" value={Number(stat.menunggu)} color="orange" />
-        <UserStatsCard icon="✓" label="Disetujui" value={Number(stat.disetujui)} color="green" />
-        <UserStatsCard icon="✕" label="Ditolak" value={Number(stat.ditolak)} color="red" />
-        <UserStatsCard icon="📊" label="Total" value={Number(stat.total)} color="primary" />
+        <UserStatsCard icon={<Clock className="w-5 h-5" />} label="Menunggu" value={Number(stat.menunggu)} color="orange" />
+        <UserStatsCard icon={<CheckCircle className="w-5 h-5" />} label="Disetujui" value={Number(stat.disetujui)} color="green" />
+        <UserStatsCard icon={<XCircle className="w-5 h-5" />} label="Ditolak" value={Number(stat.ditolak)} color="red" />
+        <UserStatsCard icon={<BarChart3 className="w-5 h-5" />} label="Total" value={Number(stat.total)} color="primary" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent Activity Timeline */}
         <div className="neu-card">
-          <h2 className="mb-4 font-display text-lg font-bold text-dark">
-            📋 Aktivitas Terbaru
+          <h2 className="mb-4 font-display text-lg font-bold text-dark flex items-center gap-2">
+            <ClipboardList className="w-5 h-5" /> Aktivitas Terbaru
           </h2>
           <ActivityTimeline activities={activities} />
         </div>
 
         {/* Frequently Requested Items */}
         <div className="neu-card">
-          <h2 className="mb-4 font-display text-lg font-bold text-dark">
-            ⭐ Item Favorit Anda
+          <h2 className="mb-4 font-display text-lg font-bold text-dark flex items-center gap-2">
+            <Star className="w-5 h-5" /> Item Favorit Anda
           </h2>
           {frequent.length === 0 ? (
             <p className="py-8 text-center text-sm text-text-muted">
@@ -131,7 +132,7 @@ export default async function DashboardPage() {
             Permintaan Terakhir
           </h2>
           <Link href="/peminjaman" className="neu-btn-primary px-6 py-2 text-sm font-bold">
-            + Ajukan Permintaan
+            <Plus className="w-4 h-4" /> Ajukan Permintaan
           </Link>
         </div>
 

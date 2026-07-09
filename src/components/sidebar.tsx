@@ -3,30 +3,45 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/lib/actions";
+import { 
+  LayoutDashboard, 
+  Package, 
+  FileText, 
+  ClipboardList, 
+  User, 
+  Users,
+  Upload,
+  CheckSquare,
+  Activity,
+  LogOut,
+  Circle,
+  ArrowRight
+} from "lucide-react";
 import type { Role } from "@/lib/definitions";
 
 interface NavItem {
   href: string;
   label: string;
+  icon: any;
 }
 
 const NAV_USER: NavItem[] = [
-  { href: "/dashboard", label: "Dasbor" },
-  { href: "/barang", label: "Daftar Barang" },
-  { href: "/peminjaman", label: "Form Peminjaman" },
-  { href: "/laporan", label: "Laporan Peminjaman" },
-  { href: "/profile", label: "Profil Saya" },
+  { href: "/dashboard", label: "Dasbor", icon: LayoutDashboard },
+  { href: "/barang", label: "Daftar Barang", icon: Package },
+  { href: "/peminjaman", label: "Form Peminjaman", icon: FileText },
+  { href: "/laporan", label: "Laporan Peminjaman", icon: ClipboardList },
+  { href: "/profile", label: "Profil Saya", icon: User },
 ];
 
 const NAV_ADMIN: NavItem[] = [
-  { href: "/admin", label: "Dasbor" },
-  { href: "/admin/barang", label: "Daftar Barang" },
-  { href: "/admin/barang/import", label: "Import Barang" },
-  { href: "/admin/peminjaman", label: "Persetujuan" },
-  { href: "/admin/laporan", label: "Laporan Peminjaman" },
-  { href: "/admin/pengguna", label: "Pengguna" },
-  { href: "/admin/logs", label: "Activity Log" },
-  { href: "/admin/profile", label: "Profil Admin" },
+  { href: "/admin", label: "Dasbor", icon: LayoutDashboard },
+  { href: "/admin/barang", label: "Daftar Barang", icon: Package },
+  { href: "/admin/barang/import", label: "Import Barang", icon: Upload },
+  { href: "/admin/peminjaman", label: "Persetujuan", icon: CheckSquare },
+  { href: "/admin/laporan", label: "Laporan Peminjaman", icon: ClipboardList },
+  { href: "/admin/pengguna", label: "Pengguna", icon: Users },
+  { href: "/admin/logs", label: "Activity Log", icon: Activity },
+  { href: "/admin/profile", label: "Profil Admin", icon: User },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -70,6 +85,7 @@ export function Sidebar({
           <ul className="space-y-1">
             {items.map((item) => {
               const active = isActive(pathname, item.href);
+              const Icon = item.icon;
               return (
                 <li key={item.href}>
                   <Link
@@ -81,12 +97,10 @@ export function Sidebar({
                         : "text-text-muted hover:bg-bg hover:text-text hover:translate-x-1"
                     }`}
                   >
-                    <span className={`text-xs ${active ? "text-primary" : "text-text-muted"}`}>
-                      ●
-                    </span>
+                    <Icon className="w-4 h-4" />
                     <span>{item.label}</span>
                     {active && (
-                      <span className="ml-auto text-primary">→</span>
+                      <ArrowRight className="ml-auto w-4 h-4" />
                     )}
                   </Link>
                 </li>
@@ -106,7 +120,7 @@ export function Sidebar({
           </div>
           <form action={logout} className="mt-3">
             <button type="submit" className="neu-btn-danger w-full justify-center text-sm">
-              Keluar →
+              <LogOut className="w-4 h-4" /> Keluar
             </button>
           </form>
         </div>
@@ -124,7 +138,7 @@ export function Sidebar({
             </p>
             <form action={logout}>
               <button type="submit" className="neu-btn-danger px-3 py-1.5 text-xs">
-                Keluar
+                <LogOut className="w-3 h-3" /> Keluar
               </button>
             </form>
           </div>

@@ -6,6 +6,7 @@ import { BarangForm } from "@/components/barang-form";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Alert } from "@/components/alert";
 import { EmptyState } from "@/components/empty-state";
+import { Search, RotateCcw, Plus, Minus, Edit, Trash2 } from "lucide-react";
 import type { Barang } from "@/lib/definitions";
 
 const OK_MSG: Record<string, string> = {
@@ -62,7 +63,7 @@ export default async function AdminBarangPage({
 
       <form
         method="GET"
-        className="mb-6 flex flex-wrap items-end gap-3 border-2 border-ink p-4"
+        className="mb-6 flex flex-wrap items-end gap-3 neu-card"
       >
         <div className="min-w-[240px] flex-1">
           <label htmlFor="q" className="label">
@@ -78,11 +79,11 @@ export default async function AdminBarangPage({
           />
         </div>
         <button type="submit" className="btn">
-          Cari
+          <Search className="w-4 h-4" /> Cari
         </button>
         {q && (
           <Link href="/admin/barang" className="btn btn-danger">
-            Reset
+            <RotateCcw className="w-4 h-4" /> Reset
           </Link>
         )}
       </form>
@@ -102,7 +103,7 @@ export default async function AdminBarangPage({
           }
         />
       ) : (
-        <div className="overflow-x-auto border-2 border-ink">
+        <div className="overflow-x-auto neu-card">
           <table className="tbl">
             <thead>
               <tr>
@@ -150,7 +151,7 @@ export default async function AdminBarangPage({
                         title={`Tambah stok ${b.nama}`}
                         className="btn px-2.5 py-1"
                       >
-                        +
+                        <Plus className="w-3 h-3" />
                       </button>
                       <button
                         type="submit"
@@ -159,7 +160,7 @@ export default async function AdminBarangPage({
                         title={`Kurangi stok ${b.nama}`}
                         className="btn btn-danger px-2.5 py-1"
                       >
-                        &minus;
+                        <Minus className="w-3 h-3" />
                       </button>
                     </form>
                   </td>
@@ -169,14 +170,14 @@ export default async function AdminBarangPage({
                         href={`/admin/barang?edit=${b.id}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
                         className="btn px-2 py-1"
                       >
-                        Ubah
+                        <Edit className="w-3 h-3" /> Ubah
                       </Link>
                       <form action={hapusBarang.bind(null, b.id)}>
                         <ConfirmButton
                           message={`Hapus ${b.kode} — ${b.nama} dari katalog?`}
                           className="btn btn-danger px-2 py-1"
                         >
-                          Hapus
+                          <Trash2 className="w-3 h-3" /> Hapus
                         </ConfirmButton>
                       </form>
                     </div>

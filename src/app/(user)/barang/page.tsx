@@ -2,6 +2,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
+import { Search, RotateCcw, Plus } from "lucide-react";
 import type { Barang } from "@/lib/definitions";
 
 export default async function BarangUserPage({
@@ -34,7 +35,7 @@ export default async function BarangUserPage({
 
       <form
         method="GET"
-        className="mb-6 flex flex-wrap items-end gap-3 border-2 border-ink p-4"
+        className="mb-6 flex flex-wrap items-end gap-3 neu-card"
       >
         <div className="min-w-[240px] flex-1">
           <label htmlFor="q" className="label">
@@ -50,15 +51,15 @@ export default async function BarangUserPage({
           />
         </div>
         <button type="submit" className="btn">
-          Cari
+          <Search className="w-4 h-4" /> Cari
         </button>
         {q && (
           <Link href="/barang" className="btn btn-danger">
-            Reset
+            <RotateCcw className="w-4 h-4" /> Reset
           </Link>
         )}
         <Link href="/peminjaman" className="btn btn-solid ml-auto">
-          + Ajukan Permintaan
+          <Plus className="w-4 h-4" /> Ajukan Permintaan
         </Link>
       </form>
 
@@ -77,7 +78,7 @@ export default async function BarangUserPage({
           }
         />
       ) : (
-        <div className="overflow-x-auto border-2 border-ink">
+        <div className="overflow-x-auto neu-card">
           <table className="tbl">
             <thead>
               <tr>

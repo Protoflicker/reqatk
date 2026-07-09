@@ -77,12 +77,22 @@ async function main() {
     CREATE TABLE IF NOT EXISTS pengguna (
       id            SERIAL PRIMARY KEY,
       nip           VARCHAR(30) UNIQUE NOT NULL,
-      nama          VARCHAR(100) NOT NULL,
-      password_hash TEXT NOT NULL,
+      nama          VARCHAR(100) NOT NULL DEFAULT '',
+      password_hash TEXT,
       role          VARCHAR(10) NOT NULL DEFAULT 'user'
                     CHECK (role IN ('user', 'admin')),
       created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
     )
+  `;
+
+  // ---- alur aktivasi akun ----
+  // Akun yang baru didaftarkan admin hanya berisi NIP (password_hash NULL =
+  // belum aktif). Pemilik NIP melengkapi nama + kata sandi saat login pertama.
+  await sql`
+    ALTER TABLE pengguna ALTER COLUMN password_hash DROP NOT NULL
+  `;
+  await sql`
+    ALTER TABLE pengguna ALTER COLUMN nama SET DEFAULT ''
   `;
 
   await sql`

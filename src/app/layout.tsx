@@ -25,7 +25,16 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="id" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
-      <body>{children}</body>
+      <body>
+        {/* Anti-flash: pasang tema tersimpan sebelum konten dirender */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              'try{if(localStorage.getItem("sesdian_theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}',
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status-badge";
 import { Alert } from "@/components/alert";
 import { EmptyState } from "@/components/empty-state";
+import { Icon } from "@/components/icon";
 import {
   formatTanggal,
   STATUS_LIST,
@@ -47,14 +48,14 @@ export default async function LaporanUserPage({
 
       {params.ok === "diajukan" && (
         <Alert variant="success">
-          Permintaan berhasil diajukan. Statusnya MENUNGGU sampai diverifikasi
+          Permintaan berhasil diajukan. Statusnya Menunggu sampai diverifikasi
           admin.
         </Alert>
       )}
 
       <form
         method="GET"
-        className="mb-6 flex flex-wrap items-end gap-3 border-2 border-ink p-4"
+        className="neu-card mb-6 flex flex-wrap items-end gap-3 hover:transform-none"
       >
         <div>
           <label htmlFor="status" className="label">
@@ -66,10 +67,10 @@ export default async function LaporanUserPage({
             defaultValue={statusFilter ?? ""}
             className="input w-52"
           >
-            <option value="">SEMUA STATUS</option>
+            <option value="">Semua status</option>
             {STATUS_LIST.map((s) => (
               <option key={s} value={s}>
-                {s}
+                {s.charAt(0) + s.slice(1).toLowerCase()}
               </option>
             ))}
           </select>
@@ -80,21 +81,26 @@ export default async function LaporanUserPage({
         <div className="ml-auto flex gap-2">
           <a
             href={`/laporan/export-excel?${exportQuery.toString()}`}
-            className="btn btn-solid"
+            className="btn"
           >
-            📊 Unduh Excel
+            <Icon name="download" />
+            Unduh Excel
           </a>
           <a
             href={`/laporan/export-pdf?${exportQuery.toString()}`}
-            className="btn btn-solid"
+            className="btn"
           >
+            <Icon name="file" />
             Unduh PDF
           </a>
         </div>
       </form>
 
-      <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.12em] text-ink/70">
-        {rows.length} catatan{statusFilter ? ` /// status ${statusFilter}` : ""}
+      <p className="mb-4 text-xs font-semibold text-text-muted">
+        {rows.length} catatan
+        {statusFilter
+          ? ` · status ${statusFilter.charAt(0) + statusFilter.slice(1).toLowerCase()}`
+          : ""}
       </p>
 
       {rows.length === 0 ? (
@@ -102,12 +108,12 @@ export default async function LaporanUserPage({
           title="Tidak ada catatan"
           hint={
             statusFilter
-              ? `Tidak ada permintaan berstatus ${statusFilter}.`
+              ? `Tidak ada permintaan berstatus ${statusFilter.toLowerCase()}.`
               : "Anda belum pernah mengajukan permintaan."
           }
         />
       ) : (
-        <div className="overflow-x-auto border-2 border-ink">
+        <div className="tbl-wrap">
           <table className="tbl">
             <thead>
               <tr>
@@ -123,22 +129,26 @@ export default async function LaporanUserPage({
             <tbody>
               {rows.map((r) => (
                 <tr key={r.id}>
-                  <td className="text-ink/60">#{String(r.id).padStart(4, "0")}</td>
+                  <td className="font-mono text-xs text-text-muted">
+                    #{String(r.id).padStart(4, "0")}
+                  </td>
                   <td>
-                    <span className="font-bold">{r.kode_barang}</span>{" "}
+                    <span className="font-mono text-[13px] font-semibold">
+                      {r.kode_barang}
+                    </span>{" "}
                     {r.nama_barang}
                   </td>
-                  <td className="whitespace-nowrap">
+                  <td className="whitespace-nowrap tnum">
                     {r.jumlah} {r.satuan}
                   </td>
                   <td className="max-w-[28ch]">{r.keperluan}</td>
-                  <td className="whitespace-nowrap">
+                  <td className="whitespace-nowrap font-mono text-xs">
                     {formatTanggal(r.tanggal_pinjam)}
                   </td>
                   <td>
                     <StatusBadge status={r.status} />
                   </td>
-                  <td className="max-w-[24ch] text-ink/80">
+                  <td className="max-w-[24ch] text-text-muted">
                     {r.catatan_admin ?? "—"}
                   </td>
                 </tr>

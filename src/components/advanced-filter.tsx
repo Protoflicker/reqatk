@@ -179,7 +179,7 @@ export function AdvancedFilter({
           <div className="flex justify-end">
             <button
               onClick={handleClear}
-              className="neu-btn px-4 py-2 text-xs font-bold text-dark-light hover:text-red-600"
+              className="neu-btn px-4 py-2 text-xs font-bold text-text-muted hover:text-danger"
             >
               ✕ Hapus Semua Filter
             </button>

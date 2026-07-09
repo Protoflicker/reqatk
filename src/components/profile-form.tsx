@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { updateProfile } from "@/lib/actions";
 import type { ActionState } from "@/lib/definitions";
+import { Icon } from "./icon";
 
 interface ProfileFormProps {
   userId: number;
@@ -20,19 +21,27 @@ export function ProfileForm({ userId, currentNip, currentNama }: ProfileFormProp
       <input type="hidden" name="user_id" value={userId} />
 
       {state.error && (
-        <div className="neu-inset border-2 border-red-500 p-3 text-xs font-bold text-red-600">
-          ⚠ {state.error}
+        <div
+          role="alert"
+          className="flex items-start gap-2.5 rounded-[var(--radius)] border border-[rgba(224,62,62,0.3)] bg-[rgba(224,62,62,0.1)] p-3 text-sm font-medium text-danger"
+        >
+          <Icon name="alert" className="mt-0.5 shrink-0" />
+          <span>{state.error}</span>
         </div>
       )}
 
       {state.success && (
-        <div className="neu-inset border-2 border-green-500 p-3 text-xs font-bold text-green-600">
-          ✓ {state.success}
+        <div
+          role="status"
+          className="flex items-start gap-2.5 rounded-[var(--radius)] border border-[rgba(26,174,57,0.3)] bg-[rgba(26,174,57,0.12)] p-3 text-sm font-medium text-success"
+        >
+          <Icon name="check" className="mt-0.5 shrink-0" />
+          <span>{state.success}</span>
         </div>
       )}
 
       <div>
-        <label htmlFor="nama" className="mb-2 block text-xs font-bold uppercase tracking-wider text-text-muted">
+        <label htmlFor="nama" className="label">
           Nama Lengkap
         </label>
         <input
@@ -41,15 +50,13 @@ export function ProfileForm({ userId, currentNip, currentNama }: ProfileFormProp
           type="text"
           defaultValue={currentNama}
           required
-          className="neu-input w-full text-sm text-dark"
+          className="input text-sm"
         />
-        <p className="mt-1 text-xs text-text-muted">
-          Nama akan ditampilkan di sistem
-        </p>
+        <p className="helper">Nama akan ditampilkan di sistem</p>
       </div>
 
       <div>
-        <label htmlFor="nip" className="mb-2 block text-xs font-bold uppercase tracking-wider text-text-muted">
+        <label htmlFor="nip" className="label">
           NIP (Nomor Induk Pegawai)
         </label>
         <input
@@ -58,9 +65,9 @@ export function ProfileForm({ userId, currentNip, currentNama }: ProfileFormProp
           type="text"
           defaultValue={currentNip}
           disabled
-          className="neu-input w-full text-sm text-dark opacity-60 cursor-not-allowed"
+          className="input cursor-not-allowed font-mono text-sm opacity-60"
         />
-        <p className="mt-1 text-xs text-text-muted">
+        <p className="helper">
           NIP tidak dapat diubah. Hubungi admin jika ada kesalahan.
         </p>
       </div>
@@ -68,7 +75,7 @@ export function ProfileForm({ userId, currentNip, currentNama }: ProfileFormProp
       <button
         type="submit"
         disabled={pending}
-        className="neu-btn-primary w-full py-2 text-sm font-bold disabled:opacity-50"
+        className="neu-btn-primary w-full py-2 text-sm disabled:opacity-50"
       >
         {pending ? "Menyimpan..." : "Simpan Perubahan"}
       </button>

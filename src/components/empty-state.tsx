@@ -6,11 +6,9 @@ export function EmptyState({
   hint?: string;
 }) {
   return (
-    <div className="border-2 border-dashed border-ink/40 p-8 text-center">
-      <p className="text-xs font-bold uppercase tracking-[0.14em] text-ink/70">
-        // {title}
-      </p>
-      {hint && <p className="mt-2 text-xs text-ink/60">{hint}</p>}
+    <div className="rounded-[var(--radius-lg)] border-2 border-dashed border-border bg-bg p-10 text-center">
+      <p className="text-sm font-bold text-text">{title}</p>
+      {hint && <p className="mt-2 text-xs leading-relaxed text-text-muted">{hint}</p>}
     </div>
   );
 }

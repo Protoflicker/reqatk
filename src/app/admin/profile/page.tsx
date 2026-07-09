@@ -15,8 +15,8 @@ export default async function AdminProfilePage() {
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Profile Info */}
-        <div className="neu-card">
-          <h2 className="mb-4 font-display text-lg font-bold text-dark">
+        <div className="neu-card hover:transform-none">
+          <h2 className="mb-4 font-display text-lg font-extrabold tracking-tight text-text">
             Informasi Akun
           </h2>
           <ProfileForm
@@ -27,8 +27,8 @@ export default async function AdminProfilePage() {
         </div>
 
         {/* Password Change */}
-        <div className="neu-card">
-          <h2 className="mb-4 font-display text-lg font-bold text-dark">
+        <div className="neu-card hover:transform-none">
+          <h2 className="mb-4 font-display text-lg font-extrabold tracking-tight text-text">
             Ubah Kata Sandi
           </h2>
           <PasswordChangeForm userId={session.id} />
@@ -36,25 +36,25 @@ export default async function AdminProfilePage() {
       </div>
 
       {/* Account Info (Read-only) */}
-      <div className="neu-card mt-6">
-        <h2 className="mb-4 font-display text-lg font-bold text-dark">
+      <div className="neu-card mt-6 hover:transform-none">
+        <h2 className="mb-4 font-display text-lg font-extrabold tracking-tight text-text">
           Detail Akun
         </h2>
         <div className="grid gap-4 md:grid-cols-3">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-text-muted">
+            <label className="label">
               NIP
             </label>
-            <p className="mt-1 font-mono text-dark">{session.nip}</p>
+            <p className="mt-1 font-mono text-text">{session.nip}</p>
           </div>
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-text-muted">
+            <label className="label">
               Nama Lengkap
             </label>
-            <p className="mt-1 text-dark">{session.nama}</p>
+            <p className="mt-1 text-text">{session.nama}</p>
           </div>
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-text-muted">
+            <label className="label">
               Role
             </label>
             <span className="mt-1 inline-block rounded-full bg-primary px-3 py-1 text-xs font-bold text-white">

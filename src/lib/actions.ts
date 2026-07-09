@@ -10,7 +10,7 @@ import {
   requireAdmin,
   requireSession,
 } from "./auth";
-import type { ActionState, Role } from "./definitions";
+import type { ActionState, CekNipState, Role } from "./definitions";
 import type { Notification } from "./notifications";
 import { logActivity } from "./audit";
 
@@ -61,6 +61,124 @@ export async function markAllNotificationsAsRead(userId: number): Promise<void> 
    AUTENTIKASI
    ============================================================ */
 
+/**
+ * Langkah pertama login: cek status NIP.
+ * - NIP tidak terdaftar  → error (hubungi admin)
+ * - NIP terdaftar, belum aktivasi (password_hash NULL) → mode "aktivasi"
+ * - NIP terdaftar dan aktif → mode "login" (minta kata sandi)
+ */
+export async function cekNip(
+  _prevState: CekNipState,
+  formData: FormData
+): Promise<CekNipState> {
+  const nip = String(formData.get("nip") ?? "").trim();
+
+  // Saat error, nip dikembalikan agar isian tidak hilang (React mereset form).
+  if (!/^\d{5,30}$/.test(nip)) {
+    return { error: "NIP harus berupa angka 5–30 digit.", nip };
+  }
+
+  try {
+    const sql = db();
+    const rows = (await sql`
+      SELECT nama, password_hash IS NOT NULL AS aktif
+      FROM pengguna
+      WHERE nip = ${nip}
+      LIMIT 1
+    `) as { nama: string; aktif: boolean }[];
+
+    if (rows.length === 0) {
+      return {
+        error:
+          "NIP tidak terdaftar. Hubungi admin bagian umum untuk didaftarkan.",
+        nip,
+      };
+    }
+
+    return {
+      mode: rows[0].aktif ? "login" : "aktivasi",
+      nip,
+      nama: rows[0].nama || "",
+    };
+  } catch (e) {
+    console.error("cekNip gagal:", e);
+    return {
+      error:
+        "Tidak dapat terhubung ke database. Periksa DATABASE_URL di .env.local.",
+      nip,
+    };
+  }
+}
+
+/**
+ * Aktivasi akun: pemilik NIP yang didaftarkan admin melengkapi nama dan
+ * kata sandi. Hanya berlaku selama akun belum aktif (password_hash NULL),
+ * sehingga akun aktif tidak bisa diambil alih lewat jalur ini.
+ */
+export async function aktivasiAkun(
+  _prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const nip = String(formData.get("nip") ?? "").trim();
+  const nama = String(formData.get("nama") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+  const konfirmasi = String(formData.get("konfirmasi") ?? "");
+
+  if (!/^\d{5,30}$/.test(nip)) {
+    return { error: "NIP tidak valid." };
+  }
+  if (nama.length < 3) {
+    return { error: "Nama lengkap minimal 3 karakter." };
+  }
+  if (password.length < 6) {
+    return { error: "Kata sandi minimal 6 karakter." };
+  }
+  if (password !== konfirmasi) {
+    return { error: "Konfirmasi kata sandi tidak cocok." };
+  }
+
+  let role: Role;
+  try {
+    const sql = db();
+    const hash = await bcrypt.hash(password, 10);
+    const rows = (await sql`
+      UPDATE pengguna
+      SET nama = ${nama}, password_hash = ${hash}
+      WHERE nip = ${nip} AND password_hash IS NULL
+      RETURNING id, nip, nama, role
+    `) as { id: number; nip: string; nama: string; role: Role }[];
+
+    if (rows.length === 0) {
+      return {
+        error:
+          "Akun ini sudah aktif atau NIP tidak terdaftar. Ulangi dari langkah NIP.",
+      };
+    }
+
+    const user = rows[0];
+    await createSession({
+      id: user.id,
+      nip: user.nip,
+      nama: user.nama,
+      role: user.role,
+    });
+    role = user.role;
+
+    try {
+      await logActivity(user.id, "ACTIVATE_ACCOUNT", "pengguna", user.id, {
+        nip: user.nip,
+      });
+    } catch (e) {
+      console.error("Failed to log activity:", e);
+    }
+  } catch (e) {
+    console.error("aktivasiAkun gagal:", e);
+    return { error: "Gagal mengaktifkan akun. Coba lagi." };
+  }
+
+  redirect(role === "admin" ? "/admin" : "/dashboard");
+}
+
 export async function login(
   _prevState: ActionState,
   formData: FormData
@@ -84,7 +202,7 @@ export async function login(
       id: number;
       nip: string;
       nama: string;
-      password_hash: string;
+      password_hash: string | null;
       role: Role;
     }[];
 
@@ -93,6 +211,12 @@ export async function login(
     }
 
     const user = rows[0];
+    if (!user.password_hash) {
+      return {
+        error:
+          "Akun belum diaktivasi. Ulangi dari langkah NIP untuk melengkapi nama dan kata sandi.",
+      };
+    }
     const cocok = await bcrypt.compare(password, user.password_hash);
     if (!cocok) {
       return { error: "Kata sandi salah." };
@@ -666,19 +790,104 @@ export async function hapusBarang(id: number, _formData: FormData): Promise<void
    PENGGUNA — CRUD ADMIN
    ============================================================ */
 
+/**
+ * Pendaftaran NIP oleh admin. Hanya NIP yang dimasukkan; akun tercipta
+ * dalam keadaan belum aktif (password_hash NULL) sampai pemilik NIP
+ * melengkapi nama + kata sandi lewat halaman login.
+ */
+export async function daftarkanNip(
+  _prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const session = await requireAdmin();
+
+  const nip = String(formData.get("nip") ?? "").trim();
+
+  if (!/^\d{5,30}$/.test(nip)) {
+    return { error: "NIP harus berupa angka 5–30 digit." };
+  }
+
+  try {
+    const sql = db();
+    const result = await sql`
+      INSERT INTO pengguna (nip, nama, password_hash, role)
+      VALUES (${nip}, '', NULL, 'user')
+      RETURNING id
+    `;
+
+    const newId = (result[0] as { id: number }).id;
+    await logActivity(session.id, "CREATE_USER", "pengguna", newId, {
+      nip,
+      status: "belum_aktivasi",
+    });
+  } catch (e: unknown) {
+    if (isUniqueViolation(e)) {
+      return { error: `NIP ${nip} sudah terdaftar.` };
+    }
+    console.error("daftarkanNip gagal:", e);
+    return { error: "Gagal mendaftarkan NIP. Coba lagi." };
+  }
+
+  revalidatePath("/admin/pengguna");
+  redirect("/admin/pengguna?ok=nip");
+}
+
+/**
+ * Reset aktivasi: kata sandi dihapus sehingga akun kembali berstatus
+ * belum aktif. Pemilik NIP harus mendaftar ulang (nama + sandi) saat login.
+ */
+export async function resetAktivasi(
+  id: number,
+  _formData: FormData
+): Promise<void> {
+  const session = await requireAdmin();
+
+  let err: string | null = null;
+  if (id === session.id) {
+    err = "reset-sendiri";
+  } else {
+    try {
+      const sql = db();
+      const rows = (await sql`
+        UPDATE pengguna
+        SET password_hash = NULL
+        WHERE id = ${id}
+        RETURNING nip
+      `) as { nip: string }[];
+
+      if (rows.length === 0) {
+        err = "gagal";
+      } else {
+        await logActivity(session.id, "RESET_USER", "pengguna", id, {
+          nip: rows[0].nip,
+          status: "dinonaktifkan",
+        });
+      }
+    } catch (e) {
+      console.error("resetAktivasi gagal:", e);
+      err = "gagal";
+    }
+  }
+
+  revalidatePath("/admin/pengguna");
+  redirect(err ? `/admin/pengguna?err=${err}` : "/admin/pengguna?ok=reset");
+}
+
 export async function simpanPengguna(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
   const session = await requireAdmin();
 
-  const idRaw = String(formData.get("id") ?? "").trim();
-  const id = idRaw ? Number(idRaw) : null;
+  const id = Number(formData.get("id"));
   const nip = String(formData.get("nip") ?? "").trim();
   const nama = String(formData.get("nama") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const role = String(formData.get("role") ?? "user");
 
+  if (!Number.isInteger(id) || id <= 0) {
+    return { error: "Pengguna baru didaftarkan lewat formulir NIP di atas." };
+  }
   if (!/^\d{5,30}$/.test(nip)) {
     return { error: "NIP harus berupa angka 5–30 digit." };
   }
@@ -688,58 +897,34 @@ export async function simpanPengguna(
   if (role !== "admin" && role !== "user") {
     return { error: "Role tidak valid." };
   }
-  if (!id && password.length < 6) {
-    return { error: "Kata sandi minimal 6 karakter." };
-  }
-  if (id && password && password.length < 6) {
+  if (password && password.length < 6) {
     return { error: "Kata sandi baru minimal 6 karakter (kosongkan bila tidak diganti)." };
   }
 
   try {
     const sql = db();
-    if (id) {
-      if (password) {
-        const hash = await bcrypt.hash(password, 10);
-        await sql`
-          UPDATE pengguna
-          SET nip = ${nip}, nama = ${nama}, role = ${role}, password_hash = ${hash}
-          WHERE id = ${id}
-        `;
-      } else {
-        await sql`
-          UPDATE pengguna
-          SET nip = ${nip}, nama = ${nama}, role = ${role}
-          WHERE id = ${id}
-        `;
-      }
-      
-      // Log update activity
-      await logActivity(
-        session.id,
-        "UPDATE_USER",
-        "pengguna",
-        id,
-        { nip, nama, role, password_changed: !!password }
-      );
-    } else {
+    if (password) {
       const hash = await bcrypt.hash(password, 10);
-      const result = await sql`
-        INSERT INTO pengguna (nip, nama, password_hash, role)
-        VALUES (${nip}, ${nama}, ${hash}, ${role})
-        RETURNING id
+      await sql`
+        UPDATE pengguna
+        SET nip = ${nip}, nama = ${nama}, role = ${role}, password_hash = ${hash}
+        WHERE id = ${id}
       `;
-      
-      const newId = (result[0] as { id: number }).id;
-      
-      // Log create activity
-      await logActivity(
-        session.id,
-        "CREATE_USER",
-        "pengguna",
-        newId,
-        { nip, nama, role }
-      );
+    } else {
+      await sql`
+        UPDATE pengguna
+        SET nip = ${nip}, nama = ${nama}, role = ${role}
+        WHERE id = ${id}
+      `;
     }
+
+    await logActivity(
+      session.id,
+      "UPDATE_USER",
+      "pengguna",
+      id,
+      { nip, nama, role, password_changed: !!password }
+    );
   } catch (e: unknown) {
     if (isUniqueViolation(e)) {
       return { error: `NIP ${nip} sudah terdaftar.` };
@@ -749,7 +934,7 @@ export async function simpanPengguna(
   }
 
   revalidatePath("/admin/pengguna");
-  redirect(`/admin/pengguna?ok=${id ? "ubah" : "tambah"}`);
+  redirect("/admin/pengguna?ok=ubah");
 }
 
 export async function hapusPengguna(

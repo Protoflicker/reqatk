@@ -1,3 +1,5 @@
+import { Icon } from "./icon";
+
 export function Alert({
   variant,
   children,
@@ -9,14 +11,17 @@ export function Alert({
   return (
     <div
       role={isError ? "alert" : "status"}
-      className={`mb-6 flex items-start gap-3 border-2 p-3 text-xs font-bold uppercase tracking-[0.06em] ${
+      className={`animate-fade-up mb-6 flex items-start gap-3 rounded-[var(--radius-lg)] border p-4 text-sm font-medium ${
         isError
-          ? "border-red bg-red text-paper"
-          : "border-ink bg-ink text-paper"
+          ? "border-[rgba(224,62,62,0.3)] bg-[rgba(224,62,62,0.1)] text-danger"
+          : "border-[rgba(26,174,57,0.3)] bg-[rgba(26,174,57,0.12)] text-success"
       }`}
     >
-      <span aria-hidden="true">{isError ? "!!" : "OK"}</span>
-      <span className="normal-case tracking-normal">{children}</span>
+      <Icon
+        name={isError ? "alert" : "check"}
+        className="mt-0.5 shrink-0 text-base"
+      />
+      <span className="text-text">{children}</span>
     </div>
   );
 }

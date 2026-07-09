@@ -1,25 +1,32 @@
+import { Icon, type IconName } from "./icon";
+
 interface StatsCardProps {
-  icon: string;
+  icon: IconName;
   label: string;
   value: number;
-  color?: "primary" | "green" | "orange" | "red";
+  color?: "primary" | "success" | "warning" | "danger";
 }
 
-export function UserStatsCard({ icon, label, value, color = "primary" }: StatsCardProps) {
-  const colorClasses = {
-    primary: "text-primary",
-    green: "text-green-600",
-    orange: "text-orange-600",
-    red: "text-red-600",
-  };
+const TONE: Record<NonNullable<StatsCardProps["color"]>, string> = {
+  primary: "",
+  success: "is-success",
+  warning: "is-warning",
+  danger: "is-danger",
+};
 
+export function UserStatsCard({
+  icon,
+  label,
+  value,
+  color = "primary",
+}: StatsCardProps) {
   return (
-    <div className="neu-card text-center">
-      <div className={`text-3xl ${colorClasses[color]}`}>{icon}</div>
-      <p className="mt-3 font-display text-3xl font-bold text-dark">{value}</p>
-      <p className="mt-1 text-xs uppercase tracking-wider text-text-muted">
-        {label}
-      </p>
+    <div className={`sesd-stat ${TONE[color]}`}>
+      <div className="flex items-center justify-between">
+        <p className="sesd-stat-num">{value}</p>
+        <Icon name={icon} className="text-lg text-text-muted" />
+      </div>
+      <p className="sesd-stat-label">{label}</p>
     </div>
   );
 }

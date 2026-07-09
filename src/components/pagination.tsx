@@ -43,13 +43,13 @@ export function Pagination({
   };
 
   return (
-    <div className="flex items-center justify-center gap-2">
+    <nav aria-label="Navigasi halaman" className="flex items-center justify-center gap-2">
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="neu-btn px-4 py-2 text-sm font-bold text-dark disabled:opacity-30"
+        className="btn px-4 py-2 text-sm disabled:opacity-30"
       >
-        ← Prev
+        Sebelumnya
       </button>
 
       {getPageNumbers().map((page, idx) =>
@@ -57,16 +57,15 @@ export function Pagination({
           <button
             key={idx}
             onClick={() => onPageChange(page)}
-            className={`neu-btn px-4 py-2 text-sm font-bold transition-all ${
-              currentPage === page
-                ? "neu-btn-primary text-white"
-                : "text-dark-light hover:text-primary"
-            }`}
+            aria-current={currentPage === page ? "page" : undefined}
+            className={`${
+              currentPage === page ? "neu-btn-primary" : "btn"
+            } tnum h-9 w-9 !p-0 text-sm`}
           >
             {page}
           </button>
         ) : (
-          <span key={idx} className="px-2 text-text-muted">
+          <span key={idx} className="px-1 text-text-muted">
             {page}
           </span>
         )
@@ -75,10 +74,10 @@ export function Pagination({
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="neu-btn px-4 py-2 text-sm font-bold text-dark disabled:opacity-30"
+        className="btn px-4 py-2 text-sm disabled:opacity-30"
       >
-        Next →
+        Berikutnya
       </button>
-    </div>
+    </nav>
   );
 }

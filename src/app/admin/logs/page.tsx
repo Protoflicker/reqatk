@@ -47,9 +47,9 @@ export default async function ActivityLogsPage({
   };
 
   const getActionColor = (action: string) => {
-    if (action.includes("CREATE") || action.includes("APPROVE")) return "text-green-600";
-    if (action.includes("DELETE") || action.includes("REJECT")) return "text-red-600";
-    if (action.includes("UPDATE") || action.includes("ADJUST")) return "text-blue-600";
+    if (action.includes("CREATE") || action.includes("APPROVE") || action.includes("ACTIVATE")) return "text-success";
+    if (action.includes("DELETE") || action.includes("REJECT")) return "text-danger";
+    if (action.includes("UPDATE") || action.includes("ADJUST") || action.includes("RESET")) return "text-primary";
     return "text-text-muted";
   };
 
@@ -62,28 +62,26 @@ export default async function ActivityLogsPage({
 
       {/* Stats */}
       <div className="mb-6 grid grid-cols-3 gap-4">
-        <div className="neu-card text-center">
-          <p className="text-xs uppercase tracking-wider text-text-muted">Hari Ini</p>
-          <p className="mt-2 font-display text-3xl font-bold text-dark">{stats.today}</p>
+        <div className="sesd-stat">
+          <p className="sesd-stat-num">{stats.today}</p>
+          <p className="sesd-stat-label">Hari Ini</p>
         </div>
-        <div className="neu-card text-center">
-          <p className="text-xs uppercase tracking-wider text-text-muted">Minggu Ini</p>
-          <p className="mt-2 font-display text-3xl font-bold text-dark">{stats.thisWeek}</p>
+        <div className="sesd-stat is-neutral">
+          <p className="sesd-stat-num">{stats.thisWeek}</p>
+          <p className="sesd-stat-label">Minggu Ini</p>
         </div>
-        <div className="neu-card text-center">
-          <p className="text-xs uppercase tracking-wider text-text-muted">Bulan Ini</p>
-          <p className="mt-2 font-display text-3xl font-bold text-dark">{stats.thisMonth}</p>
+        <div className="sesd-stat is-neutral">
+          <p className="sesd-stat-num">{stats.thisMonth}</p>
+          <p className="sesd-stat-label">Bulan Ini</p>
         </div>
       </div>
 
       {/* Filter */}
-      <div className="neu-card mb-6">
+      <div className="neu-card mb-6 hover:transform-none">
         <div className="flex flex-wrap gap-2">
           <Link
             href="/admin/logs"
-            className={`neu-btn px-4 py-2 text-xs font-bold ${
-              !params.action ? "neu-btn-primary text-white" : "text-dark-light"
-            }`}
+            className={`${!params.action ? "neu-btn-primary" : "btn"} px-4 py-1.5 text-xs`}
           >
             Semua
           </Link>
@@ -91,9 +89,7 @@ export default async function ActivityLogsPage({
             <Link
               key={action}
               href={`/admin/logs?action=${action}`}
-              className={`neu-btn px-4 py-2 text-xs font-bold ${
-                params.action === action ? "neu-btn-primary text-white" : "text-dark-light"
-              }`}
+              className={`${params.action === action ? "neu-btn-primary" : "btn"} px-4 py-1.5 text-xs`}
             >
               {getActionLabel(action)} ({stats.byAction[action]})
             </Link>
@@ -102,22 +98,22 @@ export default async function ActivityLogsPage({
       </div>
 
       {/* Logs Table */}
-      <div className="neu-card overflow-x-auto">
-        <table className="w-full text-left text-sm">
+      <div className="tbl-wrap">
+        <table className="tbl">
           <thead>
-            <tr className="border-b-2 border-bg text-xs uppercase tracking-wider text-text-muted">
-              <th className="pb-3">Waktu</th>
-              <th className="pb-3">User</th>
-              <th className="pb-3">Action</th>
-              <th className="pb-3">Entity</th>
-              <th className="pb-3">Details</th>
-              <th className="pb-3">IP Address</th>
+            <tr>
+              <th>Waktu</th>
+              <th>User</th>
+              <th>Action</th>
+              <th>Entity</th>
+              <th>Details</th>
+              <th>IP Address</th>
             </tr>
           </thead>
           <tbody>
             {logs.map((log) => (
-              <tr key={log.id} className="border-b border-bg last:border-0">
-                <td className="py-3 text-xs text-text-muted">
+              <tr key={log.id}>
+                <td className="whitespace-nowrap font-mono text-xs text-text-muted">
                   {new Date(log.created_at).toLocaleString("id-ID", {
                     day: "2-digit",
                     month: "short",
@@ -125,23 +121,23 @@ export default async function ActivityLogsPage({
                     minute: "2-digit",
                   })}
                 </td>
-                <td className="py-3">
-                  <span className="text-dark">User #{log.user_id || "-"}</span>
+                <td>
+                  <span className="text-text">User #{log.user_id || "-"}</span>
                 </td>
-                <td className="py-3">
+                <td>
                   <span className={`font-bold ${getActionColor(log.action)}`}>
                     {getActionLabel(log.action)}
                   </span>
                 </td>
-                <td className="py-3 text-dark-light">
+                <td className="text-text-muted">
                   {log.entity_type}
                   {log.entity_id && ` #${log.entity_id}`}
                 </td>
-                <td className="py-3 text-xs text-text-muted">
+                <td className="text-xs text-text-muted">
                   {log.details ? (
                     <details className="cursor-pointer">
-                      <summary>View</summary>
-                      <pre className="neu-inset mt-2 max-w-xs overflow-auto p-2 text-[10px]">
+                      <summary>Lihat</summary>
+                      <pre className="neu-inset mt-2 max-w-xs overflow-auto p-2 font-mono text-[10px]">
                         {JSON.stringify(log.details, null, 2)}
                       </pre>
                     </details>
@@ -149,7 +145,7 @@ export default async function ActivityLogsPage({
                     "-"
                   )}
                 </td>
-                <td className="py-3 text-xs font-mono text-text-muted">
+                <td className="font-mono text-xs text-text-muted">
                   {log.ip_address || "-"}
                 </td>
               </tr>

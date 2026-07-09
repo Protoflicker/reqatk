@@ -6,6 +6,8 @@ import { StatusBadge } from "@/components/status-badge";
 import { BulkApproval } from "@/components/bulk-approval";
 import { Pagination } from "@/components/pagination";
 import { ReturnForm } from "@/components/return-form";
+import { EmptyState } from "@/components/empty-state";
+import { Icon } from "@/components/icon";
 import { formatTanggal, type PeminjamanDetail } from "@/lib/definitions";
 
 type BarisAntrean = Pick<
@@ -32,8 +34,8 @@ type BarisRiwayat = Pick<
   | "kode_barang"
   | "nama_barang"
   | "satuan"
-> & { 
-  status_return: string; 
+> & {
+  status_return: string;
   tanggal_kembali: string | null;
   barang_id: number;
 };
@@ -72,96 +74,106 @@ export function PeminjamanClient({ antrean, keputusan }: PeminjamanClientProps) 
       {/* ===== Antrean menunggu ===== */}
       <section className="mb-12">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-xl uppercase tracking-tight text-dark">
+          <h2 className="font-display text-xl font-extrabold tracking-tight text-text">
             Menunggu Persetujuan{" "}
             <span className={antrean.length > 0 ? "text-primary" : "text-text-muted"}>
               ({antrean.length})
             </span>
           </h2>
           {antrean.length > 0 && (
-            <button
-              onClick={toggleSelectAll}
-              className="neu-btn px-4 py-2 text-xs font-bold text-dark-light"
-            >
-              {selectedIds.length === antrean.length ? "✓ Batalkan Semua" : "☐ Pilih Semua"}
+            <button onClick={toggleSelectAll} className="btn px-4 py-2 text-xs">
+              {selectedIds.length === antrean.length
+                ? "Batalkan Semua"
+                : "Pilih Semua"}
             </button>
           )}
         </div>
 
         {antrean.length === 0 ? (
-          <div className="neu-card py-12 text-center">
-            <p className="text-lg font-bold text-dark">Antrean kosong</p>
-            <p className="mt-2 text-sm text-text-muted">
-              Tidak ada permintaan yang menunggu persetujuan.
-            </p>
-          </div>
+          <EmptyState
+            title="Antrean kosong"
+            hint="Tidak ada permintaan yang menunggu persetujuan."
+          />
         ) : (
-          <div className="neu-card overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          <div className="tbl-wrap">
+            <table className="tbl">
               <thead>
-                <tr className="border-b-2 border-bg text-xs uppercase tracking-wider text-text-muted">
-                  <th className="pb-3">
+                <tr>
+                  <th>
                     <input
                       type="checkbox"
+                      aria-label="Pilih semua permintaan"
                       checked={selectedIds.length === antrean.length && antrean.length > 0}
                       onChange={toggleSelectAll}
-                      className="h-4 w-4 cursor-pointer"
+                      className="h-4 w-4 cursor-pointer accent-[var(--color-primary)]"
                     />
                   </th>
-                  <th className="pb-3">ID</th>
-                  <th className="pb-3">Pemohon</th>
-                  <th className="pb-3">Barang</th>
-                  <th className="pb-3">Jumlah</th>
-                  <th className="pb-3">Stok</th>
-                  <th className="pb-3">Keperluan</th>
-                  <th className="pb-3">Tgl. Pinjam</th>
-                  <th className="pb-3">Tindakan</th>
+                  <th>ID</th>
+                  <th>Pemohon</th>
+                  <th>Barang</th>
+                  <th>Jumlah</th>
+                  <th>Stok</th>
+                  <th>Keperluan</th>
+                  <th>Tgl. Pinjam</th>
+                  <th>Tindakan</th>
                 </tr>
               </thead>
               <tbody>
                 {antrean.map((r) => (
                   <tr
                     key={r.id}
-                    className={`border-b border-bg transition-colors last:border-0 ${
-                      selectedIds.includes(r.id) ? "bg-primary/5" : ""
-                    }`}
+                    className={
+                      selectedIds.includes(r.id) ? "bg-[rgba(0,117,222,0.06)]" : ""
+                    }
                   >
-                    <td className="py-3">
+                    <td>
                       <input
                         type="checkbox"
+                        aria-label={`Pilih permintaan #${r.id}`}
                         checked={selectedIds.includes(r.id)}
                         onChange={() => toggleSelect(r.id)}
-                        className="h-4 w-4 cursor-pointer"
+                        className="h-4 w-4 cursor-pointer accent-[var(--color-primary)]"
                       />
                     </td>
-                    <td className="py-3 text-text-muted">#{String(r.id).padStart(4, "0")}</td>
-                    <td className="py-3">
-                      <span className="font-bold text-dark">{r.nama_pengguna}</span>
+                    <td className="font-mono text-xs text-text-muted">
+                      #{String(r.id).padStart(4, "0")}
+                    </td>
+                    <td>
+                      <span className="font-semibold">{r.nama_pengguna}</span>
                       <br />
-                      <span className="text-xs text-text-muted">NIP {r.nip}</span>
+                      <span className="font-mono text-xs text-text-muted">{r.nip}</span>
                     </td>
-                    <td className="py-3">
-                      <span className="font-bold text-primary">{r.kode_barang}</span>{" "}
-                      <span className="text-dark-light">{r.nama_barang}</span>
+                    <td>
+                      <span className="font-mono text-[13px] font-semibold">
+                        {r.kode_barang}
+                      </span>{" "}
+                      {r.nama_barang}
                     </td>
-                    <td className="whitespace-nowrap py-3">
+                    <td className="whitespace-nowrap tnum">
                       {r.jumlah} {r.satuan}
                     </td>
-                    <td className={`py-3 ${r.stok < r.jumlah ? "font-bold text-red-600" : ""}`}>
+                    <td className={`tnum ${r.stok < r.jumlah ? "font-bold text-danger" : ""}`}>
                       {r.stok}
                       {r.stok < r.jumlah && (
-                        <span className="ml-1 text-xs uppercase">⚠ Kurang</span>
+                        <span className="ml-1 inline-flex items-center gap-1 text-xs">
+                          <Icon name="alert" />
+                          Kurang
+                        </span>
                       )}
                     </td>
-                    <td className="max-w-[24ch] py-3 text-dark-light">{r.keperluan}</td>
-                    <td className="whitespace-nowrap py-3">
+                    <td className="max-w-[24ch]">{r.keperluan}</td>
+                    <td className="whitespace-nowrap font-mono text-xs">
                       {formatTanggal(r.tanggal_pinjam)}
                     </td>
-                    <td className="py-3">
+                    <td>
                       <div className="flex min-w-[220px] flex-col gap-2">
                         <form action={setujuiPeminjaman.bind(null, r.id)}>
-                          <button type="submit" className="neu-btn-primary w-full px-3 py-1 text-xs font-bold">
-                            ✓ Setujui
+                          <button
+                            type="submit"
+                            className="neu-btn-primary w-full px-3 py-1 text-xs"
+                          >
+                            <Icon name="check" />
+                            Setujui
                           </button>
                         </form>
                         <form action={tolakPeminjaman.bind(null, r.id)} className="flex gap-1">
@@ -169,10 +181,14 @@ export function PeminjamanClient({ antrean, keputusan }: PeminjamanClientProps) 
                             name="catatan"
                             type="text"
                             placeholder="catatan (opsional)"
-                            className="neu-input flex-1 px-2 py-1 text-xs"
+                            className="input flex-1 px-2 py-1 text-xs"
                           />
-                          <button type="submit" className="neu-btn px-2 py-1 text-xs font-bold text-red-600">
-                            ✕ Tolak
+                          <button
+                            type="submit"
+                            className="btn px-2.5 py-1 text-xs text-danger"
+                          >
+                            <Icon name="x" />
+                            Tolak
                           </button>
                         </form>
                       </div>
@@ -190,93 +206,103 @@ export function PeminjamanClient({ antrean, keputusan }: PeminjamanClientProps) 
 
       {/* ===== Keputusan terakhir ===== */}
       <section>
-        <h2 className="mb-4 font-display text-xl uppercase tracking-tight text-dark">
+        <h2 className="mb-4 font-display text-xl font-extrabold tracking-tight text-text">
           Keputusan Terakhir{" "}
           <span className="text-text-muted">({keputusan.length})</span>
         </h2>
 
         {keputusan.length === 0 ? (
-          <div className="neu-card py-12 text-center">
-            <p className="text-lg font-bold text-dark">Belum ada keputusan</p>
-            <p className="mt-2 text-sm text-text-muted">
-              Permintaan yang disetujui atau ditolak akan tampil di sini.
-            </p>
-          </div>
+          <EmptyState
+            title="Belum ada keputusan"
+            hint="Permintaan yang disetujui atau ditolak akan tampil di sini."
+          />
         ) : (
           <>
-            <div className="neu-card overflow-x-auto">
-              <table className="w-full text-left text-sm">
+            <div className="tbl-wrap">
+              <table className="tbl">
                 <thead>
-                  <tr className="border-b-2 border-bg text-xs uppercase tracking-wider text-text-muted">
-                    <th className="pb-3">ID</th>
-                    <th className="pb-3">Pemohon</th>
-                    <th className="pb-3">Barang</th>
-                    <th className="pb-3">Jumlah</th>
-                    <th className="pb-3">Tgl. Pinjam</th>
-                    <th className="pb-3">Status</th>
-                    <th className="pb-3">Status Kembali</th>
-                    <th className="pb-3">Catatan</th>
-                    <th className="pb-3">Aksi</th>
+                  <tr>
+                    <th>ID</th>
+                    <th>Pemohon</th>
+                    <th>Barang</th>
+                    <th>Jumlah</th>
+                    <th>Tgl. Pinjam</th>
+                    <th>Status</th>
+                    <th>Status Kembali</th>
+                    <th>Catatan</th>
+                    <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedKeputusan.map((r) => (
-                    <tr key={r.id} className="border-b border-bg last:border-0">
-                      <td className="py-3 text-text-muted">#{String(r.id).padStart(4, "0")}</td>
-                      <td className="py-3 font-bold text-dark">{r.nama_pengguna}</td>
-                      <td className="py-3">
-                        <span className="font-bold text-primary">{r.kode_barang}</span>{" "}
-                        <span className="text-dark-light">{r.nama_barang}</span>
+                    <tr key={r.id}>
+                      <td className="font-mono text-xs text-text-muted">
+                        #{String(r.id).padStart(4, "0")}
                       </td>
-                      <td className="whitespace-nowrap py-3">
+                      <td className="font-semibold">{r.nama_pengguna}</td>
+                      <td>
+                        <span className="font-mono text-[13px] font-semibold">
+                          {r.kode_barang}
+                        </span>{" "}
+                        {r.nama_barang}
+                      </td>
+                      <td className="whitespace-nowrap tnum">
                         {r.jumlah} {r.satuan}
                       </td>
-                      <td className="whitespace-nowrap py-3">
+                      <td className="whitespace-nowrap font-mono text-xs">
                         {formatTanggal(r.tanggal_pinjam)}
                       </td>
-                      <td className="py-3">
+                      <td>
                         <StatusBadge status={r.status} />
                       </td>
-                      <td className="py-3">
+                      <td>
                         {r.status === "DISETUJUI" && (
                           <span
-                            className={`inline-block rounded px-2 py-1 text-xs font-bold ${
+                            className={`badge whitespace-nowrap ${
                               r.status_return === "DIKEMBALIKAN"
-                                ? "bg-green-100 text-green-800"
+                                ? "badge-success"
                                 : r.status_return === "TIDAK_PERLU"
-                                ? "bg-gray-100 text-gray-800"
-                                : "bg-yellow-100 text-yellow-800"
+                                ? "badge-muted"
+                                : "badge-warning"
                             }`}
                           >
-                            {r.status_return === "DIKEMBALIKAN"
-                              ? "✓ Dikembalikan"
-                              : r.status_return === "TIDAK_PERLU"
-                              ? "⊘ Tidak Perlu"
-                              : "⏱ Belum Kembali"}
+                            {r.status_return === "DIKEMBALIKAN" ? (
+                              <>
+                                <Icon name="check" />
+                                Dikembalikan
+                              </>
+                            ) : r.status_return === "TIDAK_PERLU" ? (
+                              "Tidak Perlu"
+                            ) : (
+                              <>
+                                <Icon name="clock" />
+                                Belum Kembali
+                              </>
+                            )}
                           </span>
                         )}
                         {r.status === "DITOLAK" && (
                           <span className="text-xs text-text-muted">—</span>
                         )}
                         {r.tanggal_kembali && (
-                          <div className="mt-1 text-xs text-text-muted">
+                          <div className="mt-1 font-mono text-[11px] text-text-muted">
                             {formatTanggal(r.tanggal_kembali)}
                           </div>
                         )}
                       </td>
-                      <td className="max-w-[24ch] py-3 text-dark-light">
+                      <td className="max-w-[24ch] text-text-muted">
                         {r.catatan_admin ?? "—"}
                       </td>
-                      <td className="py-3">
-                        {r.status === "DISETUJUI" && 
-                         r.status_return === "BELUM_DIKEMBALIKAN" && (
-                          <ReturnForm
-                            peminjamanId={r.id}
-                            barangNama={r.nama_barang}
-                            jumlah={r.jumlah}
-                            satuan={r.satuan}
-                          />
-                        )}
+                      <td>
+                        {r.status === "DISETUJUI" &&
+                          r.status_return === "BELUM_DIKEMBALIKAN" && (
+                            <ReturnForm
+                              peminjamanId={r.id}
+                              barangNama={r.nama_barang}
+                              jumlah={r.jumlah}
+                              satuan={r.satuan}
+                            />
+                          )}
                       </td>
                     </tr>
                   ))}
@@ -296,8 +322,8 @@ export function PeminjamanClient({ antrean, keputusan }: PeminjamanClientProps) 
           </>
         )}
 
-        <p className="mt-4 text-xs uppercase tracking-wider text-text-muted">
-          Riwayat lengkap tersedia di menu Laporan Peminjaman
+        <p className="helper mt-4">
+          Riwayat lengkap tersedia di menu Laporan Peminjaman.
         </p>
       </section>
     </>

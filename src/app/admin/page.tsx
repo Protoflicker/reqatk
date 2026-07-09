@@ -88,52 +88,41 @@ export default async function AdminDashboardPage() {
 
   return (
     <>
-      <header className="mb-8">
-        <p className="text-xs font-bold uppercase tracking-wider text-primary">
-          /// Panel Admin
-        </p>
-        <h1 className="mt-2 font-display text-3xl uppercase leading-tight tracking-tight text-dark md:text-5xl">
+      <header className="sesd-greet animate-fade-up mb-8">
+        <p className="sesd-greet-eyebrow">Panel Admin · PINJAM/ATK</p>
+        <h1 className="sesd-greet-title">
           Halo, {session.nama.split(" ")[0]}
         </h1>
-        <p className="mt-3 max-w-[65ch] text-sm text-text-muted">
+        <p className="sesd-greet-sub">
           Kondisi inventaris dan antrean permintaan saat ini. Permintaan
-          MENUNGGU perlu ditindaklanjuti lewat menu Persetujuan.
+          berstatus Menunggu perlu ditindaklanjuti lewat menu Persetujuan.
         </p>
+        <span className="sesd-greet-role">Admin — pengelola sistem</span>
       </header>
 
       {/* Stats Grid */}
       <div className="mb-10 grid grid-cols-2 gap-4 md:grid-cols-5">
-        <div className="neu-card text-center">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
-            Antrean Menunggu
-          </p>
-          <p className="mt-3 font-display text-4xl font-bold text-primary">{Number(stat.menunggu)}</p>
+        <div className="sesd-stat">
+          <p className="sesd-stat-num">{Number(stat.menunggu)}</p>
+          <p className="sesd-stat-label">Antrean Menunggu</p>
         </div>
-        <div className="neu-card text-center">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
-            Disetujui Bulan Ini
-          </p>
-          <p className="mt-3 font-display text-4xl font-bold text-dark">{Number(stat.disetujui_bulan_ini)}</p>
+        <div className="sesd-stat is-success">
+          <p className="sesd-stat-num">{Number(stat.disetujui_bulan_ini)}</p>
+          <p className="sesd-stat-label">Disetujui Bulan Ini</p>
         </div>
-        <div className="neu-card text-center">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
-            Jenis Barang
-          </p>
-          <p className="mt-3 font-display text-4xl font-bold text-dark">{Number(stat.total_barang)}</p>
+        <div className="sesd-stat is-neutral">
+          <p className="sesd-stat-num">{Number(stat.total_barang)}</p>
+          <p className="sesd-stat-label">Jenis Barang</p>
         </div>
-        <div className="neu-card text-center">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
-            Stok Habis
-          </p>
-          <p className={`mt-3 font-display text-4xl font-bold ${Number(stat.stok_habis) > 0 ? "text-red-600" : "text-dark"}`}>
-            {Number(stat.stok_habis)}
-          </p>
+        <div
+          className={`sesd-stat ${Number(stat.stok_habis) > 0 ? "is-danger" : "is-neutral"}`}
+        >
+          <p className="sesd-stat-num">{Number(stat.stok_habis)}</p>
+          <p className="sesd-stat-label">Stok Habis</p>
         </div>
-        <div className="neu-card text-center">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
-            Pengguna Terdaftar
-          </p>
-          <p className="mt-3 font-display text-4xl font-bold text-dark">{Number(stat.total_pengguna)}</p>
+        <div className="sesd-stat is-neutral">
+          <p className="sesd-stat-num">{Number(stat.total_pengguna)}</p>
+          <p className="sesd-stat-label">Pengguna Terdaftar</p>
         </div>
       </div>
 
@@ -153,11 +142,11 @@ export default async function AdminDashboardPage() {
 
       <section className="mt-10">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-display text-xl uppercase tracking-tight text-dark">
+          <h2 className="font-display text-xl font-extrabold tracking-tight text-text">
             Antrean Persetujuan
           </h2>
           <Link href="/admin/peminjaman" className="neu-btn-primary px-6 py-2 text-sm font-bold">
-            Proses Antrean →
+            Proses Antrean
           </Link>
         </div>
 
@@ -167,40 +156,46 @@ export default async function AdminDashboardPage() {
             hint="Semua permintaan sudah diproses."
           />
         ) : (
-          <div className="neu-card overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          <div className="tbl-wrap">
+            <table className="tbl">
               <thead>
-                <tr className="border-b-2 border-bg text-xs uppercase tracking-wider text-text-muted">
-                  <th className="pb-3">ID</th>
-                  <th className="pb-3">Pemohon</th>
-                  <th className="pb-3">Barang</th>
-                  <th className="pb-3">Jumlah</th>
-                  <th className="pb-3">Stok Kini</th>
-                  <th className="pb-3">Keperluan</th>
-                  <th className="pb-3">Tgl. Pinjam</th>
+                <tr>
+                  <th>ID</th>
+                  <th>Pemohon</th>
+                  <th>Barang</th>
+                  <th>Jumlah</th>
+                  <th>Stok Kini</th>
+                  <th>Keperluan</th>
+                  <th>Tgl. Pinjam</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((r) => (
-                  <tr key={r.id} className="border-b border-bg last:border-0">
-                    <td className="py-3 text-text-muted">#{String(r.id).padStart(4, "0")}</td>
-                    <td className="py-3">
-                      <span className="font-bold text-dark">{r.nama_pengguna}</span>
+                  <tr key={r.id}>
+                    <td className="font-mono text-xs text-text-muted">
+                      #{String(r.id).padStart(4, "0")}
+                    </td>
+                    <td>
+                      <span className="font-semibold">{r.nama_pengguna}</span>
                       <br />
-                      <span className="text-xs text-text-muted">NIP {r.nip}</span>
+                      <span className="font-mono text-xs text-text-muted">{r.nip}</span>
                     </td>
-                    <td className="py-3">
-                      <span className="font-bold text-primary">{r.kode_barang}</span>{" "}
-                      <span className="text-dark-light">{r.nama_barang}</span>
+                    <td>
+                      <span className="font-mono text-[13px] font-semibold">
+                        {r.kode_barang}
+                      </span>{" "}
+                      {r.nama_barang}
                     </td>
-                    <td className="whitespace-nowrap py-3">
+                    <td className="whitespace-nowrap tnum">
                       {r.jumlah} {r.satuan}
                     </td>
-                    <td className={`py-3 ${r.stok < r.jumlah ? "font-bold text-red-600" : ""}`}>
+                    <td
+                      className={`tnum ${r.stok < r.jumlah ? "font-bold text-danger" : ""}`}
+                    >
                       {r.stok}
                     </td>
-                    <td className="max-w-[28ch] py-3 text-dark-light">{r.keperluan}</td>
-                    <td className="whitespace-nowrap py-3">
+                    <td className="max-w-[28ch]">{r.keperluan}</td>
+                    <td className="whitespace-nowrap font-mono text-xs">
                       {formatTanggal(r.tanggal_pinjam)}
                     </td>
                   </tr>

@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { ajukanPeminjaman } from "@/lib/actions";
 import type { ActionState, Barang } from "@/lib/definitions";
+import { Icon } from "./icon";
 
 const initialState: ActionState = {};
 
@@ -22,10 +23,14 @@ export function PeminjamanForm({
   const dipilih = barangList.find((b) => String(b.id) === barangId);
 
   return (
-    <form action={formAction} noValidate className="border-2 border-ink">
-      <div className="border-b-2 border-ink bg-ink px-5 py-3">
-        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-paper">
-          [ Formulir Permintaan Peminjaman ]
+    <form
+      action={formAction}
+      noValidate
+      className="overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface shadow-(--shadow-card)"
+    >
+      <div className="border-b border-border bg-bg-mid px-5 py-3">
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-text-muted">
+          Formulir Permintaan Peminjaman
         </p>
       </div>
 
@@ -33,9 +38,10 @@ export function PeminjamanForm({
         {state.error && (
           <div
             role="alert"
-            className="border-2 border-red bg-red p-3 text-xs font-bold text-paper md:col-span-2"
+            className="flex items-start gap-2.5 rounded-[var(--radius)] border border-[rgba(224,62,62,0.3)] bg-[rgba(224,62,62,0.1)] p-3 text-sm font-medium text-danger md:col-span-2"
           >
-            !! {state.error}
+            <Icon name="alert" className="mt-0.5 shrink-0" />
+            <span>{state.error}</span>
           </div>
         )}
 
@@ -59,9 +65,7 @@ export function PeminjamanForm({
               </option>
             ))}
           </select>
-          <p className="helper">
-            Barang dengan stok habis tidak dapat dipilih.
-          </p>
+          <p className="helper">Barang dengan stok habis tidak dapat dipilih.</p>
         </div>
 
         <div>
@@ -96,7 +100,7 @@ export function PeminjamanForm({
             required
             defaultValue={today}
             min={today}
-            className="input"
+            className="input font-mono"
           />
         </div>
 
@@ -119,16 +123,17 @@ export function PeminjamanForm({
         </div>
       </div>
 
-      <div className="border-t-2 border-ink p-5">
+      <div className="border-t border-border p-5">
         <button
           type="submit"
           disabled={pending}
-          className="btn btn-solid w-full justify-center py-3 text-sm disabled:cursor-wait disabled:opacity-60 md:w-auto"
+          className="neu-btn-primary w-full py-3 text-sm disabled:cursor-wait disabled:opacity-60 md:w-auto"
         >
-          {pending ? "Mengirim..." : "Ajukan Permintaan >>>"}
+          {pending ? "Mengirim..." : "Ajukan permintaan"}
+          {!pending && <Icon name="arrow_right" />}
         </button>
         <p className="helper mt-3">
-          Permintaan berstatus MENUNGGU sampai disetujui admin. Stok baru
+          Permintaan berstatus Menunggu sampai disetujui admin. Stok baru
           berkurang setelah persetujuan.
         </p>
       </div>

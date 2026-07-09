@@ -6,6 +6,7 @@ import { BarangForm } from "@/components/barang-form";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Alert } from "@/components/alert";
 import { EmptyState } from "@/components/empty-state";
+import { Icon } from "@/components/icon";
 import type { Barang } from "@/lib/definitions";
 
 const OK_MSG: Record<string, string> = {
@@ -56,13 +57,13 @@ export default async function AdminBarangPage({
         <Alert variant="error">{ERR_MSG[params.err]}</Alert>
       )}
 
-      <div className="mb-10">
+      <div className="mb-8">
         <BarangForm editData={editData} />
       </div>
 
       <form
         method="GET"
-        className="mb-6 flex flex-wrap items-end gap-3 border-2 border-ink p-4"
+        className="neu-card mb-6 flex flex-wrap items-end gap-3 hover:transform-none"
       >
         <div className="min-w-[240px] flex-1">
           <label htmlFor="q" className="label">
@@ -78,18 +79,22 @@ export default async function AdminBarangPage({
           />
         </div>
         <button type="submit" className="btn">
+          <Icon name="search" />
           Cari
         </button>
         {q && (
-          <Link href="/admin/barang" className="btn btn-danger">
+          <Link href="/admin/barang" className="btn-ghost">
             Reset
           </Link>
         )}
       </form>
 
-      <h2 className="mb-4 font-display text-xl uppercase tracking-tight">
-        Katalog ({rows.length}
-        {q ? ` cocok dengan "${q}"` : ""})
+      <h2 className="mb-4 font-display text-xl font-extrabold tracking-tight text-text">
+        Katalog{" "}
+        <span className="text-text-muted">
+          ({rows.length}
+          {q ? ` cocok dengan "${q}"` : ""})
+        </span>
       </h2>
 
       {rows.length === 0 ? (
@@ -102,7 +107,7 @@ export default async function AdminBarangPage({
           }
         />
       ) : (
-        <div className="overflow-x-auto border-2 border-ink">
+        <div className="tbl-wrap">
           <table className="tbl">
             <thead>
               <tr>
@@ -118,15 +123,19 @@ export default async function AdminBarangPage({
             <tbody>
               {rows.map((b) => (
                 <tr key={b.id}>
-                  <td className="font-bold">{b.kode}</td>
-                  <td>{b.nama}</td>
-                  <td className="text-[11px] uppercase tracking-[0.06em]">
-                    {b.kategori}
+                  <td className="whitespace-nowrap font-mono text-[13px] font-semibold">
+                    {b.kode}
                   </td>
-                  <td className={b.stok === 0 ? "font-bold text-red" : "font-bold"}>
+                  <td className="font-semibold">{b.nama}</td>
+                  <td>
+                    <span className="badge">{b.kategori}</span>
+                  </td>
+                  <td
+                    className={`tnum font-bold ${b.stok === 0 ? "text-danger" : ""}`}
+                  >
                     {b.stok}
                   </td>
-                  <td>{b.satuan}</td>
+                  <td className="text-text-muted">{b.satuan}</td>
                   <td>
                     <form
                       action={ubahStok.bind(null, b.id)}
@@ -148,7 +157,7 @@ export default async function AdminBarangPage({
                         name="arah"
                         value="tambah"
                         title={`Tambah stok ${b.nama}`}
-                        className="btn px-2.5 py-1"
+                        className="btn px-2.5 py-1 text-xs"
                       >
                         +
                       </button>
@@ -157,7 +166,7 @@ export default async function AdminBarangPage({
                         name="arah"
                         value="kurang"
                         title={`Kurangi stok ${b.nama}`}
-                        className="btn btn-danger px-2.5 py-1"
+                        className="btn px-2.5 py-1 text-xs text-danger"
                       >
                         &minus;
                       </button>
@@ -167,15 +176,17 @@ export default async function AdminBarangPage({
                     <div className="flex flex-wrap gap-2">
                       <Link
                         href={`/admin/barang?edit=${b.id}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
-                        className="btn px-2 py-1"
+                        className="btn px-2.5 py-1 text-xs"
                       >
+                        <Icon name="pencil" />
                         Ubah
                       </Link>
                       <form action={hapusBarang.bind(null, b.id)}>
                         <ConfirmButton
                           message={`Hapus ${b.kode} — ${b.nama} dari katalog?`}
-                          className="btn btn-danger px-2 py-1"
+                          className="btn-danger px-2.5 py-1 text-xs"
                         >
+                          <Icon name="trash" />
                           Hapus
                         </ConfirmButton>
                       </form>

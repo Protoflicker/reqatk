@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { simpanBarang } from "@/lib/actions";
 import type { ActionState, Barang } from "@/lib/definitions";
+import { Icon } from "./icon";
 
 const initialState: ActionState = {};
 
@@ -18,18 +19,24 @@ export function BarangForm({ editData }: { editData: Barang | null }) {
       action={formAction}
       noValidate
       key={editData?.id ?? "baru"}
-      className="border-2 border-ink"
+      className="overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface shadow-(--shadow-card)"
     >
-      <div className="flex items-center justify-between border-b-2 border-ink bg-ink px-5 py-3">
-        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-paper">
-          [ {editData ? `Ubah Barang — ${editData.kode}` : "Tambah Barang Baru"} ]
+      <div className="flex items-center justify-between border-b border-border bg-bg-mid px-5 py-3">
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-text-muted">
+          {editData ? (
+            <>
+              Ubah Barang — <span className="font-mono">{editData.kode}</span>
+            </>
+          ) : (
+            "Tambah Barang Baru"
+          )}
         </p>
         {editData && (
           <Link
             href="/admin/barang"
-            className="text-[11px] font-bold uppercase tracking-[0.1em] text-red underline underline-offset-2"
+            className="text-[11px] font-bold text-primary hover:underline"
           >
-            Batal Ubah
+            Batal ubah
           </Link>
         )}
       </div>
@@ -40,9 +47,10 @@ export function BarangForm({ editData }: { editData: Barang | null }) {
         {state.error && (
           <div
             role="alert"
-            className="border-2 border-red bg-red p-3 text-xs font-bold text-paper md:col-span-4"
+            className="flex items-start gap-2.5 rounded-[var(--radius)] border border-[rgba(224,62,62,0.3)] bg-[rgba(224,62,62,0.1)] p-3 text-sm font-medium text-danger md:col-span-4"
           >
-            !! {state.error}
+            <Icon name="alert" className="mt-0.5 shrink-0" />
+            <span>{state.error}</span>
           </div>
         )}
 
@@ -58,7 +66,7 @@ export function BarangForm({ editData }: { editData: Barang | null }) {
             maxLength={20}
             defaultValue={editData?.kode ?? ""}
             placeholder="ATK-001"
-            className="input uppercase"
+            className="input font-mono uppercase"
           />
         </div>
 
@@ -126,13 +134,13 @@ export function BarangForm({ editData }: { editData: Barang | null }) {
           <button
             type="submit"
             disabled={pending}
-            className="btn btn-solid w-full justify-center disabled:cursor-wait disabled:opacity-60"
+            className="neu-btn-primary w-full disabled:cursor-wait disabled:opacity-60"
           >
             {pending
               ? "Menyimpan..."
               : editData
-                ? "Simpan Perubahan >>>"
-                : "Tambah Barang >>>"}
+                ? "Simpan perubahan"
+                : "Tambah barang"}
           </button>
         </div>
       </div>

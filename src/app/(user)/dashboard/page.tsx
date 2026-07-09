@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { UserStatsCard } from "@/components/user-stats-card";
 import { ActivityTimeline } from "@/components/activity-timeline";
+import { Icon } from "@/components/icon";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
 import {
@@ -69,40 +70,39 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <header className="mb-8">
-        <p className="text-xs font-bold uppercase tracking-wider text-primary">
-          /// Dasbor Pegawai
-        </p>
-        <h1 className="mt-2 font-display text-3xl uppercase leading-tight tracking-tight text-dark md:text-5xl">
-          Halo, {namaDepan}
-        </h1>
-        <p className="mt-3 max-w-[65ch] text-sm text-dark-light">
+      <header className="sesd-greet animate-fade-up mb-8">
+        <p className="sesd-greet-eyebrow">Dasbor Pegawai · PINJAM/ATK</p>
+        <h1 className="sesd-greet-title">Halo, {namaDepan}</h1>
+        <p className="sesd-greet-sub">
           Ringkasan permintaan alat tulis kantor Anda. Ajukan permintaan baru
           lewat menu Form Peminjaman.
         </p>
+        <span className="sesd-greet-role">User — pegawai terdaftar</span>
       </header>
 
       {/* Stats Cards */}
       <div className="mb-10 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <UserStatsCard icon="⏱" label="Menunggu" value={Number(stat.menunggu)} color="orange" />
-        <UserStatsCard icon="✓" label="Disetujui" value={Number(stat.disetujui)} color="green" />
-        <UserStatsCard icon="✕" label="Ditolak" value={Number(stat.ditolak)} color="red" />
-        <UserStatsCard icon="📊" label="Total" value={Number(stat.total)} color="primary" />
+        <UserStatsCard icon="clock" label="Menunggu" value={Number(stat.menunggu)} color="warning" />
+        <UserStatsCard icon="check" label="Disetujui" value={Number(stat.disetujui)} color="success" />
+        <UserStatsCard icon="x" label="Ditolak" value={Number(stat.ditolak)} color="danger" />
+        <UserStatsCard icon="chart" label="Total" value={Number(stat.total)} color="primary" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent Activity Timeline */}
-        <div className="neu-card">
-          <h2 className="mb-4 font-display text-lg font-bold text-dark">
-            📋 Aktivitas Terbaru
+        <div className="neu-card hover:transform-none">
+          <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-extrabold tracking-tight text-text">
+            <Icon name="clock" className="text-primary" />
+            Aktivitas Terbaru
           </h2>
           <ActivityTimeline activities={activities} />
         </div>
 
         {/* Frequently Requested Items */}
-        <div className="neu-card">
-          <h2 className="mb-4 font-display text-lg font-bold text-dark">
-            ⭐ Item Favorit Anda
+        <div className="neu-card hover:transform-none">
+          <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-extrabold tracking-tight text-text">
+            <Icon name="star" className="text-primary" />
+            Item Favorit Anda
           </h2>
           {frequent.length === 0 ? (
             <p className="py-8 text-center text-sm text-text-muted">
@@ -113,8 +113,8 @@ export default async function DashboardPage() {
               {frequent.map((item, index) => (
                 <div key={index} className="neu-raised-sm p-3">
                   <div className="flex items-center justify-between">
-                    <p className="font-bold text-dark">{item.nama}</p>
-                    <span className="rounded-full bg-primary px-3 py-1 text-xs font-bold text-white">
+                    <p className="font-semibold text-text">{item.nama}</p>
+                    <span className="badge badge-primary tnum">
                       {item.total}x
                     </span>
                   </div>
@@ -127,11 +127,12 @@ export default async function DashboardPage() {
 
       <section className="mt-10">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-display text-xl uppercase tracking-tight text-dark">
+          <h2 className="font-display text-xl font-extrabold tracking-tight text-text">
             Permintaan Terakhir
           </h2>
           <Link href="/peminjaman" className="neu-btn-primary px-6 py-2 text-sm font-bold">
-            + Ajukan Permintaan
+            <Icon name="plus" />
+            Ajukan Permintaan
           </Link>
         </div>
 
@@ -141,30 +142,36 @@ export default async function DashboardPage() {
             hint="Buka menu Form Peminjaman untuk mengajukan permintaan pertama Anda."
           />
         ) : (
-          <div className="neu-card overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          <div className="tbl-wrap">
+            <table className="tbl">
               <thead>
-                <tr className="border-b-2 border-bg text-xs uppercase tracking-wider text-text-muted">
-                  <th className="pb-3">No.</th>
-                  <th className="pb-3">Barang</th>
-                  <th className="pb-3">Jumlah</th>
-                  <th className="pb-3">Tgl. Pinjam</th>
-                  <th className="pb-3">Status</th>
+                <tr>
+                  <th>No.</th>
+                  <th>Barang</th>
+                  <th>Jumlah</th>
+                  <th>Tgl. Pinjam</th>
+                  <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((r, i) => (
-                  <tr key={r.id} className="border-b border-bg last:border-0">
-                    <td className="py-3 text-text-muted">{String(i + 1).padStart(2, "0")}</td>
-                    <td className="py-3">
-                      <span className="font-bold text-primary">{r.kode_barang}</span>{" "}
-                      <span className="text-dark-light">{r.nama_barang}</span>
+                  <tr key={r.id}>
+                    <td className="font-mono text-xs text-text-muted">
+                      {String(i + 1).padStart(2, "0")}
                     </td>
-                    <td className="py-3">
+                    <td>
+                      <span className="font-mono text-[13px] font-semibold">
+                        {r.kode_barang}
+                      </span>{" "}
+                      {r.nama_barang}
+                    </td>
+                    <td className="tnum">
                       {r.jumlah} {r.satuan}
                     </td>
-                    <td className="py-3">{formatTanggal(r.tanggal_pinjam)}</td>
-                    <td className="py-3">
+                    <td className="whitespace-nowrap font-mono text-xs">
+                      {formatTanggal(r.tanggal_pinjam)}
+                    </td>
+                    <td>
                       <StatusBadge status={r.status as StatusPeminjaman} />
                     </td>
                   </tr>

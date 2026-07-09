@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { Icon } from "./icon";
 
 interface LowStockItem {
   id: number;
@@ -12,7 +13,7 @@ interface LowStockItem {
 
 export async function LowStockAlert() {
   const sql = db();
-  
+
   const lowStockItems = (await sql`
     SELECT id, kode, nama, stok, min_stok, kategori
     FROM barang
@@ -26,14 +27,14 @@ export async function LowStockAlert() {
   }
 
   return (
-    <div className="neu-card border-l-4 border-red-500">
+    <div className="neu-card border-l-[3px] border-l-warning hover:transform-none">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="flex items-center gap-2 font-display text-lg font-bold text-dark">
-          <span className="text-red-600">⚠️</span>
+        <h3 className="flex items-center gap-2 font-display text-lg font-extrabold tracking-tight text-text">
+          <Icon name="alert" className="text-warning" />
           Stok Menipis
         </h3>
-        <span className="rounded-full bg-red-600 px-3 py-1 text-xs font-bold text-white">
-          {lowStockItems.length} Item
+        <span className="badge badge-warning tnum">
+          {lowStockItems.length} item
         </span>
       </div>
 
@@ -45,31 +46,34 @@ export async function LowStockAlert() {
           return (
             <Link
               key={item.id}
-              href={`/admin/barang?search=${item.kode}`}
-              className="block neu-raised-sm p-3 transition-all hover:scale-[1.02]"
+              href={`/admin/barang?q=${encodeURIComponent(item.kode)}`}
+              className="neu-raised-sm block p-3 transition-transform hover:-translate-y-0.5"
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-dark">
-                    {item.kode} - {item.nama}
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-text">
+                    <span className="font-mono text-[13px]">{item.kode}</span>{" "}
+                    — {item.nama}
                   </p>
                   <p className="text-xs text-text-muted">{item.kategori}</p>
                 </div>
                 <div className="text-right">
-                  <p className={`text-lg font-bold ${isCritical ? "text-red-600" : "text-orange-600"}`}>
+                  <p
+                    className={`tnum text-lg font-extrabold ${
+                      isCritical ? "text-danger" : "text-warning"
+                    }`}
+                  >
                     {item.stok}
                   </p>
-                  <p className="text-xs text-text-muted">
-                    min: {item.min_stok}
-                  </p>
+                  <p className="text-xs text-text-muted">min: {item.min_stok}</p>
                 </div>
               </div>
 
               {/* Progress Bar */}
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-bg">
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-bg-mid">
                 <div
-                  className={`h-full transition-all ${
-                    isCritical ? "bg-red-600" : "bg-orange-500"
+                  className={`h-full rounded-full transition-all ${
+                    isCritical ? "bg-danger" : "bg-warning"
                   }`}
                   style={{ width: `${Math.min(percentage, 100)}%` }}
                 />
@@ -83,7 +87,7 @@ export async function LowStockAlert() {
         href="/admin/barang"
         className="mt-4 block text-center text-sm font-bold text-primary hover:underline"
       >
-        Lihat Semua Barang →
+        Lihat Semua Barang
       </Link>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,6 +14,7 @@ import {
   ArcElement,
 } from "chart.js";
 import { Bar, Line, Doughnut } from "react-chartjs-2";
+import { Icon } from "./icon";
 
 ChartJS.register(
   CategoryScale,
@@ -26,6 +27,45 @@ ChartJS.register(
   Legend,
   ArcElement
 );
+
+/* Warna seri status per docs/style.md §30 (laporan) — aman di light & dark */
+const SERI = {
+  approved: "#0075de",
+  pending: "#dd5b00",
+  rejected: "#e03e3e",
+};
+
+/** Chart.js butuh nilai warna konkret; baca token tema & ikuti perubahan data-theme. */
+function useThemeTokens() {
+  const [tokens, setTokens] = useState({
+    text: "#1f1e1c",
+    muted: "#615d59",
+    grid: "rgba(0,117,222,0.08)",
+  });
+
+  useEffect(() => {
+    const read = () => {
+      const s = getComputedStyle(document.documentElement);
+      setTokens({
+        text: s.getPropertyValue("--color-text").trim() || "#1f1e1c",
+        muted: s.getPropertyValue("--color-text-muted").trim() || "#615d59",
+        grid:
+          document.documentElement.dataset.theme === "dark"
+            ? "rgba(255,255,255,0.08)"
+            : "rgba(0,117,222,0.08)",
+      });
+    };
+    read();
+    const obs = new MutationObserver(read);
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+    return () => obs.disconnect();
+  }, []);
+
+  return tokens;
+}
 
 interface MonthlyData {
   month: string;
@@ -54,6 +94,8 @@ export function AnalyticsChart({
   topItems,
   statusDistribution,
 }: AnalyticsChartProps) {
+  const tokens = useThemeTokens();
+
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -61,7 +103,7 @@ export function AnalyticsChart({
       legend: {
         position: "top" as const,
         labels: {
-          color: "#1e293b",
+          color: tokens.text,
           font: {
             family: "JetBrains Mono, monospace",
             size: 11,
@@ -74,19 +116,19 @@ export function AnalyticsChart({
       y: {
         beginAtZero: true,
         ticks: {
-          color: "#64748b",
+          color: tokens.muted,
           font: {
             family: "JetBrains Mono, monospace",
             size: 10,
           },
         },
         grid: {
-          color: "rgba(37, 99, 235, 0.1)",
+          color: tokens.grid,
         },
       },
       x: {
         ticks: {
-          color: "#64748b",
+          color: tokens.muted,
           font: {
             family: "JetBrains Mono, monospace",
             size: 10,
@@ -105,24 +147,24 @@ export function AnalyticsChart({
       {
         label: "Disetujui",
         data: monthlyData.map((d) => d.approved),
-        borderColor: "#2563eb",
-        backgroundColor: "rgba(37, 99, 235, 0.1)",
+        borderColor: SERI.approved,
+        backgroundColor: "rgba(0, 117, 222, 0.1)",
         tension: 0.4,
         fill: true,
       },
       {
-        label: "Pending",
+        label: "Menunggu",
         data: monthlyData.map((d) => d.pending),
-        borderColor: "#f59e0b",
-        backgroundColor: "rgba(245, 158, 11, 0.1)",
+        borderColor: SERI.pending,
+        backgroundColor: "rgba(221, 91, 0, 0.1)",
         tension: 0.4,
         fill: true,
       },
       {
         label: "Ditolak",
         data: monthlyData.map((d) => d.rejected),
-        borderColor: "#64748b",
-        backgroundColor: "rgba(100, 116, 139, 0.1)",
+        borderColor: SERI.rejected,
+        backgroundColor: "rgba(224, 62, 62, 0.1)",
         tension: 0.4,
         fill: true,
       },
@@ -135,14 +177,14 @@ export function AnalyticsChart({
       {
         label: "Total Permintaan",
         data: topItems.map((item) => item.total),
-        backgroundColor: "rgba(37, 99, 235, 0.8)",
+        backgroundColor: "rgba(0, 117, 222, 0.8)",
         borderRadius: 8,
       },
     ],
   };
 
   const doughnutData = {
-    labels: ["Disetujui", "Pending", "Ditolak"],
+    labels: ["Disetujui", "Menunggu", "Ditolak"],
     datasets: [
       {
         data: [
@@ -150,11 +192,7 @@ export function AnalyticsChart({
           statusDistribution.pending,
           statusDistribution.rejected,
         ],
-        backgroundColor: [
-          "rgba(37, 99, 235, 0.8)",
-          "rgba(245, 158, 11, 0.8)",
-          "rgba(100, 116, 139, 0.8)",
-        ],
+        backgroundColor: [SERI.approved, SERI.pending, SERI.rejected],
         borderWidth: 0,
       },
     ],
@@ -167,7 +205,7 @@ export function AnalyticsChart({
       legend: {
         position: "bottom" as const,
         labels: {
-          color: "#1e293b",
+          color: tokens.text,
           font: {
             family: "JetBrains Mono, monospace",
             size: 11,
@@ -181,9 +219,10 @@ export function AnalyticsChart({
   return (
     <div className="grid gap-6 md:grid-cols-2">
       {/* Trend Line Chart */}
-      <div className="neu-card col-span-full">
-        <h3 className="mb-4 font-display text-lg font-bold text-dark">
-          📈 Trend Permintaan (6 Bulan Terakhir)
+      <div className="neu-card col-span-full hover:transform-none">
+        <h3 className="mb-4 flex items-center gap-2 font-display text-lg font-extrabold tracking-tight text-text">
+          <Icon name="chart" className="text-primary" />
+          Trend Permintaan (6 Bulan Terakhir)
         </h3>
         <div className="h-[300px]">
           <Line data={lineData} options={chartOptions} />
@@ -191,9 +230,10 @@ export function AnalyticsChart({
       </div>
 
       {/* Top Items Bar Chart */}
-      <div className="neu-card">
-        <h3 className="mb-4 font-display text-lg font-bold text-dark">
-          🏆 Top 10 Barang Terpopuler
+      <div className="neu-card hover:transform-none">
+        <h3 className="mb-4 flex items-center gap-2 font-display text-lg font-extrabold tracking-tight text-text">
+          <Icon name="star" className="text-primary" />
+          Top 10 Barang Terpopuler
         </h3>
         <div className="h-[300px]">
           <Bar data={barData} options={chartOptions} />
@@ -201,9 +241,10 @@ export function AnalyticsChart({
       </div>
 
       {/* Status Distribution Doughnut */}
-      <div className="neu-card">
-        <h3 className="mb-4 font-display text-lg font-bold text-dark">
-          📊 Distribusi Status
+      <div className="neu-card hover:transform-none">
+        <h3 className="mb-4 flex items-center gap-2 font-display text-lg font-extrabold tracking-tight text-text">
+          <Icon name="zap" className="text-primary" />
+          Distribusi Status
         </h3>
         <div className="h-[300px]">
           <Doughnut data={doughnutData} options={doughnutOptions} />

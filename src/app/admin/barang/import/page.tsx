@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
+import { Icon } from "@/components/icon";
 import { parseExcelFile, type ImportRow } from "@/lib/import-excel";
 
 export default function ImportBarangPage() {
@@ -66,31 +67,37 @@ export default function ImportBarangPage() {
       />
 
       {/* Template Download */}
-      <div className="neu-card mb-6">
-        <h3 className="mb-3 font-bold text-dark">📥 Download Template</h3>
-        <p className="mb-4 text-sm text-dark-light">
+      <div className="neu-card mb-6 hover:transform-none">
+        <h3 className="mb-3 flex items-center gap-2 font-extrabold tracking-tight text-text">
+          <Icon name="download" className="text-primary" />
+          Download Template
+        </h3>
+        <p className="mb-4 text-sm text-text-muted">
           Download template Excel, isi data barang, lalu upload kembali.
         </p>
         <a
           href="/admin/barang/import/template"
           download="template-barang.xlsx"
-          className="neu-btn-primary inline-block px-6 py-2 text-sm font-bold"
+          className="neu-btn-primary inline-flex px-6 py-2 text-sm"
         >
           Download Template Excel
         </a>
       </div>
 
       {/* Upload Form */}
-      <div className="neu-card mb-6">
-        <h3 className="mb-3 font-bold text-dark">📤 Upload File Excel</h3>
+      <div className="neu-card mb-6 hover:transform-none">
+        <h3 className="mb-3 flex items-center gap-2 font-extrabold tracking-tight text-text">
+          <Icon name="upload" className="text-primary" />
+          Upload File Excel
+        </h3>
         <input
           type="file"
           accept=".xlsx,.xls"
           onChange={handleFileChange}
-          className="neu-input w-full text-sm"
+          className="input text-sm"
         />
         {file && (
-          <p className="mt-2 text-xs text-text-muted">
+          <p className="helper">
             File dipilih: {file.name} ({(file.size / 1024).toFixed(2)} KB)
           </p>
         )}
@@ -98,13 +105,16 @@ export default function ImportBarangPage() {
 
       {/* Errors */}
       {errors && (
-        <div className="neu-card mb-6 border-l-4 border-red-600">
-          <h3 className="mb-3 font-bold text-red-600">❌ Error Validasi</h3>
+        <div className="neu-card mb-6 border-l-[3px] border-l-danger hover:transform-none">
+          <h3 className="mb-3 flex items-center gap-2 font-extrabold tracking-tight text-danger">
+            <Icon name="alert" />
+            Error Validasi
+          </h3>
           <div className="space-y-2">
             {errors.map((error, index) => (
               <div key={index} className="neu-inset p-3 text-sm">
-                <span className="font-bold text-red-600">Baris {error.row}:</span>{" "}
-                <span className="text-dark-light">{error.message}</span>
+                <span className="font-bold text-danger">Baris {error.row}:</span>{" "}
+                <span className="text-text-muted">{error.message}</span>
               </div>
             ))}
           </div>
@@ -113,58 +123,61 @@ export default function ImportBarangPage() {
 
       {/* Preview */}
       {preview && (
-        <div className="neu-card mb-6">
+        <div className="neu-card mb-6 hover:transform-none">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-bold text-dark">✓ Preview Data ({preview.length} items)</h3>
+            <h3 className="flex items-center gap-2 font-extrabold tracking-tight text-text">
+              <Icon name="check" className="text-success" />
+              Preview Data ({preview.length} item)
+            </h3>
             <button
               onClick={handleImport}
               disabled={importing}
-              className="neu-btn-primary px-6 py-2 text-sm font-bold disabled:opacity-50"
+              className="neu-btn-primary px-6 py-2 text-sm disabled:opacity-50"
             >
-              {importing ? "Importing..." : `Import ${preview.length} Barang`}
+              {importing ? "Mengimpor..." : `Import ${preview.length} Barang`}
             </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          <div className="tbl-wrap shadow-none">
+            <table className="tbl">
               <thead>
-                <tr className="border-b-2 border-bg text-xs uppercase tracking-wider text-text-muted">
-                  <th className="pb-3">Kode</th>
-                  <th className="pb-3">Nama</th>
-                  <th className="pb-3">Kategori</th>
-                  <th className="pb-3">Satuan</th>
-                  <th className="pb-3">Stok</th>
-                  <th className="pb-3">Min Stok</th>
+                <tr>
+                  <th>Kode</th>
+                  <th>Nama</th>
+                  <th>Kategori</th>
+                  <th>Satuan</th>
+                  <th>Stok</th>
+                  <th>Min Stok</th>
                 </tr>
               </thead>
               <tbody>
                 {preview.slice(0, 20).map((item, index) => (
-                  <tr key={index} className="border-b border-bg last:border-0">
-                    <td className="py-3 font-bold text-primary">{item.kode}</td>
-                    <td className="py-3 text-dark">{item.nama}</td>
-                    <td className="py-3 text-dark-light">{item.kategori}</td>
-                    <td className="py-3 text-dark-light">{item.satuan}</td>
-                    <td className="py-3 text-dark">{item.stok}</td>
-                    <td className="py-3 text-dark">{item.min_stok}</td>
+                  <tr key={index}>
+                    <td className="font-mono text-[13px] font-semibold">{item.kode}</td>
+                    <td className="font-semibold">{item.nama}</td>
+                    <td className="text-text-muted">{item.kategori}</td>
+                    <td className="text-text-muted">{item.satuan}</td>
+                    <td className="tnum">{item.stok}</td>
+                    <td className="tnum">{item.min_stok}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {preview.length > 20 && (
-              <p className="mt-4 text-center text-xs text-text-muted">
-                ... dan {preview.length - 20} lainnya
-              </p>
-            )}
           </div>
+          {preview.length > 20 && (
+            <p className="mt-4 text-center text-xs text-text-muted">
+              ... dan {preview.length - 20} lainnya
+            </p>
+          )}
         </div>
       )}
 
-      <div className="neu-card bg-blue-50">
-        <h3 className="mb-2 font-bold text-dark">💡 Tips:</h3>
-        <ul className="list-inside list-disc space-y-1 text-sm text-dark-light">
+      <div className="rounded-[var(--radius-lg)] bg-primary-light p-5">
+        <h3 className="mb-2 font-extrabold tracking-tight text-primary">Tips</h3>
+        <ul className="list-inside list-disc space-y-1 text-sm text-text">
           <li>Kode barang harus unik</li>
           <li>Stok dan Min Stok harus berupa angka</li>
-          <li>Satuan default adalah "pcs" jika dikosongkan</li>
+          <li>Satuan default adalah &quot;pcs&quot; jika dikosongkan</li>
           <li>Data akan divalidasi sebelum import</li>
           <li>Duplikat kode akan diabaikan</li>
         </ul>

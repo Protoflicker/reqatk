@@ -4,10 +4,12 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { simpanPengguna } from "@/lib/actions";
 import type { ActionState, Pengguna } from "@/lib/definitions";
+import { Icon } from "./icon";
 
 const initialState: ActionState = {};
 
-export function PenggunaForm({ editData }: { editData: Pengguna | null }) {
+/** Form ubah data pengguna yang sudah terdaftar (nama, role, sandi opsional). */
+export function PenggunaForm({ editData }: { editData: Pengguna }) {
   const [state, formAction, pending] = useActionState(
     simpanPengguna,
     initialState
@@ -17,32 +19,31 @@ export function PenggunaForm({ editData }: { editData: Pengguna | null }) {
     <form
       action={formAction}
       noValidate
-      key={editData?.id ?? "baru"}
-      className="border-2 border-ink"
+      key={editData.id}
+      className="animate-fade-up overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface shadow-(--shadow-card)"
     >
-      <div className="flex items-center justify-between border-b-2 border-ink bg-ink px-5 py-3">
-        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-paper">
-          [ {editData ? `Ubah Pengguna — NIP ${editData.nip}` : "Daftarkan Pengguna Baru"} ]
+      <div className="flex items-center justify-between border-b border-border bg-bg-mid px-5 py-3">
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-text-muted">
+          Ubah Pengguna — <span className="font-mono">{editData.nip}</span>
         </p>
-        {editData && (
-          <Link
-            href="/admin/pengguna"
-            className="text-[11px] font-bold uppercase tracking-[0.1em] text-red underline underline-offset-2"
-          >
-            Batal Ubah
-          </Link>
-        )}
+        <Link
+          href="/admin/pengguna"
+          className="text-[11px] font-bold text-primary hover:underline"
+        >
+          Batal ubah
+        </Link>
       </div>
 
-      {editData && <input type="hidden" name="id" value={editData.id} />}
+      <input type="hidden" name="id" value={editData.id} />
 
       <div className="grid gap-5 p-5 md:grid-cols-4">
         {state.error && (
           <div
             role="alert"
-            className="border-2 border-red bg-red p-3 text-xs font-bold text-paper md:col-span-4"
+            className="flex items-start gap-2.5 rounded-[var(--radius)] border border-[rgba(224,62,62,0.3)] bg-[rgba(224,62,62,0.1)] p-3 text-sm font-medium text-danger md:col-span-4"
           >
-            !! {state.error}
+            <Icon name="alert" className="mt-0.5 shrink-0" />
+            <span>{state.error}</span>
           </div>
         )}
 
@@ -56,9 +57,9 @@ export function PenggunaForm({ editData }: { editData: Pengguna | null }) {
             type="text"
             inputMode="numeric"
             required
-            defaultValue={editData?.nip ?? ""}
-            placeholder="angka 5-30 digit"
-            className="input"
+            defaultValue={editData.nip}
+            placeholder="angka 5–30 digit"
+            className="input font-mono"
           />
         </div>
 
@@ -71,7 +72,7 @@ export function PenggunaForm({ editData }: { editData: Pengguna | null }) {
             name="nama"
             type="text"
             required
-            defaultValue={editData?.nama ?? ""}
+            defaultValue={editData.nama}
             placeholder="cth. Budi Santoso"
             className="input"
           />
@@ -79,15 +80,14 @@ export function PenggunaForm({ editData }: { editData: Pengguna | null }) {
 
         <div>
           <label htmlFor="password" className="label">
-            Kata Sandi
+            Kata Sandi Baru
           </label>
           <input
             id="password"
             name="password"
             type="password"
             autoComplete="new-password"
-            required={!editData}
-            placeholder={editData ? "kosongkan bila tetap" : "min. 6 karakter"}
+            placeholder="kosongkan bila tetap"
             className="input"
           />
         </div>
@@ -100,11 +100,11 @@ export function PenggunaForm({ editData }: { editData: Pengguna | null }) {
             id="role"
             name="role"
             required
-            defaultValue={editData?.role ?? "user"}
+            defaultValue={editData.role}
             className="input"
           >
-            <option value="user">USER — pegawai</option>
-            <option value="admin">ADMIN — pengelola</option>
+            <option value="user">User — pegawai</option>
+            <option value="admin">Admin — pengelola</option>
           </select>
         </div>
 
@@ -112,13 +112,9 @@ export function PenggunaForm({ editData }: { editData: Pengguna | null }) {
           <button
             type="submit"
             disabled={pending}
-            className="btn btn-solid w-full justify-center disabled:cursor-wait disabled:opacity-60 md:w-auto"
+            className="neu-btn-primary w-full disabled:cursor-wait disabled:opacity-60 md:w-auto"
           >
-            {pending
-              ? "Menyimpan..."
-              : editData
-                ? "Simpan Perubahan >>>"
-                : "Daftarkan Pengguna >>>"}
+            {pending ? "Menyimpan..." : "Simpan perubahan"}
           </button>
         </div>
       </div>

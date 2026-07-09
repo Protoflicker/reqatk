@@ -20,6 +20,8 @@ export type ActionType =
   | "CREATE_USER"
   | "UPDATE_USER"
   | "DELETE_USER"
+  | "ACTIVATE_ACCOUNT"
+  | "RESET_USER"
   | "CREATE_PENGGUNA"
   | "UPDATE_PENGGUNA"
   | "DELETE_PENGGUNA"

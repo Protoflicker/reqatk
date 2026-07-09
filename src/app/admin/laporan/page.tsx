@@ -2,12 +2,25 @@ import { db } from "@/lib/db";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
+import { Icon } from "@/components/icon";
 import {
   formatTanggal,
   STATUS_LIST,
   type PeminjamanDetail,
   type StatusPeminjaman,
 } from "@/lib/definitions";
+
+const STAT_TONE: Record<StatusPeminjaman, string> = {
+  MENUNGGU: "is-warning",
+  DISETUJUI: "",
+  DITOLAK: "is-danger",
+};
+
+const STAT_LABEL: Record<StatusPeminjaman, string> = {
+  MENUNGGU: "Menunggu",
+  DISETUJUI: "Disetujui",
+  DITOLAK: "Ditolak",
+};
 
 export default async function AdminLaporanPage({
   searchParams,
@@ -53,12 +66,12 @@ export default async function AdminLaporanPage({
     <>
       <PageHeader
         title="Laporan Peminjaman"
-        description="Rekapitulasi seluruh transaksi peminjaman ATK dari semua pegawai. Saring berdasarkan status atau bulan, lalu unduh sebagai PDF atau CSV."
+        description="Rekapitulasi seluruh transaksi peminjaman ATK dari semua pegawai. Saring berdasarkan status atau bulan, lalu unduh sebagai PDF, Excel, atau CSV."
       />
 
       <form
         method="GET"
-        className="mb-6 flex flex-wrap items-end gap-3 border-2 border-ink p-4"
+        className="neu-card mb-6 flex flex-wrap items-end gap-3 hover:transform-none"
       >
         <div>
           <label htmlFor="status" className="label">
@@ -70,10 +83,10 @@ export default async function AdminLaporanPage({
             defaultValue={statusFilter ?? ""}
             className="input w-48"
           >
-            <option value="">SEMUA STATUS</option>
+            <option value="">Semua status</option>
             {STATUS_LIST.map((s) => (
               <option key={s} value={s}>
-                {s}
+                {STAT_LABEL[s]}
               </option>
             ))}
           </select>
@@ -87,41 +100,42 @@ export default async function AdminLaporanPage({
             name="bulan"
             type="month"
             defaultValue={bulanFilter ?? ""}
-            className="input w-48"
+            className="input w-48 font-mono"
           />
         </div>
         <button type="submit" className="btn">
           Terapkan
         </button>
-        <div className="ml-auto flex gap-2">
+        <div className="ml-auto flex flex-wrap gap-2">
           <a
             href={`/admin/laporan/export-excel?${exportQuery.toString()}`}
-            className="btn btn-solid"
+            className="btn"
           >
-            📊 Unduh Excel
+            <Icon name="download" />
+            Excel
           </a>
           <a
             href={`/admin/laporan/export-pdf?${exportQuery.toString()}`}
-            className="btn btn-solid"
+            className="btn"
           >
-            Unduh PDF
+            <Icon name="file" />
+            PDF
           </a>
           <a
             href={`/admin/laporan/export?${exportQuery.toString()}`}
             className="btn"
           >
-            Unduh CSV
+            <Icon name="download" />
+            CSV
           </a>
         </div>
       </form>
 
-      <div className="mb-6 grid grid-cols-3 gap-px border-2 border-ink bg-ink">
+      <div className="mb-6 grid grid-cols-3 gap-4">
         {STATUS_LIST.map((s) => (
-          <div key={s} className="bg-paper p-3">
-            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-ink/70">
-              {s}
-            </p>
-            <p className="mt-1 font-display text-2xl">{ringkas[s]}</p>
+          <div key={s} className={`sesd-stat ${STAT_TONE[s]}`}>
+            <p className="sesd-stat-num">{ringkas[s]}</p>
+            <p className="sesd-stat-label">{STAT_LABEL[s]}</p>
           </div>
         ))}
       </div>
@@ -132,7 +146,7 @@ export default async function AdminLaporanPage({
           hint="Tidak ada transaksi yang cocok dengan saringan saat ini."
         />
       ) : (
-        <div className="overflow-x-auto border-2 border-ink">
+        <div className="tbl-wrap">
           <table className="tbl">
             <thead>
               <tr>
@@ -150,24 +164,30 @@ export default async function AdminLaporanPage({
             <tbody>
               {rows.map((r) => (
                 <tr key={r.id}>
-                  <td className="text-ink/60">#{String(r.id).padStart(4, "0")}</td>
-                  <td className="font-bold">{r.nama_pengguna}</td>
-                  <td className="whitespace-nowrap text-[11px]">{r.nip}</td>
+                  <td className="font-mono text-xs text-text-muted">
+                    #{String(r.id).padStart(4, "0")}
+                  </td>
+                  <td className="font-semibold">{r.nama_pengguna}</td>
+                  <td className="whitespace-nowrap font-mono text-xs">
+                    {r.nip}
+                  </td>
                   <td>
-                    <span className="font-bold">{r.kode_barang}</span>{" "}
+                    <span className="font-mono text-[13px] font-semibold">
+                      {r.kode_barang}
+                    </span>{" "}
                     {r.nama_barang}
                   </td>
-                  <td className="whitespace-nowrap">
+                  <td className="whitespace-nowrap tnum">
                     {r.jumlah} {r.satuan}
                   </td>
                   <td className="max-w-[24ch]">{r.keperluan}</td>
-                  <td className="whitespace-nowrap">
+                  <td className="whitespace-nowrap font-mono text-xs">
                     {formatTanggal(r.tanggal_pinjam)}
                   </td>
                   <td>
                     <StatusBadge status={r.status} />
                   </td>
-                  <td className="max-w-[20ch] text-ink/80">
+                  <td className="max-w-[20ch] text-text-muted">
                     {r.catatan_admin ?? "—"}
                   </td>
                 </tr>
@@ -177,10 +197,10 @@ export default async function AdminLaporanPage({
         </div>
       )}
 
-      <p className="mt-4 text-[10px] uppercase tracking-[0.14em] text-ink/60">
+      <p className="helper mt-3">
         Total {rows.length} transaksi ditampilkan
-        {bulanFilter ? ` /// periode ${bulanFilter}` : ""}
-        {statusFilter ? ` /// status ${statusFilter}` : ""}
+        {bulanFilter ? ` · periode ${bulanFilter}` : ""}
+        {statusFilter ? ` · status ${STAT_LABEL[statusFilter]}` : ""}
       </p>
     </>
   );

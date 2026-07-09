@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { markAsRead, markAllAsRead } from "@/lib/notifications";
 import type { Notification } from "@/lib/notifications";
+import { Icon, type IconName } from "./icon";
 
 interface NotificationBellProps {
   userId: number;
@@ -34,18 +35,18 @@ export function NotificationBell({ userId, initialNotifications }: NotificationB
     }
   };
 
-  const getIcon = (type: string) => {
+  const getIcon = (type: string): IconName => {
     switch (type) {
       case "REQUEST_APPROVED":
-        return "✓";
+        return "check";
       case "REQUEST_REJECTED":
-        return "✕";
+        return "x";
       case "LOW_STOCK":
-        return "⚠";
+        return "alert";
       case "NEW_REQUEST":
-        return "📬";
+        return "inbox";
       default:
-        return "•";
+        return "bell";
     }
   };
 
@@ -54,11 +55,12 @@ export function NotificationBell({ userId, initialNotifications }: NotificationB
       {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="neu-btn relative px-3 py-2 text-dark-light"
+        aria-label="Notifikasi"
+        className="sesd-iconbtn relative"
       >
-        <span className="text-lg">🔔</span>
+        <Icon name="bell" className="text-[1.05rem]" />
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[9px] font-bold text-white">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -73,17 +75,19 @@ export function NotificationBell({ userId, initialNotifications }: NotificationB
             onClick={() => setIsOpen(false)}
           />
 
-          {/* Notification Panel */}
-          <div className="absolute right-0 top-full z-50 mt-2 w-80 neu-card max-h-96 overflow-hidden">
+          {/* Notification Panel (docs/style.md §20) */}
+          <div className="animate-fade-up absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface shadow-(--shadow-hover)">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-bg px-4 py-3">
-              <h3 className="font-bold text-dark">Notifikasi</h3>
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <h3 className="text-sm font-extrabold tracking-tight text-text">
+                Notifikasi
+              </h3>
               {unreadCount > 0 && (
                 <button
                   onClick={handleMarkAllAsRead}
-                  className="text-xs text-primary hover:underline"
+                  className="text-xs font-semibold text-primary hover:underline"
                 >
-                  Tandai semua sudah dibaca
+                  Tandai semua dibaca
                 </button>
               )}
             </div>
@@ -103,20 +107,22 @@ export function NotificationBell({ userId, initialNotifications }: NotificationB
                       handleMarkAsRead(notif.id);
                       setIsOpen(false);
                     }}
-                    className={`block border-b border-bg px-4 py-3 transition-colors hover:bg-bg/50 ${
-                      !notif.read ? "bg-primary/5" : ""
+                    className={`block border-b border-border px-4 py-3 transition-colors last:border-b-0 hover:bg-bg ${
+                      !notif.read ? "bg-[rgba(0,117,222,0.06)]" : ""
                     }`}
                   >
-                    <div className="flex items-start gap-2">
-                      <span className="text-lg">{getIcon(notif.type)}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-dark">
+                    <div className="flex items-start gap-2.5">
+                      <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg bg-primary-light text-primary">
+                        <Icon name={getIcon(notif.type)} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-text">
                           {notif.title}
                         </p>
-                        <p className="mt-1 text-xs text-dark-light line-clamp-2">
+                        <p className="mt-1 line-clamp-2 text-xs text-text-muted">
                           {notif.message}
                         </p>
-                        <p className="mt-1 text-[10px] text-text-muted">
+                        <p className="mt-1 font-mono text-[10px] text-text-muted">
                           {new Date(notif.created_at).toLocaleString("id-ID", {
                             day: "numeric",
                             month: "short",
@@ -126,7 +132,7 @@ export function NotificationBell({ userId, initialNotifications }: NotificationB
                         </p>
                       </div>
                       {!notif.read && (
-                        <span className="h-2 w-2 rounded-full bg-primary" />
+                        <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
                       )}
                     </div>
                   </a>

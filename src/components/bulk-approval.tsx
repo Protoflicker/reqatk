@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { bulkApprovePeminjaman, bulkRejectPeminjaman } from "@/lib/actions";
+import { Icon } from "./icon";
 
 interface BulkApprovalProps {
   selectedIds: number[];
@@ -17,12 +18,12 @@ export function BulkApproval({ selectedIds, onClear }: BulkApprovalProps) {
 
   const handleBulkApprove = async () => {
     if (!confirm(`Setujui ${selectedIds.length} permintaan sekaligus?`)) return;
-    
+
     setLoading(true);
     try {
       await bulkApprovePeminjaman(selectedIds);
       onClear();
-    } catch (error) {
+    } catch {
       alert("Gagal menyetujui beberapa permintaan. Periksa stok barang.");
     } finally {
       setLoading(false);
@@ -36,7 +37,7 @@ export function BulkApproval({ selectedIds, onClear }: BulkApprovalProps) {
       setShowRejectModal(false);
       setRejectNote("");
       onClear();
-    } catch (error) {
+    } catch {
       alert("Gagal menolak permintaan.");
     } finally {
       setLoading(false);
@@ -45,31 +46,33 @@ export function BulkApproval({ selectedIds, onClear }: BulkApprovalProps) {
 
   return (
     <>
-      <div className="neu-card fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 px-6 py-4 shadow-2xl">
-        <span className="text-sm font-bold text-dark">
+      <div className="animate-fade-up fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full border border-border bg-surface py-3 pl-5 pr-3 shadow-(--shadow-hover)">
+        <span className="whitespace-nowrap text-sm font-bold text-text">
           {selectedIds.length} dipilih
         </span>
-        
+
         <button
           onClick={handleBulkApprove}
           disabled={loading}
-          className="neu-btn-primary px-6 py-2 text-sm font-bold disabled:opacity-50"
+          className="neu-btn-primary px-5 py-2 text-sm disabled:opacity-50"
         >
-          {loading ? "Memproses..." : "✓ Setujui Semua"}
+          <Icon name="check" />
+          {loading ? "Memproses..." : "Setujui Semua"}
         </button>
-        
+
         <button
           onClick={() => setShowRejectModal(true)}
           disabled={loading}
-          className="neu-btn px-6 py-2 text-sm font-bold text-dark-light disabled:opacity-50"
+          className="btn px-5 py-2 text-sm text-danger disabled:opacity-50"
         >
-          ✕ Tolak Semua
+          <Icon name="x" />
+          Tolak Semua
         </button>
-        
+
         <button
           onClick={onClear}
           disabled={loading}
-          className="text-sm text-text-muted underline hover:text-dark"
+          className="btn-ghost px-3 py-2 text-sm"
         >
           Batal
         </button>
@@ -77,28 +80,29 @@ export function BulkApproval({ selectedIds, onClear }: BulkApprovalProps) {
 
       {/* Reject Modal */}
       {showRejectModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-dark/50 backdrop-blur-sm">
-          <div className="neu-card mx-4 w-full max-w-md">
-            <h3 className="mb-4 font-display text-lg font-bold text-dark">
+        <div className="animate-fade-in fixed inset-0 z-[1000] flex items-center justify-center bg-[rgba(15,23,42,0.5)] backdrop-blur-[8px]">
+          <div className="animate-bounce-in mx-4 w-full max-w-md rounded-[var(--radius-xl)] border border-border bg-surface p-8 shadow-(--shadow-hover)">
+            <h3 className="mb-4 font-display text-lg font-extrabold tracking-tight text-text">
               Tolak {selectedIds.length} Permintaan
             </h3>
-            
-            <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-text-muted">
+
+            <label htmlFor="bulk-catatan" className="label">
               Catatan Admin (Opsional)
             </label>
             <textarea
+              id="bulk-catatan"
               value={rejectNote}
               onChange={(e) => setRejectNote(e.target.value)}
               placeholder="Alasan penolakan..."
-              className="neu-input mb-4 w-full resize-none text-sm"
+              className="input mb-4 resize-none text-sm"
               rows={4}
             />
-            
+
             <div className="flex gap-3">
               <button
                 onClick={handleBulkReject}
                 disabled={loading}
-                className="neu-btn-primary flex-1 py-2 text-sm font-bold disabled:opacity-50"
+                className="neu-btn-danger flex-1 py-2 text-sm disabled:opacity-50"
               >
                 {loading ? "Memproses..." : "Konfirmasi Tolak"}
               </button>
@@ -108,7 +112,7 @@ export function BulkApproval({ selectedIds, onClear }: BulkApprovalProps) {
                   setRejectNote("");
                 }}
                 disabled={loading}
-                className="neu-btn flex-1 py-2 text-sm font-bold text-dark-light"
+                className="btn flex-1 py-2 text-sm"
               >
                 Batal
               </button>

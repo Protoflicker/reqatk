@@ -8,6 +8,17 @@ export interface Pengguna {
   nama: string;
   role: Role;
   created_at: string;
+  /** false = NIP sudah didaftarkan admin tetapi pemiliknya belum aktivasi. */
+  aktif: boolean;
+}
+
+/** Hasil pengecekan NIP pada langkah pertama halaman login. */
+export interface CekNipState {
+  error?: string;
+  /** "login" = akun aktif (minta kata sandi); "aktivasi" = lengkapi nama + sandi. */
+  mode?: "login" | "aktivasi";
+  nip?: string;
+  nama?: string;
 }
 
 export interface Barang {

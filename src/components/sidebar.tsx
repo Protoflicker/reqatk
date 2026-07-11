@@ -23,22 +23,21 @@ const NAV_USER: NavSection[] = [
   {
     title: "Utama",
     items: [
-      { href: "/dashboard", label: "Dashboard", subtitle: "Ringkasan & statistik", icon: "grid" }
-    ],
-  },
-  {
-    title: "Aset",
-    items: [
-      { href: "/barang", label: "Data Aset", subtitle: "Lihat semua aset", icon: "package" },
-      { href: "#", label: "Ruangan", subtitle: "Daftar ruangan", icon: "home" },
+      { href: "/dashboard", label: "Dasbor", subtitle: "Ringkasan & statistik", icon: "zap" }
     ],
   },
   {
     title: "Peminjaman",
     items: [
-      { href: "/laporan", label: "Daftar Pinjam", subtitle: "Riwayat peminjaman", icon: "refresh" },
-      { href: "#", label: "Sedang Dipinjam", subtitle: "Barang belum kembali", icon: "clock" },
-      { href: "/peminjaman", label: "Ajukan Pinjam", subtitle: "Request baru", icon: "clipboard" },
+      { href: "/barang", label: "Daftar Barang", subtitle: "Lihat semua aset", icon: "package" },
+      { href: "/peminjaman", label: "Form Peminjaman", subtitle: "Request baru", icon: "clipboard" },
+      { href: "/laporan", label: "Laporan Peminjaman", subtitle: "Riwayat peminjaman", icon: "chart" },
+    ],
+  },
+  {
+    title: "Akun",
+    items: [
+      { href: "/profile", label: "Profil Saya", subtitle: "Pengaturan akun", icon: "user" }
     ],
   },
 ];
@@ -46,12 +45,12 @@ const NAV_USER: NavSection[] = [
 const NAV_ADMIN: NavSection[] = [
   {
     title: "Utama",
-    items: [{ href: "/admin", label: "Dashboard", subtitle: "Ringkasan & statistik", icon: "grid" }],
+    items: [{ href: "/admin", label: "Dasbor", subtitle: "Ringkasan & statistik", icon: "zap" }],
   },
   {
     title: "Inventaris",
     items: [
-      { href: "/admin/barang", label: "Data Aset", subtitle: "Kelola semua barang", icon: "package" },
+      { href: "/admin/barang", label: "Daftar Barang", subtitle: "Kelola semua barang", icon: "package" },
       { href: "/admin/barang/import", label: "Import Barang", subtitle: "Upload data massal", icon: "upload" },
     ],
   },
@@ -103,10 +102,8 @@ export function Sidebar({
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[17rem] flex-col border-r border-border-light bg-white md:flex">
         {/* Header / Logo */}
         <div className="flex items-center justify-between p-6">
-          <p className="font-display text-2xl font-extrabold tracking-tight">
-            <span className="text-[#0075DE]">SES</span>
-            <span className="text-[#16a34a]">D</span>
-            <span className="text-[#fbbf24]">IAN</span>
+          <p className="font-display text-2xl font-extrabold tracking-tight text-text">
+            PINJAM<span className="text-primary">/ATK</span>
           </p>
           <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200">
             <Icon name="chevron_left" className="text-lg" />
@@ -188,9 +185,7 @@ export function Sidebar({
       <header data-mobilebar className="sticky top-0 z-40 border-b border-border bg-surface md:hidden">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <p className="font-display text-lg font-extrabold tracking-tight text-text">
-            <span className="text-[#0075DE]">SES</span>
-            <span className="text-[#16a34a]">D</span>
-            <span className="text-[#fbbf24]">IAN</span>
+            PINJAM<span className="text-primary">/ATK</span>
           </p>
           <div className="flex items-center gap-2">
             <ThemeToggle className="!h-[34px] !w-[34px]" />

@@ -173,7 +173,7 @@ export function AppShell({
             </div>
           </div>
         </div>
-        <main className="mx-auto max-w-[1200px] px-4 py-6 md:px-8 md:py-8">
+        <main className="w-full px-4 py-6 md:px-8 md:py-8">
           {children}
         </main>
         <footer className="mt-10 border-t border-border px-4 py-6 text-center md:px-8">

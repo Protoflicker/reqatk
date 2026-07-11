@@ -59,7 +59,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       </label>
       <style>{`
         .theme-switch {
-          --toggle-size: 11px;
+          --toggle-size: 8.5px;
           --container-width: 5.625em;
           --container-height: 2.5em;
           --container-radius: 6.25em;

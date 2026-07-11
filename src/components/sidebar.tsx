@@ -23,7 +23,7 @@ const NAV_USER: NavSection[] = [
   {
     title: "Utama",
     items: [
-      { href: "/dashboard", label: "Dasbor", subtitle: "Ringkasan & statistik", icon: "zap" }
+      { href: "/dashboard", label: "Dashboard", subtitle: "Ringkasan & statistik", icon: "grid" }
     ],
   },
   {
@@ -45,7 +45,7 @@ const NAV_USER: NavSection[] = [
 const NAV_ADMIN: NavSection[] = [
   {
     title: "Utama",
-    items: [{ href: "/admin", label: "Dasbor", subtitle: "Ringkasan & statistik", icon: "zap" }],
+    items: [{ href: "/admin", label: "Dashboard", subtitle: "Ringkasan & statistik", icon: "grid" }],
   },
   {
     title: "Inventaris",
@@ -99,7 +99,7 @@ export function Sidebar({
   return (
     <>
       {/* ===== Desktop: sidebar tetap di kiri ===== */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[17rem] flex-col border-r border-border-light bg-white md:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[16rem] flex-col border-r border-border-light bg-white md:flex">
         {/* Header / Logo */}
         <div className="flex items-center justify-between p-6">
           <p className="font-display text-2xl font-extrabold tracking-tight text-text">

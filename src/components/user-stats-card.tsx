@@ -45,7 +45,7 @@ export function UserStatsCard({
       <div
         className={`flex w-14 shrink-0 items-center justify-center bg-gradient-to-b ${tone.gradient}`}
       >
-        <Icon name={icon} className="text-xl text-white" />
+        <Icon name={icon} className="text-xl text-white -rotate-12 opacity-90" />
       </div>
 
       {/* Content */}

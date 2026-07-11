@@ -10,6 +10,7 @@ import { ThemeToggle } from "./theme-toggle";
 interface NavItem {
   href: string;
   label: string;
+  subtitle: string;
   icon: IconName;
 }
 
@@ -21,52 +22,58 @@ interface NavSection {
 const NAV_USER: NavSection[] = [
   {
     title: "Utama",
-    items: [{ href: "/dashboard", label: "Dasbor", icon: "zap" }],
+    items: [
+      { href: "/dashboard", label: "Dashboard", subtitle: "Ringkasan & statistik", icon: "grid" }
+    ],
+  },
+  {
+    title: "Aset",
+    items: [
+      { href: "/barang", label: "Data Aset", subtitle: "Lihat semua aset", icon: "package" },
+      { href: "#", label: "Ruangan", subtitle: "Daftar ruangan", icon: "home" },
+    ],
   },
   {
     title: "Peminjaman",
     items: [
-      { href: "/barang", label: "Daftar Barang", icon: "package" },
-      { href: "/peminjaman", label: "Form Peminjaman", icon: "clipboard" },
-      { href: "/laporan", label: "Laporan Peminjaman", icon: "chart" },
+      { href: "/laporan", label: "Daftar Pinjam", subtitle: "Riwayat peminjaman", icon: "refresh" },
+      { href: "#", label: "Sedang Dipinjam", subtitle: "Barang belum kembali", icon: "clock" },
+      { href: "/peminjaman", label: "Ajukan Pinjam", subtitle: "Request baru", icon: "clipboard" },
     ],
-  },
-  {
-    title: "Akun",
-    items: [{ href: "/profile", label: "Profil Saya", icon: "user" }],
   },
 ];
 
 const NAV_ADMIN: NavSection[] = [
   {
     title: "Utama",
-    items: [{ href: "/admin", label: "Dasbor", icon: "zap" }],
+    items: [{ href: "/admin", label: "Dashboard", subtitle: "Ringkasan & statistik", icon: "grid" }],
   },
   {
     title: "Inventaris",
     items: [
-      { href: "/admin/barang", label: "Daftar Barang", icon: "package" },
-      { href: "/admin/barang/import", label: "Import Barang", icon: "upload" },
+      { href: "/admin/barang", label: "Data Aset", subtitle: "Kelola semua barang", icon: "package" },
+      { href: "/admin/barang/import", label: "Import Barang", subtitle: "Upload data massal", icon: "upload" },
     ],
   },
   {
     title: "Peminjaman",
     items: [
-      { href: "/admin/peminjaman", label: "Persetujuan", icon: "check" },
-      { href: "/admin/laporan", label: "Laporan Peminjaman", icon: "chart" },
+      { href: "/admin/peminjaman", label: "Persetujuan", subtitle: "Review request", icon: "check" },
+      { href: "/admin/laporan", label: "Laporan Peminjaman", subtitle: "Riwayat peminjaman", icon: "chart" },
     ],
   },
   {
     title: "Sistem",
     items: [
-      { href: "/admin/pengguna", label: "Pengguna", icon: "users" },
-      { href: "/admin/logs", label: "Activity Log", icon: "clock" },
-      { href: "/admin/profile", label: "Profil Admin", icon: "user" },
+      { href: "/admin/pengguna", label: "Pengguna", subtitle: "Kelola akun", icon: "users" },
+      { href: "/admin/logs", label: "Activity Log", subtitle: "Log aktivitas sistem", icon: "clock" },
+      { href: "/admin/profile", label: "Profil Admin", subtitle: "Pengaturan akun", icon: "user" },
     ],
   },
 ];
 
 function isActive(pathname: string, href: string): boolean {
+  if (href === "#") return false;
   if (href === "/admin" || href === "/dashboard") return pathname === href;
   if (href === "/admin/barang") {
     return pathname === href || (pathname.startsWith(`${href}/`) && !pathname.startsWith(`${href}/import`));
@@ -87,42 +94,63 @@ export function Sidebar({
   const sections = role === "admin" ? NAV_ADMIN : NAV_USER;
   const flatItems = sections.flatMap((s) => s.items);
 
+  // Helper to extract initials
+  const initials = nama.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
   return (
     <>
       {/* ===== Desktop: sidebar tetap di kiri ===== */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col rounded-b-[16px] border-r border-border-light bg-surface md:flex">
-        <div className="border-b border-border p-5">
-          <p className="font-display text-2xl font-extrabold leading-tight tracking-tight text-text">
-            PINJAM
-            <span className="text-primary">/ATK</span>
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[17rem] flex-col border-r border-border-light bg-white md:flex">
+        {/* Header / Logo */}
+        <div className="flex items-center justify-between p-6">
+          <p className="font-display text-2xl font-extrabold tracking-tight">
+            <span className="text-[#0075DE]">SES</span>
+            <span className="text-[#16a34a]">D</span>
+            <span className="text-[#fbbf24]">IAN</span>
           </p>
-          <p className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-            Sistem Peminjaman ATK
-          </p>
+          <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200">
+            <Icon name="chevron_left" className="text-lg" />
+          </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-3">
-          {sections.map((section) => (
-            <div key={section.title} className="mb-4">
-              <p className="mb-1.5 px-3 text-[10px] font-extrabold uppercase tracking-[0.14em] text-text-muted/80">
-                {section.title}
-              </p>
-              <ul className="space-y-1">
+        {/* Navigation List */}
+        <nav className="flex-1 overflow-y-auto px-4 pb-4">
+          {sections.map((section, idx) => (
+            <div key={section.title} className={idx > 0 ? "mt-4" : ""}>
+              {/* Divider with Text */}
+              <div className="mb-3 flex items-center gap-4">
+                <div className="h-px flex-1 bg-gray-200"></div>
+                <p className="text-[11px] font-extrabold uppercase tracking-widest text-gray-500">
+                  {section.title}
+                </p>
+                <div className="h-px flex-1 bg-gray-200"></div>
+              </div>
+
+              <ul className="space-y-1.5">
                 {section.items.map((item) => {
                   const active = isActive(pathname, item.href);
                   return (
-                    <li key={item.href}>
+                    <li key={item.label}>
                       <Link
                         href={item.href}
                         aria-current={active ? "page" : undefined}
-                        className={`group flex items-center gap-3 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-all ${
+                        className={`group flex items-center gap-4 rounded-xl border p-3 transition-all ${
                           active
-                            ? "border-[rgba(0,117,222,0.22)] bg-[rgba(0,117,222,0.10)] text-primary"
-                            : "border-transparent text-text-muted hover:translate-x-1 hover:bg-[rgba(0,117,222,0.07)] hover:text-text"
+                            ? "border-[rgba(0,117,222,0.22)] bg-[rgba(0,117,222,0.10)]"
+                            : "border-transparent hover:bg-gray-50"
                         }`}
                       >
-                        <Icon name={item.icon} className="shrink-0 text-base" />
-                        <span>{item.label}</span>
+                        <div className={`flex items-center justify-center ${active ? "text-[#0075DE]" : "text-gray-500"}`}>
+                          <Icon name={item.icon} className="text-[1.3rem]" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className={`text-[15px] font-bold ${active ? "text-[#0075DE]" : "text-gray-700"}`}>
+                            {item.label}
+                          </span>
+                          <span className={`text-xs ${active ? "text-[#0075DE]" : "text-gray-500"}`}>
+                            {item.subtitle}
+                          </span>
+                        </div>
                       </Link>
                     </li>
                   );
@@ -132,26 +160,27 @@ export function Sidebar({
           ))}
         </nav>
 
-        <div className="border-t border-border p-4">
-          <div className="rounded-xl bg-bg p-3">
-            <p className="truncate text-sm font-bold text-text">{nama}</p>
-            <p className="mt-0.5 font-mono text-xs text-text-muted">{nip}</p>
-            <span
-              className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                role === "admin"
-                  ? "bg-primary-light text-primary"
-                  : "bg-bg-mid text-text-muted"
-              }`}
-            >
-              <Icon name={role === "admin" ? "shield" : "user"} />
-              {role === "admin" ? "Admin" : "User"}
-            </span>
+        {/* User Profile Card */}
+        <div className="p-4">
+          <div className="flex items-center justify-between rounded-2xl bg-gray-50 p-3 border border-gray-100">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#0075DE] text-sm font-bold text-white">
+                {initials}
+              </div>
+              <div className="flex flex-col overflow-hidden">
+                <p className="truncate text-sm font-bold text-gray-900">{nama}</p>
+                <div className="text-[11px] font-mono text-gray-500 leading-tight">
+                  <p>NIP</p>
+                  <p className="truncate">{nip}</p>
+                </div>
+              </div>
+            </div>
+            <form action={logout} className="ml-2 shrink-0">
+              <button type="submit" className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100">
+                Keluar
+              </button>
+            </form>
           </div>
-          <form action={logout} className="mt-3">
-            <button type="submit" className="neu-btn-danger w-full text-sm">
-              Keluar
-            </button>
-          </form>
         </div>
       </aside>
 
@@ -159,7 +188,9 @@ export function Sidebar({
       <header data-mobilebar className="sticky top-0 z-40 border-b border-border bg-surface md:hidden">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <p className="font-display text-lg font-extrabold tracking-tight text-text">
-            PINJAM<span className="text-primary">/ATK</span>
+            <span className="text-[#0075DE]">SES</span>
+            <span className="text-[#16a34a]">D</span>
+            <span className="text-[#fbbf24]">IAN</span>
           </p>
           <div className="flex items-center gap-2">
             <ThemeToggle className="!h-[34px] !w-[34px]" />
@@ -176,7 +207,7 @@ export function Sidebar({
             {flatItems.map((item) => {
               const active = isActive(pathname, item.href);
               return (
-                <li key={item.href}>
+                <li key={item.label}>
                   <Link
                     href={item.href}
                     aria-current={active ? "page" : undefined}

@@ -141,6 +141,13 @@ const PATHS: Record<string, React.ReactNode> = {
       <line x1="3" y1="10" x2="21" y2="10" />
     </>
   ),
+  home: (
+    <>
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
+    </>
+  ),
+  chevron_left: <polyline points="15 18 9 12 15 6" />,
 };
 
 export type IconName = keyof typeof PATHS;

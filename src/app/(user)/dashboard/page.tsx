@@ -82,10 +82,10 @@ export default async function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="mb-10 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <UserStatsCard icon="clock" label="Menunggu" value={Number(stat.menunggu)} color="warning" />
-        <UserStatsCard icon="check" label="Disetujui" value={Number(stat.disetujui)} color="success" />
-        <UserStatsCard icon="x" label="Ditolak" value={Number(stat.ditolak)} color="danger" />
-        <UserStatsCard icon="chart" label="Total" value={Number(stat.total)} color="primary" />
+        <UserStatsCard icon="clock" label="Menunggu" value={Number(stat.menunggu)} subtitle="Menunggu approve" color="warning" />
+        <UserStatsCard icon="check" label="Disetujui" value={Number(stat.disetujui)} subtitle="Sudah disetujui" color="success" />
+        <UserStatsCard icon="x" label="Ditolak" value={Number(stat.ditolak)} subtitle="Permintaan ditolak" color="danger" />
+        <UserStatsCard icon="chart" label="Total" value={Number(stat.total)} subtitle="Semua permintaan" color="primary" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

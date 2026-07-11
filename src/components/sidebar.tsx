@@ -84,10 +84,14 @@ export function Sidebar({
   role,
   nama,
   nip,
+  isCollapsed,
+  onToggleCollapse,
 }: {
   role: Role;
   nama: string;
   nip: string;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
 }) {
   const pathname = usePathname();
   const sections = role === "admin" ? NAV_ADMIN : NAV_USER;
@@ -99,29 +103,38 @@ export function Sidebar({
   return (
     <>
       {/* ===== Desktop: sidebar tetap di kiri ===== */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[16rem] flex-col border-r border-border-light bg-white md:flex">
+      <aside className={`fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-border-light bg-white transition-all duration-300 md:flex ${isCollapsed ? 'w-[5rem]' : 'w-[16rem]'}`}>
         {/* Header / Logo */}
-        <div className="flex items-center justify-between p-6">
-          <p className="font-display text-2xl font-extrabold tracking-tight text-text">
-            PINJAM<span className="text-primary">/ATK</span>
-          </p>
-          <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200">
+        <div className={`flex items-center p-6 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+          {!isCollapsed && (
+            <p className="font-display text-2xl font-extrabold tracking-tight text-text">
+              PINJAM<span className="text-primary">/ATK</span>
+            </p>
+          )}
+          <button 
+            onClick={onToggleCollapse}
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-600 transition-all hover:bg-gray-200 ${isCollapsed ? 'rotate-180' : ''}`}
+          >
             <Icon name="chevron_left" className="text-lg" />
           </button>
         </div>
 
         {/* Navigation List */}
-        <nav className="flex-1 overflow-y-auto px-4 pb-4">
+        <nav className={`flex-1 overflow-y-auto pb-4 ${isCollapsed ? 'px-2' : 'px-4'}`}>
           {sections.map((section, idx) => (
             <div key={section.title} className={idx > 0 ? "mt-4" : ""}>
               {/* Divider with Text */}
-              <div className="mb-3 flex items-center gap-4">
-                <div className="h-px flex-1 bg-gray-200"></div>
-                <p className="text-[11px] font-extrabold uppercase tracking-widest text-gray-500">
-                  {section.title}
-                </p>
-                <div className="h-px flex-1 bg-gray-200"></div>
-              </div>
+              {!isCollapsed ? (
+                <div className="mb-3 flex items-center gap-4">
+                  <div className="h-px flex-1 bg-gray-200"></div>
+                  <p className="text-[11px] font-extrabold uppercase tracking-widest text-gray-500">
+                    {section.title}
+                  </p>
+                  <div className="h-px flex-1 bg-gray-200"></div>
+                </div>
+              ) : (
+                <div className="mb-3 h-px w-full bg-gray-200"></div>
+              )}
 
               <ul className="space-y-1.5">
                 {section.items.map((item) => {
@@ -130,8 +143,9 @@ export function Sidebar({
                     <li key={item.label}>
                       <Link
                         href={item.href}
+                        title={isCollapsed ? item.label : undefined}
                         aria-current={active ? "page" : undefined}
-                        className={`group flex items-center gap-4 rounded-xl border p-3 transition-all ${
+                        className={`group flex items-center rounded-xl border transition-all ${isCollapsed ? 'justify-center p-3' : 'gap-4 p-3'} ${
                           active
                             ? "border-[rgba(0,117,222,0.22)] bg-[rgba(0,117,222,0.10)]"
                             : "border-transparent hover:bg-gray-50"
@@ -140,14 +154,16 @@ export function Sidebar({
                         <div className={`flex items-center justify-center ${active ? "text-[#0075DE]" : "text-gray-500"}`}>
                           <Icon name={item.icon} className="text-[1.3rem]" />
                         </div>
-                        <div className="flex flex-col">
-                          <span className={`text-[15px] font-bold ${active ? "text-[#0075DE]" : "text-gray-700"}`}>
-                            {item.label}
-                          </span>
-                          <span className={`text-xs ${active ? "text-[#0075DE]" : "text-gray-500"}`}>
-                            {item.subtitle}
-                          </span>
-                        </div>
+                        {!isCollapsed && (
+                          <div className="flex flex-col">
+                            <span className={`text-[15px] font-bold ${active ? "text-[#0075DE]" : "text-gray-700"}`}>
+                              {item.label}
+                            </span>
+                            <span className={`text-xs ${active ? "text-[#0075DE]" : "text-gray-500"}`}>
+                              {item.subtitle}
+                            </span>
+                          </div>
+                        )}
                       </Link>
                     </li>
                   );
@@ -158,25 +174,29 @@ export function Sidebar({
         </nav>
 
         {/* User Profile Card */}
-        <div className="p-4">
-          <div className="flex items-center justify-between rounded-2xl bg-gray-50 p-3 border border-gray-100">
-            <div className="flex items-center gap-3 overflow-hidden">
+        <div className={`p-4 ${isCollapsed ? 'flex justify-center' : ''}`}>
+          <div className={`flex items-center rounded-2xl bg-gray-50 border border-gray-100 ${isCollapsed ? 'justify-center p-2' : 'justify-between p-3'}`}>
+            <div className={`flex items-center overflow-hidden ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#0075DE] text-sm font-bold text-white">
                 {initials}
               </div>
-              <div className="flex flex-col overflow-hidden">
-                <p className="truncate text-sm font-bold text-gray-900">{nama}</p>
-                <div className="text-[11px] font-mono text-gray-500 leading-tight">
-                  <p>NIP</p>
-                  <p className="truncate">{nip}</p>
+              {!isCollapsed && (
+                <div className="flex flex-col overflow-hidden">
+                  <p className="truncate text-sm font-bold text-gray-900">{nama}</p>
+                  <div className="text-[11px] font-mono text-gray-500 leading-tight">
+                    <p>NIP</p>
+                    <p className="truncate">{nip}</p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
-            <form action={logout} className="ml-2 shrink-0">
-              <button type="submit" className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100">
-                Keluar
-              </button>
-            </form>
+            {!isCollapsed && (
+              <form action={logout} className="ml-2 shrink-0">
+                <button type="submit" className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100">
+                  Keluar
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </aside>

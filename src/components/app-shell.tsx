@@ -21,6 +21,7 @@ export function AppShell({
   const [formattedDate, setFormattedDate] = useState("");
   const [currentYear, setCurrentYear] = useState("");
   const [fontSize, setFontSize] = useState<"small" | "medium" | "large">("medium");
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -96,8 +97,14 @@ export function AppShell({
 
   return (
     <div className="min-h-dvh bg-bg">
-      <Sidebar role={session.role} nama={session.nama} nip={session.nip} />
-      <div className="md:ml-[16rem]">
+      <Sidebar 
+        role={session.role} 
+        nama={session.nama} 
+        nip={session.nip} 
+        isCollapsed={isCollapsed}
+        onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+      />
+      <div className={`transition-all duration-300 ${isCollapsed ? "md:ml-[5rem]" : "md:ml-[16rem]"}`}>
         <div
           data-topbar
           className="sticky top-0 z-50 hidden items-center justify-between border-b border-border bg-surface/90 px-8 py-3 backdrop-blur-sm md:flex"

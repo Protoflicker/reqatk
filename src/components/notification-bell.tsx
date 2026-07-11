@@ -60,8 +60,8 @@ export function NotificationBell({ userId, initialNotifications }: NotificationB
       >
         <Icon name="bell" className="text-[1.05rem]" />
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[9px] font-bold text-white">
-            {unreadCount > 9 ? "9+" : unreadCount}
+          <span className="absolute -right-1 -top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-danger text-[9px] font-bold text-white border-2 border-surface shadow-sm">
+            {unreadCount > 9 ? "9" : unreadCount}
           </span>
         )}
       </button>

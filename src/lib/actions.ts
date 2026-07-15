@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
@@ -264,16 +264,29 @@ export async function ajukanPermintaan(
 ): Promise<ActionState> {
   const session = await requireSession();
 
-  const barangId = Number(formData.get("barang_id"));
-  const jumlah = Number(formData.get("jumlah"));
+  const cartDataStr = String(formData.get("cart_data") ?? "");
   const keperluan = String(formData.get("keperluan") ?? "").trim();
   const tanggalPinjam = String(formData.get("tanggal_pinjam") ?? "").trim();
 
-  if (!Number.isInteger(barangId) || barangId <= 0) {
-    return { error: "Pilih barang terlebih dahulu." };
+  let cartItems: { barang_id: number; jumlah: number }[] = [];
+  
+  if (cartDataStr) {
+    try {
+      cartItems = JSON.parse(cartDataStr);
+    } catch (e) {
+      return { error: "Data keranjang tidak valid." };
+    }
+  } else {
+    // Fallback for old forms
+    const bId = Number(formData.get("barang_id"));
+    const qty = Number(formData.get("jumlah"));
+    if (bId && qty) {
+      cartItems = [{ barang_id: bId, jumlah: qty }];
+    }
   }
-  if (!Number.isInteger(jumlah) || jumlah <= 0) {
-    return { error: "Jumlah harus bilangan bulat lebih dari nol." };
+
+  if (cartItems.length === 0) {
+    return { error: "Pilih minimal satu barang terlebih dahulu." };
   }
   if (keperluan.length < 5) {
     return { error: "Keperluan wajib diisi (minimal 5 karakter)." };
@@ -282,41 +295,60 @@ export async function ajukanPermintaan(
     return { error: "Tanggal pinjam tidak valid." };
   }
 
-  let barangNama = "";
+  let barangNames: string[] = [];
   
   try {
     const sql = db();
-    const barang = (await sql`
-      SELECT id, nama, stok FROM barang WHERE id = ${barangId} LIMIT 1
-    `) as { id: number; nama: string; stok: number }[];
+    
+    // Validasi stok semua barang terlebih dahulu
+    for (const item of cartItems) {
+      if (!Number.isInteger(item.barang_id) || item.barang_id <= 0) {
+        return { error: "ID Barang tidak valid." };
+      }
+      if (!Number.isInteger(item.jumlah) || item.jumlah <= 0) {
+        return { error: "Jumlah harus lebih dari nol." };
+      }
+      
+      const barang = (await sql`
+        SELECT id, nama, stok FROM barang WHERE id = ${item.barang_id} LIMIT 1
+      `) as { id: number; nama: string; stok: number }[];
 
-    if (barang.length === 0) {
-      return { error: "Barang tidak ditemukan." };
-    }
-    if (barang[0].stok < jumlah) {
-      return {
-        error: `Stok ${barang[0].nama} tersisa ${barang[0].stok}. Kurangi jumlah permintaan.`,
-      };
+      if (barang.length === 0) {
+        return { error: "Ada barang yang tidak ditemukan." };
+      }
+      if (barang[0].stok < item.jumlah) {
+        return {
+          error: `Stok ${barang[0].nama} tersisa ${barang[0].stok}. Kurangi jumlah permintaan.`,
+        };
+      }
     }
     
-    barangNama = barang[0].nama;
+    // Insert setiap item sebagai permintaan terpisah
+    for (const item of cartItems) {
+      const barang = (await sql`
+        SELECT id, nama, stok FROM barang WHERE id = ${item.barang_id} LIMIT 1
+      `) as { id: number; nama: string; stok: number }[];
+      
+      const barangNama = barang[0].nama;
+      barangNames.push(barangNama);
 
-    const result = await sql`
-      INSERT INTO permintaan (pengguna_id, barang_id, jumlah, keperluan, tanggal_pinjam)
-      VALUES (${session.id}, ${barangId}, ${jumlah}, ${keperluan}, ${tanggalPinjam})
-      RETURNING id
-    `;
-    
-    const newRequestId = (result[0] as { id: number }).id;
-    
-    // Log activity
-    await logActivity(
-      session.id,
-      "CREATE_REQUEST",
-      "permintaan",
-      newRequestId,
-      { barang_id: barangId, barang_nama: barangNama, jumlah, keperluan }
-    );
+      const result = await sql`
+        INSERT INTO permintaan (pengguna_id, barang_id, jumlah, keperluan, tanggal_pinjam)
+        VALUES (${session.id}, ${item.barang_id}, ${item.jumlah}, ${keperluan}, ${tanggalPinjam})
+        RETURNING id
+      `;
+      
+      const newRequestId = (result[0] as { id: number }).id;
+      
+      // Log activity per item
+      await logActivity(
+        session.id,
+        "CREATE_REQUEST",
+        "permintaan",
+        newRequestId,
+        { barang_id: item.barang_id, barang_nama: barangNama, jumlah: item.jumlah, keperluan }
+      );
+    }
   } catch (e) {
     console.error("ajukanPermintaan gagal:", e);
     return { error: "Gagal menyimpan permintaan. Coba lagi." };
@@ -326,10 +358,14 @@ export async function ajukanPermintaan(
   revalidatePath("/dashboard");
   revalidatePath("/admin/permintaan");
   
-  // Notify admins about new request
+  // Notify admins about new requests
   try {
     const { notifyAdminsNewRequest } = await import("./notifications");
-    await notifyAdminsNewRequest(session.nama, barangNama);
+    // Only pass first few names to not overflow notification text
+    const summaryNames = barangNames.length > 2 
+      ? `${barangNames.slice(0, 2).join(", ")} dan ${barangNames.length - 2} lainnya`
+      : barangNames.join(", ");
+    await notifyAdminsNewRequest(session.nama, summaryNames);
   } catch (e) {
     console.error("Failed to send notification:", e);
   }

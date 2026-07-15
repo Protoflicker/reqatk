@@ -1,4 +1,4 @@
-# 🎉 PHASE 2: COMPLETE! 
+﻿# 🎉 PHASE 2: COMPLETE! 
 
 ## ✅ All 5 Enhanced Features - 100% Implemented
 
@@ -18,7 +18,7 @@
 
 ### Database:
 ```sql
-ALTER TABLE peminjaman 
+ALTER TABLE PERMINTAAN 
 ADD COLUMN status_return VARCHAR(20) DEFAULT 'BELUM_DIKEMBALIKAN',
 ADD COLUMN tanggal_kembali DATE,
 ADD COLUMN catatan_kembali TEXT;
@@ -90,7 +90,7 @@ getActivityStats()
 - ✅ LOGIN
 - ⏳ LOGOUT (to be added)
 - ⏳ CREATE/UPDATE/DELETE operations (to be added)
-- ⏳ APPROVE/REJECT peminjaman (to be added)
+- ⏳ APPROVE/REJECT PERMINTAAN (to be added)
 
 ---
 
@@ -147,7 +147,7 @@ getActivityStats()
 ## 🧪 Testing Guide
 
 ### Return Workflow:
-1. Go to `/admin/peminjaman`
+1. Go to `/admin/PERMINTAAN`
 2. Find DISETUJUI item
 3. Click "Sudah Dikembalikan"
 4. Select date & add note
@@ -192,11 +192,11 @@ Add links to new pages:
 ```
 
 ### Return Button:
-In `/admin/peminjaman` page, add:
+In `/admin/PERMINTAAN` page, add:
 ```tsx
 {item.status === 'DISETUJUI' && item.status_return === 'BELUM_DIKEMBALIKAN' && (
   <ReturnForm 
-    peminjamanId={item.id}
+    PERMINTAANId={item.id}
     barangNama={item.nama_barang}
     jumlah={item.jumlah}
     satuan={item.satuan}
@@ -230,7 +230,7 @@ In laporan pages:
 
 ### Immediate Tasks (Quick Wins):
 1. [ ] Add sidebar links to new pages
-2. [ ] Integrate ReturnForm in peminjaman page
+2. [ ] Integrate ReturnForm in PERMINTAAN page
 3. [ ] Add Excel export buttons in laporan
 4. [ ] Add activity logging to all major actions
 5. [ ] Test all features end-to-end

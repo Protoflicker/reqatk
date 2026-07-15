@@ -1,11 +1,11 @@
-import { NextResponse, type NextRequest } from "next/server";
+﻿import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { buatLaporanPdf } from "@/lib/pdf";
 import {
   STATUS_LIST,
-  type PeminjamanDetail,
-  type StatusPeminjaman,
+  type PermintaanDetail,
+  type StatusPermintaan,
 } from "@/lib/definitions";
 
 export async function GET(request: NextRequest) {
@@ -18,8 +18,8 @@ export async function GET(request: NextRequest) {
   const statusParam = searchParams.get("status");
   const bulanParam = searchParams.get("bulan");
 
-  const statusFilter = STATUS_LIST.includes(statusParam as StatusPeminjaman)
-    ? (statusParam as StatusPeminjaman)
+  const statusFilter = STATUS_LIST.includes(statusParam as StatusPermintaan)
+    ? (statusParam as StatusPermintaan)
     : null;
   const bulanFilter = /^\d{4}-\d{2}$/.test(bulanParam ?? "")
     ? bulanParam
@@ -31,14 +31,14 @@ export async function GET(request: NextRequest) {
            p.catatan_admin,
            u.nip, u.nama AS nama_pengguna,
            b.kode AS kode_barang, b.nama AS nama_barang, b.satuan
-    FROM peminjaman p
+    FROM permintaan p
     JOIN pengguna u ON u.id = p.pengguna_id
     JOIN barang b   ON b.id = p.barang_id
     WHERE (${statusFilter}::text IS NULL OR p.status = ${statusFilter})
       AND (${bulanFilter}::text IS NULL
            OR to_char(p.tanggal_pinjam, 'YYYY-MM') = ${bulanFilter})
     ORDER BY p.created_at DESC
-  `) as unknown as PeminjamanDetail[];
+  `) as unknown as PermintaanDetail[];
 
   const filterInfo = [
     `STATUS: ${statusFilter ?? "SEMUA"}`,
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
   });
 
   const suffix = [statusFilter, bulanFilter].filter(Boolean).join("-");
-  const filename = `laporan-peminjaman${suffix ? `-${suffix}` : ""}.pdf`;
+  const filename = `laporan-permintaan${suffix ? `-${suffix}` : ""}.pdf`;
 
   return new NextResponse(pdf, {
     headers: {

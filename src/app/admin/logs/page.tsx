@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth";
+﻿import { requireAdmin } from "@/lib/auth";
 import { PageHeader } from "@/components/page-header";
 import { getActivityLogs, getActivityStats } from "@/lib/audit";
 import { Pagination } from "@/components/pagination";
@@ -32,10 +32,10 @@ export default async function ActivityLogsPage({
       CREATE_BARANG: "Tambah Barang",
       UPDATE_BARANG: "Update Barang",
       DELETE_BARANG: "Hapus Barang",
-      CREATE_PEMINJAMAN: "Ajukan Peminjaman",
-      APPROVE_PEMINJAMAN: "Setujui Peminjaman",
-      REJECT_PEMINJAMAN: "Tolak Peminjaman",
-      RETURN_PEMINJAMAN: "Kembalikan Barang",
+      CREATE_PERMINTAAN: "Ajukan Permintaan",
+      APPROVE_PERMINTAAN: "Setujui Permintaan",
+      REJECT_PERMINTAAN: "Tolak Permintaan",
+      RETURN_PERMINTAAN: "Kembalikan Barang",
       CREATE_PENGGUNA: "Tambah Pengguna",
       UPDATE_PENGGUNA: "Update Pengguna",
       DELETE_PENGGUNA: "Hapus Pengguna",

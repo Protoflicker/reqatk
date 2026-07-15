@@ -1,13 +1,13 @@
-"use client";
+﻿"use client";
 
 import { useActionState, useState } from "react";
-import { ajukanPeminjaman } from "@/lib/actions";
+import { ajukanPermintaan } from "@/lib/actions";
 import type { ActionState, Barang } from "@/lib/definitions";
 import { Icon } from "./icon";
 
 const initialState: ActionState = {};
 
-export function PeminjamanForm({
+export function PermintaanForm({
   barangList,
   today,
 }: {
@@ -15,7 +15,7 @@ export function PeminjamanForm({
   today: string;
 }) {
   const [state, formAction, pending] = useActionState(
-    ajukanPeminjaman,
+    ajukanPermintaan,
     initialState
   );
   const [barangId, setBarangId] = useState<string>("");
@@ -30,7 +30,7 @@ export function PeminjamanForm({
     >
       <div className="border-b border-border bg-bg-mid px-5 py-3">
         <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-text-muted">
-          Formulir Permintaan Peminjaman
+          Formulir Permintaan Permintaan
         </p>
       </div>
 

@@ -1,17 +1,17 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
-import { setujuiPeminjaman, tolakPeminjaman } from "@/lib/actions";
+import { setujuiPermintaan, tolakPermintaan } from "@/lib/actions";
 import { StatusBadge } from "@/components/status-badge";
 import { BulkApproval } from "@/components/bulk-approval";
 import { Pagination } from "@/components/pagination";
 import { ReturnForm } from "@/components/return-form";
 import { EmptyState } from "@/components/empty-state";
 import { Icon } from "@/components/icon";
-import { formatTanggal, type PeminjamanDetail } from "@/lib/definitions";
+import { formatTanggal, type PermintaanDetail } from "@/lib/definitions";
 
 type BarisAntrean = Pick<
-  PeminjamanDetail,
+  PermintaanDetail,
   | "id"
   | "jumlah"
   | "keperluan"
@@ -24,7 +24,7 @@ type BarisAntrean = Pick<
 > & { stok: number };
 
 type BarisRiwayat = Pick<
-  PeminjamanDetail,
+  PermintaanDetail,
   | "id"
   | "jumlah"
   | "status"
@@ -40,14 +40,14 @@ type BarisRiwayat = Pick<
   barang_id: number;
 };
 
-interface PeminjamanClientProps {
+interface PermintaanClientProps {
   antrean: BarisAntrean[];
   keputusan: BarisRiwayat[];
 }
 
 const ITEMS_PER_PAGE = 10;
 
-export function PeminjamanClient({ antrean, keputusan }: PeminjamanClientProps) {
+export function PermintaanClient({ antrean, keputusan }: PermintaanClientProps) {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -167,7 +167,7 @@ export function PeminjamanClient({ antrean, keputusan }: PeminjamanClientProps) 
                     </td>
                     <td>
                       <div className="flex min-w-[220px] flex-col gap-2">
-                        <form action={setujuiPeminjaman.bind(null, r.id)}>
+                        <form action={setujuiPermintaan.bind(null, r.id)}>
                           <button
                             type="submit"
                             className="neu-btn-primary w-full px-3 py-1 text-xs"
@@ -176,7 +176,7 @@ export function PeminjamanClient({ antrean, keputusan }: PeminjamanClientProps) 
                             Setujui
                           </button>
                         </form>
-                        <form action={tolakPeminjaman.bind(null, r.id)} className="flex gap-1">
+                        <form action={tolakPermintaan.bind(null, r.id)} className="flex gap-1">
                           <input
                             name="catatan"
                             type="text"
@@ -297,7 +297,7 @@ export function PeminjamanClient({ antrean, keputusan }: PeminjamanClientProps) 
                         {r.status === "DISETUJUI" &&
                           r.status_return === "BELUM_DIKEMBALIKAN" && (
                             <ReturnForm
-                              peminjamanId={r.id}
+                              permintaanId={r.id}
                               barangNama={r.nama_barang}
                               jumlah={r.jumlah}
                               satuan={r.satuan}
@@ -323,7 +323,7 @@ export function PeminjamanClient({ antrean, keputusan }: PeminjamanClientProps) 
         )}
 
         <p className="helper mt-4">
-          Riwayat lengkap tersedia di menu Laporan Peminjaman.
+          Riwayat lengkap tersedia di menu Laporan Permintaan.
         </p>
       </section>
     </>

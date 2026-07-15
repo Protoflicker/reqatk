@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { generatePeminjamanExcel, generateFilename } from "@/lib/excel";
-import type { PeminjamanDetail } from "@/lib/definitions";
+import { generatePermintaanExcel, generateFilename } from "@/lib/excel";
+import type { PermintaanDetail } from "@/lib/definitions";
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
         p.tanggal_pinjam, p.catatan_admin,
         u.nip, u.nama AS nama_pengguna,
         b.kode AS kode_barang, b.nama AS nama_barang, b.satuan
-      FROM peminjaman p
+      FROM permintaan p
       JOIN pengguna u ON u.id = p.pengguna_id
       JOIN barang b ON b.id = p.barang_id
       WHERE p.pengguna_id = ${session.id}
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     query = sql`${query} ORDER BY p.created_at DESC`;
 
-    const data = (await query) as unknown as PeminjamanDetail[];
+    const data = (await query) as unknown as PermintaanDetail[];
 
     // Calculate summary
     const summary = {
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     };
 
     // Generate Excel
-    const buffer = generatePeminjamanExcel(data, summary);
+    const buffer = generatePermintaanExcel(data, summary);
     const filename = generateFilename(`laporan_${session.nip}`);
 
     // Return Excel file

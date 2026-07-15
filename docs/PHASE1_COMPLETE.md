@@ -1,4 +1,4 @@
-# 🎉 Phase 1: COMPLETE!
+﻿# 🎉 Phase 1: COMPLETE!
 
 ## ✅ Top 5 Features - Implementation Status
 
@@ -194,12 +194,12 @@ ADD COLUMN min_stok INTEGER DEFAULT 10;
 
 ### 1. Notifications
 1. Login as user
-2. Submit a peminjaman request
+2. Submit a PERMINTAAN request
 3. See bell icon in header (no badge yet)
 4. Login as admin
 5. Bell icon should show badge with "1"
 6. Click bell → see notification "Budi Santoso mengajukan permintaan..."
-7. Go to /admin/peminjaman
+7. Go to /admin/PERMINTAAN
 8. Approve request
 9. Logout, login as user again
 10. Bell should show notification "✓ Permintaan Disetujui"

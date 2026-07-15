@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+﻿import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status-badge";
@@ -8,8 +8,8 @@ import { Icon } from "@/components/icon";
 import {
   formatTanggal,
   STATUS_LIST,
-  type PeminjamanDetail,
-  type StatusPeminjaman,
+  type PermintaanDetail,
+  type StatusPermintaan,
 } from "@/lib/definitions";
 
 export default async function LaporanUserPage({
@@ -20,8 +20,8 @@ export default async function LaporanUserPage({
   const session = await requireSession();
   const params = await searchParams;
 
-  const statusFilter = STATUS_LIST.includes(params.status as StatusPeminjaman)
-    ? (params.status as StatusPeminjaman)
+  const statusFilter = STATUS_LIST.includes(params.status as StatusPermintaan)
+    ? (params.status as StatusPermintaan)
     : null;
 
   const sql = db();
@@ -29,12 +29,12 @@ export default async function LaporanUserPage({
     SELECT p.id, p.jumlah, p.keperluan, p.status, p.tanggal_pinjam,
            p.catatan_admin,
            b.kode AS kode_barang, b.nama AS nama_barang, b.satuan
-    FROM peminjaman p
+    FROM permintaan p
     JOIN barang b ON b.id = p.barang_id
     WHERE p.pengguna_id = ${session.id}
       AND (${statusFilter}::text IS NULL OR p.status = ${statusFilter})
     ORDER BY p.created_at DESC
-  `) as unknown as PeminjamanDetail[];
+  `) as unknown as PermintaanDetail[];
 
   const exportQuery = new URLSearchParams();
   if (statusFilter) exportQuery.set("status", statusFilter);
@@ -42,7 +42,7 @@ export default async function LaporanUserPage({
   return (
     <>
       <PageHeader
-        title="Laporan Peminjaman"
+        title="Laporan Permintaan"
         description="Riwayat seluruh permintaan alat tulis kantor Anda beserta statusnya."
       />
 

@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { UserStatsCard } from "@/components/user-stats-card";
@@ -8,8 +8,8 @@ import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
 import {
   formatTanggal,
-  type PeminjamanDetail,
-  type StatusPeminjaman,
+  type PermintaanDetail,
+  type StatusPermintaan,
 } from "@/lib/definitions";
 
 export default async function DashboardPage() {
@@ -23,13 +23,13 @@ export default async function DashboardPage() {
         COUNT(*) FILTER (WHERE status = 'DISETUJUI') AS disetujui,
         COUNT(*) FILTER (WHERE status = 'DITOLAK')   AS ditolak,
         COUNT(*)                                     AS total
-      FROM peminjaman
+      FROM permintaan
       WHERE pengguna_id = ${session.id}
     `,
     sql`
       SELECT p.id, p.jumlah, p.status, p.tanggal_pinjam,
              b.kode AS kode_barang, b.nama AS nama_barang, b.satuan
-      FROM peminjaman p
+      FROM permintaan p
       JOIN barang b ON b.id = p.barang_id
       WHERE p.pengguna_id = ${session.id}
       ORDER BY p.created_at DESC
@@ -39,7 +39,7 @@ export default async function DashboardPage() {
     sql`
       SELECT p.id, p.status, p.created_at,
              b.nama AS nama_barang, p.jumlah, b.satuan
-      FROM peminjaman p
+      FROM permintaan p
       JOIN barang b ON b.id = p.barang_id
       WHERE p.pengguna_id = ${session.id}
       ORDER BY p.created_at DESC
@@ -48,7 +48,7 @@ export default async function DashboardPage() {
     // Frequently requested items
     sql`
       SELECT b.nama, COUNT(*) as total
-      FROM peminjaman p
+      FROM permintaan p
       JOIN barang b ON b.id = p.barang_id
       WHERE p.pengguna_id = ${session.id}
       GROUP BY b.id, b.nama
@@ -59,7 +59,7 @@ export default async function DashboardPage() {
 
   const stat = statRows[0] as Record<string, string>;
   const rows = terbaru as unknown as Pick<
-    PeminjamanDetail,
+    PermintaanDetail,
     "id" | "jumlah" | "status" | "tanggal_pinjam" | "kode_barang" | "nama_barang" | "satuan"
   >[];
   
@@ -75,7 +75,7 @@ export default async function DashboardPage() {
         <h1 className="sesd-greet-title">Halo, {namaDepan}</h1>
         <p className="sesd-greet-sub">
           Ringkasan permintaan alat tulis kantor Anda. Ajukan permintaan baru
-          lewat menu Form Peminjaman.
+          lewat menu Form Permintaan.
         </p>
         <span className="sesd-greet-role">User — pegawai terdaftar</span>
       </header>
@@ -130,7 +130,7 @@ export default async function DashboardPage() {
           <h2 className="font-display text-xl font-extrabold tracking-tight text-text">
             Permintaan Terakhir
           </h2>
-          <Link href="/peminjaman" className="neu-btn-primary px-6 py-2 text-sm font-bold">
+          <Link href="/permintaan" className="neu-btn-primary px-6 py-2 text-sm font-bold">
             <Icon name="plus" />
             Ajukan Permintaan
           </Link>
@@ -139,7 +139,7 @@ export default async function DashboardPage() {
         {rows.length === 0 ? (
           <EmptyState
             title="Belum ada permintaan"
-            hint="Buka menu Form Peminjaman untuk mengajukan permintaan pertama Anda."
+            hint="Buka menu Form Permintaan untuk mengajukan permintaan pertama Anda."
           />
         ) : (
           <div className="tbl-wrap">
@@ -172,7 +172,7 @@ export default async function DashboardPage() {
                       {formatTanggal(r.tanggal_pinjam)}
                     </td>
                     <td>
-                      <StatusBadge status={r.status as StatusPeminjaman} />
+                      <StatusBadge status={r.status as StatusPermintaan} />
                     </td>
                   </tr>
                 ))}

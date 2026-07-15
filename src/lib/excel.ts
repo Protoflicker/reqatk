@@ -1,10 +1,10 @@
-/**
+﻿/**
  * Excel Export Utilities
  * Uses xlsx library to generate Excel files with formatting
  */
 
 import * as XLSX from "xlsx";
-import type { PeminjamanDetail } from "./definitions";
+import type { PermintaanDetail } from "./definitions";
 
 export interface ExcelData {
   sheetName: string;
@@ -48,10 +48,10 @@ export function generateExcelBuffer(sheets: ExcelData[]): Buffer {
 }
 
 /**
- * Generate Excel for Peminjaman Report
+ * Generate Excel for Permintaan Report
  */
-export function generatePeminjamanExcel(
-  data: PeminjamanDetail[],
+export function generatePermintaanExcel(
+  data: PermintaanDetail[],
   summary?: {
     total: number;
     approved: number;

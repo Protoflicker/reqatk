@@ -1,7 +1,7 @@
-import { NextResponse, type NextRequest } from "next/server";
+﻿import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import { STATUS_LIST, type StatusPeminjaman } from "@/lib/definitions";
+import { STATUS_LIST, type StatusPermintaan } from "@/lib/definitions";
 
 function csvCell(value: unknown): string {
   const s = value === null || value === undefined ? "" : String(value);
@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
   const statusParam = searchParams.get("status");
   const bulanParam = searchParams.get("bulan");
 
-  const statusFilter = STATUS_LIST.includes(statusParam as StatusPeminjaman)
-    ? (statusParam as StatusPeminjaman)
+  const statusFilter = STATUS_LIST.includes(statusParam as StatusPermintaan)
+    ? (statusParam as StatusPermintaan)
     : null;
   const bulanFilter = /^\d{4}-\d{2}$/.test(bulanParam ?? "")
     ? bulanParam
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
            p.jumlah, b.satuan, p.keperluan, p.status,
            to_char(p.tanggal_pinjam, 'YYYY-MM-DD') AS tanggal_pinjam,
            p.catatan_admin
-    FROM peminjaman p
+    FROM permintaan p
     JOIN pengguna u ON u.id = p.pengguna_id
     JOIN barang b   ON b.id = p.barang_id
     WHERE (${statusFilter}::text IS NULL OR p.status = ${statusFilter})
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
   ];
 
   const suffix = [statusFilter, bulanFilter].filter(Boolean).join("-");
-  const filename = `laporan-peminjaman${suffix ? `-${suffix}` : ""}.csv`;
+  const filename = `laporan-permintaan${suffix ? `-${suffix}` : ""}.csv`;
 
   // BOM (U+FEFF) agar Excel membaca UTF-8 dengan benar
   const bom = String.fromCharCode(0xfeff);

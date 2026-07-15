@@ -1,4 +1,4 @@
-# ✅ DATABASE CONNECTION FIXED
+﻿# ✅ DATABASE CONNECTION FIXED
 
 **Date:** 8 Juli 2026  
 **Issue:** Database connection error & login credentials mismatch  
@@ -68,7 +68,7 @@ $ node test-db.mjs
   - activity_logs
   - barang
   - notifications
-  - peminjaman
+  - PERMINTAAN
   - pengguna
 ```
 

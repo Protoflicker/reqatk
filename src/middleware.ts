@@ -1,11 +1,11 @@
-import { NextResponse, type NextRequest } from "next/server";
+﻿import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySession } from "@/lib/session";
 
 const USER_HOME = "/dashboard";
 const ADMIN_HOME = "/admin";
 
 /** Halaman milik user biasa; admin diarahkan ke area /admin. */
-const USER_PATHS = ["/dashboard", "/barang", "/peminjaman", "/laporan"];
+const USER_PATHS = ["/dashboard", "/barang", "/permintaan", "/laporan"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

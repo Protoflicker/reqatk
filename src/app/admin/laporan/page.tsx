@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+﻿import { db } from "@/lib/db";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
@@ -6,17 +6,17 @@ import { Icon } from "@/components/icon";
 import {
   formatTanggal,
   STATUS_LIST,
-  type PeminjamanDetail,
-  type StatusPeminjaman,
+  type PermintaanDetail,
+  type StatusPermintaan,
 } from "@/lib/definitions";
 
-const STAT_TONE: Record<StatusPeminjaman, string> = {
+const STAT_TONE: Record<StatusPermintaan, string> = {
   MENUNGGU: "is-warning",
   DISETUJUI: "",
   DITOLAK: "is-danger",
 };
 
-const STAT_LABEL: Record<StatusPeminjaman, string> = {
+const STAT_LABEL: Record<StatusPermintaan, string> = {
   MENUNGGU: "Menunggu",
   DISETUJUI: "Disetujui",
   DITOLAK: "Ditolak",
@@ -29,8 +29,8 @@ export default async function AdminLaporanPage({
 }) {
   const params = await searchParams;
 
-  const statusFilter = STATUS_LIST.includes(params.status as StatusPeminjaman)
-    ? (params.status as StatusPeminjaman)
+  const statusFilter = STATUS_LIST.includes(params.status as StatusPermintaan)
+    ? (params.status as StatusPermintaan)
     : null;
   const bulanFilter = /^\d{4}-\d{2}$/.test(params.bulan ?? "")
     ? (params.bulan as string)
@@ -42,20 +42,20 @@ export default async function AdminLaporanPage({
            p.catatan_admin,
            u.nip, u.nama AS nama_pengguna,
            b.kode AS kode_barang, b.nama AS nama_barang, b.satuan
-    FROM peminjaman p
+    FROM permintaan p
     JOIN pengguna u ON u.id = p.pengguna_id
     JOIN barang b   ON b.id = p.barang_id
     WHERE (${statusFilter}::text IS NULL OR p.status = ${statusFilter})
       AND (${bulanFilter}::text IS NULL
            OR to_char(p.tanggal_pinjam, 'YYYY-MM') = ${bulanFilter})
     ORDER BY p.created_at DESC
-  `) as unknown as PeminjamanDetail[];
+  `) as unknown as PermintaanDetail[];
 
   const ringkas = {
     MENUNGGU: 0,
     DISETUJUI: 0,
     DITOLAK: 0,
-  } as Record<StatusPeminjaman, number>;
+  } as Record<StatusPermintaan, number>;
   for (const r of rows) ringkas[r.status] += 1;
 
   const exportQuery = new URLSearchParams();
@@ -65,8 +65,8 @@ export default async function AdminLaporanPage({
   return (
     <>
       <PageHeader
-        title="Laporan Peminjaman"
-        description="Rekapitulasi seluruh transaksi peminjaman ATK dari semua pegawai. Saring berdasarkan status atau bulan, lalu unduh sebagai PDF, Excel, atau CSV."
+        title="Laporan Permintaan"
+        description="Rekapitulasi seluruh transaksi permintaan ATK dari semua pegawai. Saring berdasarkan status atau bulan, lalu unduh sebagai PDF, Excel, atau CSV."
       />
 
       <form

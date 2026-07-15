@@ -1,4 +1,4 @@
-# 🚀 Implementation Roadmap - All 20 Features
+﻿# 🚀 Implementation Roadmap - All 20 Features
 
 ## ✅ Status: IN PROGRESS
 
@@ -150,7 +150,7 @@ import * as XLSX from 'xlsx';
 
 **Database Changes:**
 ```sql
-ALTER TABLE peminjaman 
+ALTER TABLE PERMINTAAN 
 ADD COLUMN status_return VARCHAR(20) DEFAULT 'BELUM_DIKEMBALIKAN';
 -- Values: BELUM_DIKEMBALIKAN, DIKEMBALIKAN, TIDAK_PERLU
 
@@ -293,7 +293,7 @@ CREATE TABLE reservations (
 ```sql
 CREATE TABLE comments (
   id SERIAL PRIMARY KEY,
-  peminjaman_id INTEGER REFERENCES peminjaman(id),
+  PERMINTAAN_id INTEGER REFERENCES PERMINTAAN(id),
   user_id INTEGER REFERENCES pengguna(id),
   comment TEXT,
   created_at TIMESTAMPTZ
@@ -315,7 +315,7 @@ CREATE TABLE approval_workflows (
 
 CREATE TABLE approval_steps (
   id SERIAL PRIMARY KEY,
-  peminjaman_id INTEGER REFERENCES peminjaman(id),
+  PERMINTAAN_id INTEGER REFERENCES PERMINTAAN(id),
   approver_id INTEGER REFERENCES pengguna(id),
   step_order INTEGER,
   status VARCHAR(20), -- PENDING, APPROVED, REJECTED

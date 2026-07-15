@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Sidebar } from "./sidebar";
 import { NotificationBell } from "./notification-bell";
@@ -78,7 +78,7 @@ export function AppShell({
     if (path.includes("/profile")) return "Profile";
     if (path.includes("/pengguna")) return "Pengguna";
     if (path.includes("/logs")) return "Log Aktivitas";
-    if (path.includes("/peminjaman")) return "Peminjaman";
+    if (path.includes("/permintaan")) return "Permintaan";
     return "Dashboard";
   };
 
@@ -88,7 +88,7 @@ export function AppShell({
     if (path.includes("/profile")) return "user";
     if (path.includes("/pengguna")) return "users";
     if (path.includes("/logs")) return "clipboard";
-    if (path.includes("/peminjaman")) return "clipboard";
+    if (path.includes("/permintaan")) return "clipboard";
     return "grid";
   };
 

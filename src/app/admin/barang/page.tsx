@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { db } from "@/lib/db";
 import { hapusBarang, ubahStok } from "@/lib/actions";
 import { PageHeader } from "@/components/page-header";
@@ -16,7 +16,7 @@ const OK_MSG: Record<string, string> = {
 
 const ERR_MSG: Record<string, string> = {
   terpakai:
-    "Barang tidak bisa dihapus karena punya riwayat peminjaman. Set stok ke 0 bila ingin menonaktifkannya.",
+    "Barang tidak bisa dihapus karena punya riwayat permintaan. Set stok ke 0 bila ingin menonaktifkannya.",
   gagal: "Gagal menghapus barang. Coba lagi.",
   "stok-input": "Jumlah penyesuaian stok harus bilangan bulat lebih dari nol.",
 };

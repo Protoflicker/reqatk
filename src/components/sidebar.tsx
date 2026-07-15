@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -27,11 +27,11 @@ const NAV_USER: NavSection[] = [
     ],
   },
   {
-    title: "Peminjaman",
+    title: "Permintaan",
     items: [
       { href: "/barang", label: "Daftar Barang", subtitle: "Lihat semua aset", icon: "package" },
-      { href: "/peminjaman", label: "Form Peminjaman", subtitle: "Request baru", icon: "clipboard" },
-      { href: "/laporan", label: "Laporan Peminjaman", subtitle: "Riwayat peminjaman", icon: "chart" },
+      { href: "/permintaan", label: "Form Permintaan", subtitle: "Request baru", icon: "clipboard" },
+      { href: "/laporan", label: "Laporan Permintaan", subtitle: "Riwayat permintaan", icon: "chart" },
     ],
   },
   {
@@ -55,10 +55,10 @@ const NAV_ADMIN: NavSection[] = [
     ],
   },
   {
-    title: "Peminjaman",
+    title: "Permintaan",
     items: [
-      { href: "/admin/peminjaman", label: "Persetujuan", subtitle: "Review request", icon: "check" },
-      { href: "/admin/laporan", label: "Laporan Peminjaman", subtitle: "Riwayat peminjaman", icon: "chart" },
+      { href: "/admin/permintaan", label: "Persetujuan", subtitle: "Review request", icon: "check" },
+      { href: "/admin/laporan", label: "Laporan Permintaan", subtitle: "Riwayat permintaan", icon: "chart" },
     ],
   },
   {

@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
-import type { StatusPeminjaman } from "@/lib/definitions";
+import type { StatusPermintaan } from "@/lib/definitions";
 
 interface FilterOptions {
-  status?: StatusPeminjaman | "ALL";
+  status?: StatusPermintaan | "ALL";
   month?: string;
   kategori?: string;
   search?: string;

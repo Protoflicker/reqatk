@@ -1,9 +1,9 @@
-import { jsPDF } from "jspdf";
+﻿import { jsPDF } from "jspdf";
 import autoTable, { type RowInput } from "jspdf-autotable";
 import {
   formatTanggal,
   STATUS_LIST,
-  type PeminjamanDetail,
+  type PermintaanDetail,
 } from "./definitions";
 
 /** Palet Swiss Industrial Print — sama dengan antarmuka web. */
@@ -13,7 +13,7 @@ const PAPER_DIM: [number, number, number] = [234, 232, 227];
 const RED: [number, number, number] = [230, 25, 25];
 
 export interface LaporanPdfInput {
-  rows: PeminjamanDetail[];
+  rows: PermintaanDetail[];
   /** true = laporan admin (kolom pemohon ikut dicetak) */
   sertakanPemohon: boolean;
   /** baris identitas di bawah judul, mis. "SEMUA PEGAWAI" */
@@ -39,7 +39,7 @@ export function buatLaporanPdf({
   doc.setTextColor(...PAPER);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.text("PINJAM/ATK — LAPORAN PEMINJAMAN", 14, 11);
+  doc.text("PINJAM/ATK — LAPORAN PERMINTAAN", 14, 11);
 
   doc.setFont("courier", "normal");
   doc.setFontSize(8);

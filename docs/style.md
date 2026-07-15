@@ -1,4 +1,4 @@
-# SESDIAN — Style Guide & Design System Reference
+﻿# SESDIAN — Style Guide & Design System Reference
 
 > **Versi**: Design System v7 (Notion design language)
 > **Bahasa desain**: Warm paper canvas · near-black ink · ONE blue accent · hairlines
@@ -1325,7 +1325,7 @@ Semua interactive element minimal `34×34px` (mobile), `38×38px` (desktop).
 
 ## 30. Status & Semantic Colors
 
-### Peminjaman Status (app.js)
+### PERMINTAAN Status (app.js)
 
 | Key | Label | BG | FG |
 |---|---|---|---|
@@ -1338,7 +1338,7 @@ Semua interactive element minimal `34×34px` (mobile), `38×38px` (desktop).
 | `rejected` | Ditolak | `#fbe4e4` | `#a02020` |
 | `cancelled` | Dibatalkan | `#eceff3` | `#5b6472` |
 
-### Peminjaman Status — Laporan (reports.js)
+### PERMINTAAN Status — Laporan (reports.js)
 
 | Key | Label | Chart Color |
 |---|---|---|

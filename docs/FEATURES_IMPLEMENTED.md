@@ -1,4 +1,4 @@
-# ✨ Fitur Baru yang Sudah Diimplementasikan
+﻿# ✨ Fitur Baru yang Sudah Diimplementasikan
 
 ## 📊 1. Dashboard Analytics dengan Charts
 
@@ -35,13 +35,13 @@ SELECT
   COUNT(*) FILTER (WHERE status = 'DISETUJUI') as approved,
   COUNT(*) FILTER (WHERE status = 'MENUNGGU') as pending,
   COUNT(*) FILTER (WHERE status = 'DITOLAK') as rejected
-FROM peminjaman
+FROM PERMINTAAN
 WHERE tanggal_pinjam >= CURRENT_DATE - INTERVAL '6 months'
 GROUP BY DATE_TRUNC('month', tanggal_pinjam)
 
 -- Top Items
 SELECT b.nama, COUNT(*) as total
-FROM peminjaman p
+FROM PERMINTAAN p
 JOIN barang b ON b.id = p.barang_id
 WHERE p.created_at >= CURRENT_DATE - INTERVAL '6 months'
 GROUP BY b.id, b.nama
@@ -51,11 +51,11 @@ LIMIT 10
 
 ---
 
-## ✅ 2. Bulk Approval untuk Peminjaman
+## ✅ 2. Bulk Approval untuk PERMINTAAN
 
 ### Lokasi
 - `src/components/bulk-approval.tsx` - Bulk action UI
-- `src/app/admin/peminjaman/peminjaman-client.tsx` - Client wrapper dengan state
+- `src/app/admin/PERMINTAAN/PERMINTAAN-client.tsx` - Client wrapper dengan state
 - `src/lib/actions.ts` - Server actions
 
 ### Fitur
@@ -86,8 +86,8 @@ LIMIT 10
 ```typescript
 // src/lib/actions.ts
 
-export async function bulkApprovePeminjaman(ids: number[]): Promise<void>
-export async function bulkRejectPeminjaman(ids: number[], catatan: string | null): Promise<void>
+export async function bulkApprovePERMINTAAN(ids: number[]): Promise<void>
+export async function bulkRejectPERMINTAAN(ids: number[], catatan: string | null): Promise<void>
 ```
 
 ### Usage Flow
@@ -104,7 +104,7 @@ export async function bulkRejectPeminjaman(ids: number[], catatan: string | null
 
 ### Lokasi
 - `src/components/pagination.tsx` - Pagination component
-- `src/app/admin/peminjaman/peminjaman-client.tsx` - Implemented di keputusan history
+- `src/app/admin/PERMINTAAN/PERMINTAAN-client.tsx` - Implemented di keputusan history
 
 ### Fitur
 ✅ **Smart Page Numbers**
@@ -226,7 +226,7 @@ npm install chart.js react-chartjs-2
 
 ### 2. Bulk Approval
 1. Login sebagai admin
-2. Pergi ke `/admin/peminjaman`
+2. Pergi ke `/admin/PERMINTAAN`
 3. Centang checkbox pada beberapa request MENUNGGU
 4. Floating bar muncul di bottom
 5. Klik "Setujui Semua" atau "Tolak Semua"
@@ -298,7 +298,7 @@ npm run dev
 - `src/components/analytics-chart.tsx`
 - `src/components/bulk-approval.tsx`
 - `src/components/pagination.tsx`
-- `src/app/admin/peminjaman/peminjaman-client.tsx`
+- `src/app/admin/PERMINTAAN/PERMINTAAN-client.tsx`
 - `NEUMORPHISM_MIGRATION_TODO.md`
 - `FEATURES_IMPLEMENTED.md`
 
@@ -306,7 +306,7 @@ npm run dev
 - `src/app/globals.css` - Neumorphism theme
 - `src/lib/actions.ts` - Bulk operations
 - `src/app/admin/page.tsx` - Analytics integration
-- `src/app/admin/peminjaman/page.tsx` - Bulk approval integration
+- `src/app/admin/PERMINTAAN/page.tsx` - Bulk approval integration
 - `src/app/login/page.tsx` - Neumorphic styling
 - `src/components/login-form.tsx` - Neumorphic inputs
 - `src/components/app-shell.tsx` - Neumorphic layout

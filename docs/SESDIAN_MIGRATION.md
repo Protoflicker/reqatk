@@ -1,4 +1,4 @@
-# 🎨 SESDIAN Design System Migration
+﻿# 🎨 SESDIAN Design System Migration
 
 **Status:** ✅ PHASE 1 COMPLETE - Foundation Migrated  
 **Date:** 8 Juli 2026  
@@ -282,7 +282,7 @@ User:  199002022016012002 / user123
 # Check pages:
 - /dashboard - See new warm paper background
 - /barang - White cards with shadows
-- /peminjaman - Forms with new styling
+- /PERMINTAAN - Forms with new styling
 - /admin - All admin features with SESDIAN look
 ```
 

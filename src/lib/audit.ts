@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Audit Trail & Activity Logging
  */
 
@@ -13,10 +13,10 @@ export type ActionType =
   | "CREATE_REQUEST"
   | "APPROVE_REQUEST"
   | "REJECT_REQUEST"
-  | "CREATE_PEMINJAMAN"
-  | "APPROVE_PEMINJAMAN"
-  | "REJECT_PEMINJAMAN"
-  | "RETURN_PEMINJAMAN"
+  | "CREATE_PERMINTAAN"
+  | "APPROVE_PERMINTAAN"
+  | "REJECT_PERMINTAAN"
+  | "RETURN_PERMINTAAN"
   | "CREATE_USER"
   | "UPDATE_USER"
   | "DELETE_USER"

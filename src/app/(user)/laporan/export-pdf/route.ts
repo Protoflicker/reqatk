@@ -1,11 +1,11 @@
-import { NextResponse, type NextRequest } from "next/server";
+﻿import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { buatLaporanPdf } from "@/lib/pdf";
 import {
   STATUS_LIST,
-  type PeminjamanDetail,
-  type StatusPeminjaman,
+  type PermintaanDetail,
+  type StatusPermintaan,
 } from "@/lib/definitions";
 
 export async function GET(request: NextRequest) {
@@ -17,8 +17,8 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const statusParam = searchParams.get("status");
 
-  const statusFilter = STATUS_LIST.includes(statusParam as StatusPeminjaman)
-    ? (statusParam as StatusPeminjaman)
+  const statusFilter = STATUS_LIST.includes(statusParam as StatusPermintaan)
+    ? (statusParam as StatusPermintaan)
     : null;
 
   const sql = db();
@@ -27,13 +27,13 @@ export async function GET(request: NextRequest) {
            p.catatan_admin,
            u.nip, u.nama AS nama_pengguna,
            b.kode AS kode_barang, b.nama AS nama_barang, b.satuan
-    FROM peminjaman p
+    FROM permintaan p
     JOIN pengguna u ON u.id = p.pengguna_id
     JOIN barang b   ON b.id = p.barang_id
     WHERE p.pengguna_id = ${session.id}
       AND (${statusFilter}::text IS NULL OR p.status = ${statusFilter})
     ORDER BY p.created_at DESC
-  `) as unknown as PeminjamanDetail[];
+  `) as unknown as PermintaanDetail[];
 
   const pdf = buatLaporanPdf({
     rows,
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     filterInfo: `STATUS: ${statusFilter ?? "SEMUA"}`,
   });
 
-  const filename = `laporan-peminjaman-${session.nip}${statusFilter ? `-${statusFilter}` : ""}.pdf`;
+  const filename = `laporan-permintaan-${session.nip}${statusFilter ? `-${statusFilter}` : ""}.pdf`;
 
   return new NextResponse(pdf, {
     headers: {

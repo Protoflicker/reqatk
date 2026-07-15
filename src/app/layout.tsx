@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -15,9 +15,9 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PINJAM/ATK — Sistem Peminjaman Alat Tulis Kantor",
+  title: "PINJAM/ATK — Sistem Permintaan Alat Tulis Kantor",
   description:
-    "Sistem permintaan dan peminjaman alat tulis kantor berbasis NIP.",
+    "Sistem permintaan dan permintaan alat tulis kantor berbasis NIP.",
 };
 
 export default function RootLayout({

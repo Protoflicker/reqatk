@@ -1,4 +1,4 @@
-# 🎉 IMPLEMENTASI LENGKAP - 20 Fitur Sistem PINJAM/ATK
+﻿# 🎉 IMPLEMENTASI LENGKAP - 20 Fitur Sistem PINJAM/ATK
 
 ## 📊 Status Keseluruhan
 
@@ -116,7 +116,7 @@
 
 **Database:**
 ```sql
-ALTER TABLE peminjaman 
+ALTER TABLE PERMINTAAN 
 ADD COLUMN status_return VARCHAR(20) DEFAULT 'BELUM_DIKEMBALIKAN',
 ADD COLUMN tanggal_kembali DATE,
 ADD COLUMN catatan_kembali TEXT;

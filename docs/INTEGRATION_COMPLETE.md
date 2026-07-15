@@ -1,4 +1,4 @@
-# ✅ INTEGRATION COMPLETE - ALL PHASE 2 FEATURES FULLY INTEGRATED
+﻿# ✅ INTEGRATION COMPLETE - ALL PHASE 2 FEATURES FULLY INTEGRATED
 
 ## 🎉 Status: SEMUA FITUR TERINTEGRASI & SIAP PAKAI
 
@@ -29,8 +29,8 @@
 ```
 01 - Dasbor
 02 - Daftar Barang
-03 - Form Peminjaman
-04 - Laporan Peminjaman
+03 - Form PERMINTAAN
+04 - Laporan PERMINTAAN
 05 - Profil Saya ✨ NEW
 ```
 
@@ -40,7 +40,7 @@
 02 - Daftar Barang
 03 - Import Barang ✨ NEW
 04 - Persetujuan
-05 - Laporan Peminjaman
+05 - Laporan PERMINTAAN
 06 - Pengguna
 07 - Activity Log ✨ NEW
 08 - Profil Admin ✨ NEW
@@ -52,7 +52,7 @@
 
 ### 2. Return Workflow - Fully Integrated ✅
 
-**Lokasi:** `/admin/peminjaman` page
+**Lokasi:** `/admin/PERMINTAAN` page
 
 **Features:**
 - ✅ Tombol "Sudah Dikembalikan" di setiap item DISETUJUI
@@ -66,8 +66,8 @@
 - ✅ Auto-restore stock setelah dikembalikan
 
 **Files Modified:**
-- `src/app/admin/peminjaman/page.tsx` - Added status_return columns to query
-- `src/app/admin/peminjaman/peminjaman-client.tsx` - Integrated ReturnForm component
+- `src/app/admin/PERMINTAAN/page.tsx` - Added status_return columns to query
+- `src/app/admin/PERMINTAAN/PERMINTAAN-client.tsx` - Integrated ReturnForm component
 
 **Component Used:** `src/components/return-form.tsx`
 
@@ -109,9 +109,9 @@
 | Action | Activity Type | Entity | Details |
 |--------|--------------|--------|---------|
 | Login user | `LOGIN` | user | nip, nama, role |
-| Create request | `CREATE_REQUEST` | peminjaman | barang_id, jumlah, keperluan |
-| Approve request | `APPROVE_REQUEST` | peminjaman | status |
-| Reject request | `REJECT_REQUEST` | peminjaman | status, catatan |
+| Create request | `CREATE_REQUEST` | PERMINTAAN | barang_id, jumlah, keperluan |
+| Approve request | `APPROVE_REQUEST` | PERMINTAAN | status |
+| Reject request | `REJECT_REQUEST` | PERMINTAAN | status, catatan |
 | Create barang | `CREATE_BARANG` | barang | kode, nama, kategori |
 | Update barang | `UPDATE_BARANG` | barang | kode, nama, kategori |
 | Delete barang | `DELETE_BARANG` | barang | kode, nama |
@@ -198,8 +198,8 @@ Navigation:
   src/components/sidebar.tsx
 
 Return Workflow:
-  src/app/admin/peminjaman/page.tsx
-  src/app/admin/peminjaman/peminjaman-client.tsx
+  src/app/admin/PERMINTAAN/page.tsx
+  src/app/admin/PERMINTAAN/PERMINTAAN-client.tsx
 
 Excel Export:
   src/app/(user)/laporan/page.tsx
@@ -246,7 +246,7 @@ Bug Fixes:
 - [ ] Check mobile navigation works
 
 **Return Workflow:**
-1. [ ] Go to `/admin/peminjaman`
+1. [ ] Go to `/admin/PERMINTAAN`
 2. [ ] Find DISETUJUI item with "BELUM KEMBALI"
 3. [ ] Click "Sudah Dikembalikan"
 4. [ ] Fill date & catatan
@@ -401,7 +401,7 @@ NIP: 199002022016012002
 Password: user123
 
 # 5. Test checklist:
-✅ Go to "Form Peminjaman" → create request
+✅ Go to "Form PERMINTAAN" → create request
 ✅ Go to "Laporan" → download Excel
 ✅ Go to "Profil Saya" → update profile
 ✅ Check notification bell → see notifications

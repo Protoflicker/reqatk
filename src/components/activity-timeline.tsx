@@ -1,8 +1,8 @@
-import { type PeminjamanDetail } from "@/lib/definitions";
+﻿import { type PermintaanDetail } from "@/lib/definitions";
 import { Icon, type IconName } from "./icon";
 
 type Activity = Pick<
-  PeminjamanDetail,
+  PermintaanDetail,
   "id" | "status" | "nama_barang" | "jumlah" | "satuan" | "created_at"
 >;
 

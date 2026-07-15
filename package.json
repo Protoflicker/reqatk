@@ -1,8 +1,8 @@
-{
+﻿{
   "name": "pinjamatk",
   "version": "1.0.0",
   "private": true,
-  "description": "Sistem peminjaman alat tulis kantor (ATK) berbasis NIP",
+  "description": "Sistem permintaan alat tulis kantor (ATK) berbasis NIP",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

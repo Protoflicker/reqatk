@@ -1,6 +1,6 @@
-import { db } from "@/lib/db";
+﻿import { db } from "@/lib/db";
 import { PageHeader } from "@/components/page-header";
-import { PeminjamanForm } from "@/components/peminjaman-form";
+import { PermintaanForm } from "@/components/permintaan-form";
 import { EmptyState } from "@/components/empty-state";
 import type { Barang } from "@/lib/definitions";
 
@@ -11,7 +11,7 @@ function tanggalHariIniWIB(): string {
   }).format(new Date());
 }
 
-export default async function PeminjamanPage() {
+export default async function PermintaanPage() {
   const sql = db();
   const barangList = (await sql`
     SELECT id, kode, nama, stok, satuan
@@ -22,7 +22,7 @@ export default async function PeminjamanPage() {
   return (
     <>
       <PageHeader
-        title="Form Peminjaman"
+        title="Form Permintaan"
         description="Isi formulir berikut untuk mengajukan permintaan alat tulis kantor. Permintaan akan diverifikasi oleh admin sebelum barang dapat diambil."
       />
 
@@ -33,7 +33,7 @@ export default async function PeminjamanPage() {
         />
       ) : (
         <div className="max-w-3xl">
-          <PeminjamanForm barangList={barangList} today={tanggalHariIniWIB()} />
+          <PermintaanForm barangList={barangList} today={tanggalHariIniWIB()} />
         </div>
       )}
     </>

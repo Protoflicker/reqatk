@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { LoginForm } from "@/components/login-form";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -41,7 +41,7 @@ export default function LoginPage() {
             <span className="text-primary">/ATK</span>
           </h1>
           <p className="mt-8 max-w-[46ch] text-base leading-relaxed text-text-muted">
-            Sistem permintaan dan peminjaman alat tulis kantor. Ajukan
+            Sistem permintaan dan permintaan alat tulis kantor. Ajukan
             kebutuhan, pantau persetujuan, dan lihat riwayat — semua tercatat
             berdasarkan NIP.
           </p>

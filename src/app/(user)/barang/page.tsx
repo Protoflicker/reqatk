@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
@@ -59,7 +59,7 @@ export default async function BarangUserPage({
             Reset
           </Link>
         )}
-        <Link href="/peminjaman" className="neu-btn-primary ml-auto">
+        <Link href="/permintaan" className="neu-btn-primary ml-auto">
           <Icon name="plus" />
           Ajukan Permintaan
         </Link>

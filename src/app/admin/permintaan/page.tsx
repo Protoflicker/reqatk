@@ -1,11 +1,11 @@
-import { db } from "@/lib/db";
+﻿import { db } from "@/lib/db";
 import { PageHeader } from "@/components/page-header";
 import { Alert } from "@/components/alert";
-import { PeminjamanClient } from "./peminjaman-client";
-import type { PeminjamanDetail } from "@/lib/definitions";
+import { PermintaanClient } from "./permintaan-client";
+import type { PermintaanDetail } from "@/lib/definitions";
 
 type BarisAntrean = Pick<
-  PeminjamanDetail,
+  PermintaanDetail,
   | "id"
   | "jumlah"
   | "keperluan"
@@ -18,7 +18,7 @@ type BarisAntrean = Pick<
 > & { stok: number };
 
 type BarisRiwayat = Pick<
-  PeminjamanDetail,
+  PermintaanDetail,
   | "id"
   | "jumlah"
   | "status"
@@ -34,7 +34,7 @@ type BarisRiwayat = Pick<
   barang_id: number;
 };
 
-export default async function AdminPeminjamanPage({
+export default async function AdminPermintaanPage({
   searchParams,
 }: {
   searchParams: Promise<{ err?: string }>;
@@ -47,7 +47,7 @@ export default async function AdminPeminjamanPage({
       SELECT p.id, p.jumlah, p.keperluan, p.tanggal_pinjam,
              u.nip, u.nama AS nama_pengguna,
              b.kode AS kode_barang, b.nama AS nama_barang, b.satuan, b.stok
-      FROM peminjaman p
+      FROM permintaan p
       JOIN pengguna u ON u.id = p.pengguna_id
       JOIN barang b   ON b.id = p.barang_id
       WHERE p.status = 'MENUNGGU'
@@ -58,7 +58,7 @@ export default async function AdminPeminjamanPage({
              p.status_return, p.tanggal_kembali, p.barang_id,
              u.nama AS nama_pengguna,
              b.kode AS kode_barang, b.nama AS nama_barang, b.satuan
-      FROM peminjaman p
+      FROM permintaan p
       JOIN pengguna u ON u.id = p.pengguna_id
       JOIN barang b   ON b.id = p.barang_id
       WHERE p.status IN ('DISETUJUI', 'DITOLAK')
@@ -83,7 +83,7 @@ export default async function AdminPeminjamanPage({
         </Alert>
       )}
 
-      <PeminjamanClient antrean={antrean} keputusan={keputusan} />
+      <PermintaanClient antrean={antrean} keputusan={keputusan} />
     </>
   );
 }

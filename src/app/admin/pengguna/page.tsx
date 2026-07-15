@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { hapusPengguna, resetAktivasi } from "@/lib/actions";
@@ -23,7 +23,7 @@ const ERR_MSG: Record<string, string> = {
   "reset-admin":
     "Akun admin tidak bisa dinonaktifkan (mencegah akun diambil alih). Ubah role-nya menjadi User lewat tombol Ubah bila ingin mencabut akses admin.",
   terpakai:
-    "Pengguna tidak bisa dihapus karena punya riwayat peminjaman. Gunakan Reset untuk mencabut aksesnya.",
+    "Pengguna tidak bisa dihapus karena punya riwayat permintaan. Gunakan Reset untuk mencabut aksesnya.",
   gagal: "Operasi gagal. Coba lagi.",
 };
 

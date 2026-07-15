@@ -1,17 +1,17 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { markAsReturned, markAsNotReturnable } from "@/lib/actions";
 import { Icon } from "./icon";
 
 interface ReturnFormProps {
-  peminjamanId: number;
+  permintaanId: number;
   barangNama: string;
   jumlah: number;
   satuan: string;
 }
 
-export function ReturnForm({ peminjamanId, barangNama, jumlah, satuan }: ReturnFormProps) {
+export function ReturnForm({ permintaanId, barangNama, jumlah, satuan }: ReturnFormProps) {
   const [showModal, setShowModal] = useState(false);
   const [tanggalKembali, setTanggalKembali] = useState(
     new Date().toISOString().slice(0, 10)
@@ -19,7 +19,7 @@ export function ReturnForm({ peminjamanId, barangNama, jumlah, satuan }: ReturnF
 
   const handleNotReturnable = async () => {
     if (confirm("Tandai sebagai tidak perlu dikembalikan (barang habis pakai)?")) {
-      await markAsNotReturnable(peminjamanId);
+      await markAsNotReturnable(permintaanId);
     }
   };
 
@@ -56,13 +56,13 @@ export function ReturnForm({ peminjamanId, barangNama, jumlah, satuan }: ReturnF
               </p>
             </div>
 
-            <form action={markAsReturned.bind(null, peminjamanId)}>
+            <form action={markAsReturned.bind(null, permintaanId)}>
               <div className="mb-4">
-                <label htmlFor={`tgl-kembali-${peminjamanId}`} className="label">
+                <label htmlFor={`tgl-kembali-${permintaanId}`} className="label">
                   Tanggal Pengembalian
                 </label>
                 <input
-                  id={`tgl-kembali-${peminjamanId}`}
+                  id={`tgl-kembali-${permintaanId}`}
                   type="date"
                   name="tanggal_kembali"
                   value={tanggalKembali}
@@ -74,11 +74,11 @@ export function ReturnForm({ peminjamanId, barangNama, jumlah, satuan }: ReturnF
               </div>
 
               <div className="mb-4">
-                <label htmlFor={`catatan-kembali-${peminjamanId}`} className="label">
+                <label htmlFor={`catatan-kembali-${permintaanId}`} className="label">
                   Catatan (Opsional)
                 </label>
                 <textarea
-                  id={`catatan-kembali-${peminjamanId}`}
+                  id={`catatan-kembali-${permintaanId}`}
                   name="catatan_kembali"
                   placeholder="Kondisi barang, keterangan, dll..."
                   rows={3}

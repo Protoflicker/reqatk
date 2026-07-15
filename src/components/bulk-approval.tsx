@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
-import { bulkApprovePeminjaman, bulkRejectPeminjaman } from "@/lib/actions";
+import { bulkApprovePermintaan, bulkRejectPermintaan } from "@/lib/actions";
 import { Icon } from "./icon";
 
 interface BulkApprovalProps {
@@ -21,7 +21,7 @@ export function BulkApproval({ selectedIds, onClear }: BulkApprovalProps) {
 
     setLoading(true);
     try {
-      await bulkApprovePeminjaman(selectedIds);
+      await bulkApprovePermintaan(selectedIds);
       onClear();
     } catch {
       alert("Gagal menyetujui beberapa permintaan. Periksa stok barang.");
@@ -33,7 +33,7 @@ export function BulkApproval({ selectedIds, onClear }: BulkApprovalProps) {
   const handleBulkReject = async () => {
     setLoading(true);
     try {
-      await bulkRejectPeminjaman(selectedIds, rejectNote.trim() || null);
+      await bulkRejectPermintaan(selectedIds, rejectNote.trim() || null);
       setShowRejectModal(false);
       setRejectNote("");
       onClear();

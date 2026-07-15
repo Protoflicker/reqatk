@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
@@ -255,10 +255,10 @@ export async function logout(): Promise<void> {
 }
 
 /* ============================================================
-   PEMINJAMAN — SISI USER
+   PERMINTAAN — SISI USER
    ============================================================ */
 
-export async function ajukanPeminjaman(
+export async function ajukanPermintaan(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
@@ -302,7 +302,7 @@ export async function ajukanPeminjaman(
     barangNama = barang[0].nama;
 
     const result = await sql`
-      INSERT INTO peminjaman (pengguna_id, barang_id, jumlah, keperluan, tanggal_pinjam)
+      INSERT INTO permintaan (pengguna_id, barang_id, jumlah, keperluan, tanggal_pinjam)
       VALUES (${session.id}, ${barangId}, ${jumlah}, ${keperluan}, ${tanggalPinjam})
       RETURNING id
     `;
@@ -313,18 +313,18 @@ export async function ajukanPeminjaman(
     await logActivity(
       session.id,
       "CREATE_REQUEST",
-      "peminjaman",
+      "permintaan",
       newRequestId,
       { barang_id: barangId, barang_nama: barangNama, jumlah, keperluan }
     );
   } catch (e) {
-    console.error("ajukanPeminjaman gagal:", e);
+    console.error("ajukanPermintaan gagal:", e);
     return { error: "Gagal menyimpan permintaan. Coba lagi." };
   }
 
   revalidatePath("/laporan");
   revalidatePath("/dashboard");
-  revalidatePath("/admin/peminjaman");
+  revalidatePath("/admin/permintaan");
   
   // Notify admins about new request
   try {
@@ -338,10 +338,10 @@ export async function ajukanPeminjaman(
 }
 
 /* ============================================================
-   PEMINJAMAN — SISI ADMIN
+   PERMINTAAN — SISI ADMIN
    ============================================================ */
 
-export async function setujuiPeminjaman(
+export async function setujuiPermintaan(
   id: number,
   _formData: FormData
 ): Promise<void> {
@@ -355,7 +355,7 @@ export async function setujuiPeminjaman(
     const rows = (await sql`
       WITH ambil AS (
         SELECT barang_id, jumlah
-        FROM peminjaman
+        FROM permintaan
         WHERE id = ${id} AND status = 'MENUNGGU'
       ),
       kurangi AS (
@@ -365,7 +365,7 @@ export async function setujuiPeminjaman(
         WHERE b.id = a.barang_id AND b.stok >= a.jumlah
         RETURNING b.id
       )
-      UPDATE peminjaman p
+      UPDATE permintaan p
       SET status = 'DISETUJUI', updated_at = now()
       FROM kurangi k
       WHERE p.id = ${id}
@@ -378,20 +378,20 @@ export async function setujuiPeminjaman(
       await logActivity(
         session.id,
         "APPROVE_REQUEST",
-        "peminjaman",
+        "permintaan",
         id,
         { action: "approved", status: "DISETUJUI" }
       );
     }
   } catch (e) {
-    console.error("setujuiPeminjaman gagal:", e);
+    console.error("setujuiPermintaan gagal:", e);
   }
 
-  revalidatePath("/admin/peminjaman");
+  revalidatePath("/admin/permintaan");
   revalidatePath("/admin");
   revalidatePath("/admin/barang");
   if (!berhasil) {
-    redirect("/admin/peminjaman?err=stok");
+    redirect("/admin/permintaan?err=stok");
   }
   
   // Send notification to user
@@ -399,7 +399,7 @@ export async function setujuiPeminjaman(
     const sql = db();
     const [request] = (await sql`
       SELECT p.pengguna_id, p.jumlah, b.nama as barang_nama
-      FROM peminjaman p
+      FROM permintaan p
       JOIN barang b ON b.id = p.barang_id
       WHERE p.id = ${id}
       LIMIT 1
@@ -414,7 +414,7 @@ export async function setujuiPeminjaman(
   }
 }
 
-export async function tolakPeminjaman(
+export async function tolakPermintaan(
   id: number,
   formData: FormData
 ): Promise<void> {
@@ -425,7 +425,7 @@ export async function tolakPeminjaman(
   try {
     const sql = db();
     await sql`
-      UPDATE peminjaman
+      UPDATE permintaan
       SET status = 'DITOLAK', catatan_admin = ${catatan}, updated_at = now()
       WHERE id = ${id} AND status = 'MENUNGGU'
     `;
@@ -434,15 +434,15 @@ export async function tolakPeminjaman(
     await logActivity(
       session.id,
       "REJECT_REQUEST",
-      "peminjaman",
+      "permintaan",
       id,
       { action: "rejected", status: "DITOLAK", catatan }
     );
   } catch (e) {
-    console.error("tolakPeminjaman gagal:", e);
+    console.error("tolakPermintaan gagal:", e);
   }
 
-  revalidatePath("/admin/peminjaman");
+  revalidatePath("/admin/permintaan");
   revalidatePath("/admin");
   
   // Send notification to user
@@ -450,7 +450,7 @@ export async function tolakPeminjaman(
     const sql = db();
     const [request] = (await sql`
       SELECT p.pengguna_id, p.jumlah, b.nama as barang_nama
-      FROM peminjaman p
+      FROM permintaan p
       JOIN barang b ON b.id = p.barang_id
       WHERE p.id = ${id}
       LIMIT 1
@@ -479,48 +479,48 @@ export async function markAsReturned(
   const catatanKembali = String(formData.get("catatan_kembali") ?? "").trim() || null;
 
   if (!tanggalKembali || !/^\d{4}-\d{2}-\d{2}$/.test(tanggalKembali)) {
-    redirect("/admin/peminjaman?err=tanggal");
+    redirect("/admin/permintaan?err=tanggal");
     return;
   }
 
   try {
     const sql = db();
     
-    // Get peminjaman details
-    const [peminjaman] = (await sql`
+    // Get permintaan details
+    const [permintaan] = (await sql`
       SELECT p.barang_id, p.jumlah, p.status
-      FROM peminjaman p
+      FROM permintaan p
       WHERE p.id = ${id} AND p.status = 'DISETUJUI' AND p.status_return = 'BELUM_DIKEMBALIKAN'
       LIMIT 1
     `) as { barang_id: number; jumlah: number; status: string }[];
     
-    if (!peminjaman) {
-      redirect("/admin/peminjaman?err=not-found");
+    if (!permintaan) {
+      redirect("/admin/permintaan?err=not-found");
       return;
     }
     
-    // Update peminjaman status and return stock
+    // Update permintaan status and return stock
     await sql`
       WITH return_stock AS (
         UPDATE barang
-        SET stok = stok + ${peminjaman.jumlah}
-        WHERE id = ${peminjaman.barang_id}
+        SET stok = stok + ${permintaan.jumlah}
+        WHERE id = ${permintaan.barang_id}
         RETURNING id
       )
-      UPDATE peminjaman
+      UPDATE permintaan
       SET 
         status_return = 'DIKEMBALIKAN',
         tanggal_kembali = ${tanggalKembali},
         catatan_kembali = ${catatanKembali},
         updated_at = now()
       FROM return_stock
-      WHERE peminjaman.id = ${id}
+      WHERE permintaan.id = ${id}
     `;
   } catch (e) {
     console.error("markAsReturned gagal:", e);
   }
 
-  revalidatePath("/admin/peminjaman");
+  revalidatePath("/admin/permintaan");
   revalidatePath("/admin/barang");
   revalidatePath("/admin");
 }
@@ -531,7 +531,7 @@ export async function markAsNotReturnable(id: number): Promise<void> {
   try {
     const sql = db();
     await sql`
-      UPDATE peminjaman
+      UPDATE permintaan
       SET status_return = 'TIDAK_PERLU', updated_at = now()
       WHERE id = ${id} AND status = 'DISETUJUI'
     `;
@@ -539,14 +539,14 @@ export async function markAsNotReturnable(id: number): Promise<void> {
     console.error("markAsNotReturnable gagal:", e);
   }
 
-  revalidatePath("/admin/peminjaman");
+  revalidatePath("/admin/permintaan");
 }
 
 /* ============================================================
-   BULK OPERATIONS — PEMINJAMAN
+   BULK OPERATIONS — PERMINTAAN
    ============================================================ */
 
-export async function bulkApprovePeminjaman(ids: number[]): Promise<void> {
+export async function bulkApprovePermintaan(ids: number[]): Promise<void> {
   await requireAdmin();
 
   if (!Array.isArray(ids) || ids.length === 0) {
@@ -561,7 +561,7 @@ export async function bulkApprovePeminjaman(ids: number[]): Promise<void> {
       await sql`
         WITH ambil AS (
           SELECT barang_id, jumlah
-          FROM peminjaman
+          FROM permintaan
           WHERE id = ${id} AND status = 'MENUNGGU'
         ),
         kurangi AS (
@@ -571,23 +571,23 @@ export async function bulkApprovePeminjaman(ids: number[]): Promise<void> {
           WHERE b.id = a.barang_id AND b.stok >= a.jumlah
           RETURNING b.id
         )
-        UPDATE peminjaman p
+        UPDATE permintaan p
         SET status = 'DISETUJUI', updated_at = now()
         FROM kurangi k
         WHERE p.id = ${id}
       `;
     }
   } catch (e) {
-    console.error("bulkApprovePeminjaman gagal:", e);
+    console.error("bulkApprovePermintaan gagal:", e);
     throw e;
   }
 
-  revalidatePath("/admin/peminjaman");
+  revalidatePath("/admin/permintaan");
   revalidatePath("/admin");
   revalidatePath("/admin/barang");
 }
 
-export async function bulkRejectPeminjaman(
+export async function bulkRejectPermintaan(
   ids: number[],
   catatan: string | null
 ): Promise<void> {
@@ -602,16 +602,16 @@ export async function bulkRejectPeminjaman(
     
     // Reject all selected items with the same note
     await sql`
-      UPDATE peminjaman
+      UPDATE permintaan
       SET status = 'DITOLAK', catatan_admin = ${catatan}, updated_at = now()
       WHERE id = ANY(${ids}) AND status = 'MENUNGGU'
     `;
   } catch (e) {
-    console.error("bulkRejectPeminjaman gagal:", e);
+    console.error("bulkRejectPermintaan gagal:", e);
     throw e;
   }
 
-  revalidatePath("/admin/peminjaman");
+  revalidatePath("/admin/permintaan");
   revalidatePath("/admin");
 }
 
@@ -728,7 +728,7 @@ export async function ubahStok(id: number, formData: FormData): Promise<void> {
 
   revalidatePath("/admin/barang");
   revalidatePath("/barang");
-  revalidatePath("/peminjaman");
+  revalidatePath("/permintaan");
   
   // Check for low stock and notify admins
   try {

@@ -1,4 +1,4 @@
-# ✅ Migration Checklist
+﻿# ✅ Migration Checklist
 
 ## Pre-Migration
 
@@ -93,7 +93,7 @@
   - [ ] Grid layout
   - [ ] Detail modal
 
-- [ ] **Peminjaman** (`/peminjaman`)
+- [ ] **PERMINTAAN** (`/PERMINTAAN`)
   - [ ] Request form
   - [ ] Status badges
   - [ ] Date pickers

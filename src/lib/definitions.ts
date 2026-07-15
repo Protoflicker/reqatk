@@ -1,6 +1,6 @@
-export type Role = "admin" | "user";
+﻿export type Role = "admin" | "user";
 
-export type StatusPeminjaman = "MENUNGGU" | "DISETUJUI" | "DITOLAK";
+export type StatusPermintaan = "MENUNGGU" | "DISETUJUI" | "DITOLAK";
 
 export interface Pengguna {
   id: number;
@@ -31,20 +31,20 @@ export interface Barang {
   created_at: string;
 }
 
-export interface Peminjaman {
+export interface Permintaan {
   id: number;
   pengguna_id: number;
   barang_id: number;
   jumlah: number;
   keperluan: string;
-  status: StatusPeminjaman;
+  status: StatusPermintaan;
   tanggal_pinjam: string;
   catatan_admin: string | null;
   created_at: string;
 }
 
-/** Baris peminjaman hasil JOIN dengan pengguna dan barang untuk tabel/laporan. */
-export interface PeminjamanDetail extends Peminjaman {
+/** Baris permintaan hasil JOIN dengan pengguna dan barang untuk tabel/laporan. */
+export interface PermintaanDetail extends Permintaan {
   nip: string;
   nama_pengguna: string;
   kode_barang: string;
@@ -57,7 +57,7 @@ export interface ActionState {
   success?: string;
 }
 
-export const STATUS_LIST: StatusPeminjaman[] = [
+export const STATUS_LIST: StatusPermintaan[] = [
   "MENUNGGU",
   "DISETUJUI",
   "DITOLAK",

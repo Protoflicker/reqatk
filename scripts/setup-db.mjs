@@ -1,10 +1,10 @@
-/**
+﻿/**
  * Setup database Neon untuk PINJAM/ATK.
  *
  * Jalankan:  npm run db:setup
  *
  * Skrip ini:
- *   1. Membuat tabel pengguna, barang, dan peminjaman (bila belum ada)
+ *   1. Membuat tabel pengguna, barang, dan permintaan (bila belum ada)
  *   2. Menanam akun admin + user contoh (bila tabel pengguna kosong)
  *   3. Menanam katalog barang contoh (bila tabel barang kosong)
  *
@@ -109,7 +109,7 @@ async function main() {
   `;
 
   await sql`
-    CREATE TABLE IF NOT EXISTS peminjaman (
+    CREATE TABLE IF NOT EXISTS permintaan (
       id              SERIAL PRIMARY KEY,
       pengguna_id     INTEGER NOT NULL REFERENCES pengguna(id) ON DELETE RESTRICT,
       barang_id       INTEGER NOT NULL REFERENCES barang(id) ON DELETE RESTRICT,
@@ -129,26 +129,26 @@ async function main() {
   // ---- migrasi dari skema lama (yang masih punya alur pengembalian) ----
   // Aman dijalankan berulang; pada database baru semua ini tidak berefek.
   await sql`
-    UPDATE peminjaman SET status = 'DISETUJUI' WHERE status = 'DIKEMBALIKAN'
+    UPDATE permintaan SET status = 'DISETUJUI' WHERE status = 'DIKEMBALIKAN'
   `;
   await sql`
-    ALTER TABLE peminjaman DROP COLUMN IF EXISTS tanggal_kembali
+    ALTER TABLE permintaan DROP COLUMN IF EXISTS tanggal_kembali
   `;
   await sql`
-    ALTER TABLE peminjaman DROP CONSTRAINT IF EXISTS peminjaman_status_check
+    ALTER TABLE permintaan DROP CONSTRAINT IF EXISTS permintaan_status_check
   `;
   await sql`
-    ALTER TABLE peminjaman ADD CONSTRAINT peminjaman_status_check
+    ALTER TABLE permintaan ADD CONSTRAINT permintaan_status_check
     CHECK (status IN ('MENUNGGU', 'DISETUJUI', 'DITOLAK'))
   `;
 
   await sql`
-    CREATE INDEX IF NOT EXISTS idx_peminjaman_pengguna
-    ON peminjaman (pengguna_id, created_at DESC)
+    CREATE INDEX IF NOT EXISTS idx_permintaan_pengguna
+    ON permintaan (pengguna_id, created_at DESC)
   `;
   await sql`
-    CREATE INDEX IF NOT EXISTS idx_peminjaman_status
-    ON peminjaman (status, created_at DESC)
+    CREATE INDEX IF NOT EXISTS idx_permintaan_status
+    ON permintaan (status, created_at DESC)
   `;
   
   // Add min_stok column to existing barang table if not exists
@@ -207,15 +207,15 @@ async function main() {
     ON activity_logs (entity_type, entity_id, created_at DESC)
   `;
 
-  // Add return workflow columns to existing peminjaman table if not exists
+  // Add return workflow columns to existing permintaan table if not exists
   await sql`
     DO $$ 
     BEGIN
       IF NOT EXISTS (
         SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'peminjaman' AND column_name = 'status_return'
+        WHERE table_name = 'permintaan' AND column_name = 'status_return'
       ) THEN
-        ALTER TABLE peminjaman 
+        ALTER TABLE permintaan 
         ADD COLUMN status_return VARCHAR(20) DEFAULT 'BELUM_DIKEMBALIKAN',
         ADD COLUMN tanggal_kembali DATE,
         ADD COLUMN catatan_kembali TEXT;
@@ -223,7 +223,7 @@ async function main() {
     END $$;
   `;
 
-  console.log("    Tabel siap: pengguna, barang, peminjaman, notifications, activity_logs");
+  console.log("    Tabel siap: pengguna, barang, permintaan, notifications, activity_logs");
 
   // ---- seed pengguna ----
   const [{ n: jumlahPengguna }] = await sql`

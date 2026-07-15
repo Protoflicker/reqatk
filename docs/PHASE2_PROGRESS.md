@@ -1,4 +1,4 @@
-# 🚀 Phase 2: Enhanced Features - Progress Report
+﻿# 🚀 Phase 2: Enhanced Features - Progress Report
 
 ## ✅ Status: 40% Complete (2/5 features)
 
@@ -10,7 +10,7 @@
 
 ### Database Changes:
 ```sql
-ALTER TABLE peminjaman 
+ALTER TABLE PERMINTAAN 
 ADD COLUMN status_return VARCHAR(20) DEFAULT 'BELUM_DIKEMBALIKAN',
 ADD COLUMN tanggal_kembali DATE,
 ADD COLUMN catatan_kembali TEXT;
@@ -32,7 +32,7 @@ ADD COLUMN catatan_kembali TEXT;
 ✅ Admin-only feature  
 
 ### Integration Points:
-- TODO: Add return button di admin peminjaman page
+- TODO: Add return button di admin PERMINTAAN page
 - TODO: Filter/view barang belum dikembali
 - TODO: Laporan pengembalian
 
@@ -137,7 +137,7 @@ CREATE TABLE role_permissions (
 
 ### Log Actions to Track:
 - User login/logout
-- Peminjaman create/approve/reject
+- PERMINTAAN create/approve/reject
 - Barang create/update/delete
 - Pengguna create/update/delete
 - Stok adjustments
@@ -212,7 +212,7 @@ ATK-001 | Pulpen | Alat Tulis | pcs | 50 | 10
 **To Complete Phase 2:**
 
 1. **Immediate (2-3 hours):**
-   - Integrate return form into admin peminjaman page
+   - Integrate return form into admin PERMINTAAN page
    - Create activity log viewer page
    - Add logging to all actions
 
@@ -233,7 +233,7 @@ ATK-001 | Pulpen | Alat Tulis | pcs | 50 | 10
 While Phase 2 continues, here are easy integrations:
 
 1. **Add Return Button** (10 min)
-   - In `/admin/peminjaman` page
+   - In `/admin/PERMINTAAN` page
    - Show for DISETUJUI items
    - Use `<ReturnForm>` component
 

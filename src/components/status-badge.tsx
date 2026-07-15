@@ -1,25 +1,25 @@
-import type { StatusPeminjaman } from "@/lib/definitions";
+﻿import type { StatusPermintaan } from "@/lib/definitions";
 
 /* Warna chip status per docs/style.md §30 */
-const STYLE: Record<StatusPeminjaman, string> = {
+const STYLE: Record<StatusPermintaan, string> = {
   MENUNGGU: "badge-warning",
   DISETUJUI: "badge-primary",
   DITOLAK: "badge-danger",
 };
 
-const LABEL: Record<StatusPeminjaman, string> = {
+const LABEL: Record<StatusPermintaan, string> = {
   MENUNGGU: "Menunggu",
   DISETUJUI: "Disetujui",
   DITOLAK: "Ditolak",
 };
 
-const DOT: Record<StatusPeminjaman, string> = {
+const DOT: Record<StatusPermintaan, string> = {
   MENUNGGU: "bg-warning",
   DISETUJUI: "bg-primary",
   DITOLAK: "bg-danger",
 };
 
-export function StatusBadge({ status }: { status: StatusPeminjaman }) {
+export function StatusBadge({ status }: { status: StatusPermintaan }) {
   return (
     <span className={`badge ${STYLE[status]} whitespace-nowrap`}>
       <span

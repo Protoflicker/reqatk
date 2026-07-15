@@ -1,10 +1,10 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { EmptyState } from "@/components/empty-state";
 import { AnalyticsChart } from "@/components/analytics-chart";
 import { LowStockAlert } from "@/components/low-stock-alert";
-import { formatTanggal, type PeminjamanDetail } from "@/lib/definitions";
+import { formatTanggal, type PermintaanDetail } from "@/lib/definitions";
 
 export default async function AdminDashboardPage() {
   const session = await requireAdmin();
@@ -15,8 +15,8 @@ export default async function AdminDashboardPage() {
       SELECT
         (SELECT COUNT(*) FROM barang)                                 AS total_barang,
         (SELECT COUNT(*) FROM barang WHERE stok = 0)                  AS stok_habis,
-        (SELECT COUNT(*) FROM peminjaman WHERE status = 'MENUNGGU')   AS menunggu,
-        (SELECT COUNT(*) FROM peminjaman
+        (SELECT COUNT(*) FROM permintaan WHERE status = 'MENUNGGU')   AS menunggu,
+        (SELECT COUNT(*) FROM permintaan
          WHERE status = 'DISETUJUI'
            AND to_char(tanggal_pinjam, 'YYYY-MM') = to_char(CURRENT_DATE, 'YYYY-MM')
         )                                                             AS disetujui_bulan_ini,
@@ -26,7 +26,7 @@ export default async function AdminDashboardPage() {
       SELECT p.id, p.jumlah, p.keperluan, p.tanggal_pinjam,
              u.nip, u.nama AS nama_pengguna,
              b.kode AS kode_barang, b.nama AS nama_barang, b.satuan, b.stok
-      FROM peminjaman p
+      FROM permintaan p
       JOIN pengguna u ON u.id = p.pengguna_id
       JOIN barang b   ON b.id = p.barang_id
       WHERE p.status = 'MENUNGGU'
@@ -40,7 +40,7 @@ export default async function AdminDashboardPage() {
         COUNT(*) FILTER (WHERE status = 'DISETUJUI') as approved,
         COUNT(*) FILTER (WHERE status = 'MENUNGGU') as pending,
         COUNT(*) FILTER (WHERE status = 'DITOLAK') as rejected
-      FROM peminjaman
+      FROM permintaan
       WHERE tanggal_pinjam >= CURRENT_DATE - INTERVAL '6 months'
       GROUP BY DATE_TRUNC('month', tanggal_pinjam)
       ORDER BY DATE_TRUNC('month', tanggal_pinjam) ASC
@@ -48,7 +48,7 @@ export default async function AdminDashboardPage() {
     // Top 10 most requested items
     sql`
       SELECT b.nama, COUNT(*) as total
-      FROM peminjaman p
+      FROM permintaan p
       JOIN barang b ON b.id = p.barang_id
       WHERE p.created_at >= CURRENT_DATE - INTERVAL '6 months'
       GROUP BY b.id, b.nama
@@ -61,14 +61,14 @@ export default async function AdminDashboardPage() {
         COUNT(*) FILTER (WHERE status = 'DISETUJUI') as approved,
         COUNT(*) FILTER (WHERE status = 'MENUNGGU') as pending,
         COUNT(*) FILTER (WHERE status = 'DITOLAK') as rejected
-      FROM peminjaman
+      FROM permintaan
       WHERE created_at >= CURRENT_DATE - INTERVAL '6 months'
     `,
   ]);
 
   const stat = statRows[0] as Record<string, string>;
   const rows = antrean as unknown as (Pick<
-    PeminjamanDetail,
+    PermintaanDetail,
     | "id"
     | "jumlah"
     | "keperluan"
@@ -145,7 +145,7 @@ export default async function AdminDashboardPage() {
           <h2 className="font-display text-xl font-extrabold tracking-tight text-text">
             Antrean Persetujuan
           </h2>
-          <Link href="/admin/peminjaman" className="neu-btn-primary px-6 py-2 text-sm font-bold">
+          <Link href="/admin/permintaan" className="neu-btn-primary px-6 py-2 text-sm font-bold">
             Proses Antrean
           </Link>
         </div>

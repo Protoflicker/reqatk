@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Notification System
  * Support: Email, In-app notifications
  */
@@ -154,7 +154,7 @@ export async function notifyAdminsNewRequest(pemohonNama: string, barangNama: st
       "NEW_REQUEST",
       "📬 Permintaan Baru",
       `${pemohonNama} mengajukan permintaan ${barangNama}`,
-      "/admin/peminjaman"
+      "/admin/permintaan"
     );
   }
 }

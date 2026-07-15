@@ -1,6 +1,6 @@
-# PINJAM/ATK®
+﻿# PINJAM/ATK®
 
-Sistem permintaan & peminjaman alat tulis kantor (ATK) berbasis NIP, dengan
+Sistem permintaan & PERMINTAAN alat tulis kantor (ATK) berbasis NIP, dengan
 area terpisah untuk **pegawai (user)** dan **admin**. Dibangun di atas
 infrastruktur ringan yang siap deploy ke Vercel dan tetap bisa dijalankan
 lokal untuk troubleshooting.
@@ -86,7 +86,7 @@ USER                          ADMIN
 ----                          -----
 login (NIP + sandi)           login (NIP + sandi)
 cari & lihat daftar barang    kelola katalog barang (CRUD + cari
-ajukan form peminjaman  --->    + tombol stok cepat +/-)
+ajukan form PERMINTAAN  --->    + tombol stok cepat +/-)
   status: MENUNGGU            antrean persetujuan
                                 setujui -> stok berkurang permanen, DISETUJUI
 lihat laporan pribadi           tolak   -> status DITOLAK (+ catatan)
@@ -120,7 +120,7 @@ src/
   app/
     login/                  # halaman masuk
     (user)/                 # area pegawai: dashboard, barang (cari),
-                            #   peminjaman, laporan (+ export PDF)
+                            #   PERMINTAAN, laporan (+ export PDF)
     admin/                  # area admin: dashboard, barang (cari + stok cepat),
                             #   persetujuan, laporan (+ export PDF & CSV), pengguna
 ```

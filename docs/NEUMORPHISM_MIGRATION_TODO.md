@@ -1,4 +1,4 @@
-# Neumorphism Migration Guide
+﻿# Neumorphism Migration Guide
 
 ## ✅ Sudah Selesai
 
@@ -26,12 +26,12 @@
 
 ### 3. Updated Pages
 - [x] `src/app/admin/page.tsx` - Dashboard dengan analytics charts
-- [x] `src/app/admin/peminjaman/page.tsx` - Dengan bulk approval & pagination
-- [x] `src/app/admin/peminjaman/peminjaman-client.tsx` - Client component wrapper
+- [x] `src/app/admin/PERMINTAAN/page.tsx` - Dengan bulk approval & pagination
+- [x] `src/app/admin/PERMINTAAN/PERMINTAAN-client.tsx` - Client component wrapper
 - [x] `src/components/app-shell.tsx` - Neumorphic header/footer
 
 ### 4. Updated Actions
-- [x] `src/lib/actions.ts` - Added `bulkApprovePeminjaman` dan `bulkRejectPeminjaman`
+- [x] `src/lib/actions.ts` - Added `bulkApprovePERMINTAAN` dan `bulkRejectPERMINTAAN`
 
 ### 5. Dependencies
 - [x] Installed `chart.js` and `react-chartjs-2`
@@ -57,9 +57,9 @@
 ### Low Priority (User pages)
 - [ ] `src/app/(user)/dashboard/page.tsx` - User dashboard
 - [ ] `src/app/(user)/barang/page.tsx` - Browse items
-- [ ] `src/app/(user)/peminjaman/page.tsx` - Borrow form
+- [ ] `src/app/(user)/PERMINTAAN/page.tsx` - Borrow form
 - [ ] `src/app/(user)/laporan/page.tsx` - User reports
-- [ ] `src/components/peminjaman-form.tsx` - Borrow form
+- [ ] `src/components/PERMINTAAN-form.tsx` - Borrow form
 - [ ] `src/components/empty-state.tsx` - Empty states
 - [ ] `src/components/stat-tile.tsx` - Stat cards
 

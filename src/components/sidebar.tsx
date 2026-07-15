@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -103,7 +103,7 @@ export function Sidebar({
   return (
     <>
       {/* ===== Desktop: sidebar tetap di kiri ===== */}
-      <aside className={`fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-border-light bg-white transition-all duration-300 md:flex ${isCollapsed ? 'w-[4.5rem]' : 'w-[16rem]'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-border-light bg-surface transition-all duration-300 md:flex ${isCollapsed ? 'w-[4.5rem]' : 'w-[16rem]'}`}>
         {/* Header / Logo + Toggle */}
         <div className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-5' : 'justify-between p-6'}`}>
           {!isCollapsed && (
@@ -115,8 +115,8 @@ export function Sidebar({
             onClick={onToggleCollapse}
             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-all ${
               isCollapsed 
-                ? 'bg-[#0075DE] text-white shadow-md hover:bg-[#005bb5]' 
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-primary text-white shadow-md hover:bg-primary-dark' 
+                : 'bg-bg-mid text-text-muted hover:bg-border'
             }`}
           >
             <Icon name="chevron_left" className={`text-lg transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} />
@@ -130,11 +130,11 @@ export function Sidebar({
               {/* Divider with Text — hidden when collapsed */}
               {!isCollapsed && (
                 <div className="mb-3 flex items-center gap-4">
-                  <div className="h-px flex-1 bg-gray-200"></div>
-                  <p className="text-[11px] font-extrabold uppercase tracking-widest text-gray-500">
+                  <div className="h-px flex-1 bg-border-light"></div>
+                  <p className="text-[11px] font-extrabold uppercase tracking-widest text-text-muted">
                     {section.title}
                   </p>
-                  <div className="h-px flex-1 bg-gray-200"></div>
+                  <div className="h-px flex-1 bg-border-light"></div>
                 </div>
               )}
 
@@ -151,25 +151,25 @@ export function Sidebar({
                           isCollapsed 
                             ? `justify-center rounded-xl p-2.5 ${
                                 active 
-                                  ? "bg-[rgba(0,117,222,0.10)] text-[#0075DE]" 
-                                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                                  ? "bg-primary/10 text-primary" 
+                                  : "text-text-muted hover:bg-bg-mid hover:text-text"
                               }` 
                             : `gap-4 rounded-xl border p-3 ${
                                 active
-                                  ? "border-[rgba(0,117,222,0.22)] bg-[rgba(0,117,222,0.10)]"
-                                  : "border-transparent hover:bg-gray-50"
+                                  ? "border-primary/22 bg-primary/10"
+                                  : "border-transparent hover:bg-bg-mid"
                               }`
                         }`}
                       >
-                        <div className={`flex items-center justify-center ${active ? "text-[#0075DE]" : isCollapsed ? "" : "text-gray-500"}`}>
+                        <div className={`flex items-center justify-center ${active ? "text-primary" : isCollapsed ? "" : "text-text-muted"}`}>
                           <Icon name={item.icon} className={isCollapsed ? "text-[1.4rem]" : "text-[1.3rem]"} />
                         </div>
                         {!isCollapsed && (
                           <div className="flex flex-col">
-                            <span className={`text-[15px] font-bold ${active ? "text-[#0075DE]" : "text-gray-700"}`}>
+                            <span className={`text-[15px] font-bold ${active ? "text-primary" : "text-text"}`}>
                               {item.label}
                             </span>
-                            <span className={`text-xs ${active ? "text-[#0075DE]" : "text-gray-500"}`}>
+                            <span className={`text-xs ${active ? "text-primary" : "text-text-muted"}`}>
                               {item.subtitle}
                             </span>
                           </div>
@@ -187,26 +187,26 @@ export function Sidebar({
         <div className={`p-4 ${isCollapsed ? 'flex justify-center' : ''}`}>
           {isCollapsed ? (
             /* Collapsed: just show avatar circle */
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#dc2626] text-sm font-bold text-white cursor-pointer" title={`${nama} — Keluar`}>
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white cursor-pointer" title={`${nama} — Keluar`}>
               <Icon name="user" className="text-lg" />
             </div>
           ) : (
             /* Expanded: full profile card */
-            <div className="flex items-center justify-between rounded-2xl bg-gray-50 p-3 border border-gray-100">
+            <div className="flex items-center justify-between rounded-2xl bg-bg-mid p-3 border border-border-light">
               <div className="flex items-center gap-3 overflow-hidden">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#0075DE] text-sm font-bold text-white">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
                   {initials}
                 </div>
                 <div className="flex flex-col overflow-hidden">
-                  <p className="truncate text-sm font-bold text-gray-900">{nama}</p>
-                  <div className="text-[11px] font-mono text-gray-500 leading-tight">
+                  <p className="truncate text-sm font-bold text-text">{nama}</p>
+                  <div className="text-[11px] font-mono text-text-muted leading-tight">
                     <p>NIP</p>
                     <p className="truncate">{nip}</p>
                   </div>
                 </div>
               </div>
               <form action={logout} className="ml-2 shrink-0">
-                <button type="submit" className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100">
+                <button type="submit" className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-text-muted hover:bg-bg-mid hover:text-text">
                   Keluar
                 </button>
               </form>

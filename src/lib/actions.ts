@@ -1150,5 +1150,6 @@ function isUniqueViolation(e: unknown): boolean {
 }
 
 function isForeignKeyViolation(e: unknown): boolean {
-  return pgCode(e) === "23503";
+  const code = pgCode(e);
+  return code === "23503" || code === "23001";
 }

@@ -8,6 +8,7 @@ export interface ImportRow {
   kode: string;
   nama: string;
   kategori: string;
+  jenis: string;
   satuan: string;
   stok: number;
   min_stok: number;
@@ -45,7 +46,7 @@ export function parseExcelFile(buffer: Buffer): ImportResult {
         return;
       }
 
-      const [kode, nama, kategori, satuan, stok, min_stok] = row;
+      const [kode, nama, kategori, jenis, satuan, stok, min_stok] = row;
 
       // Validate
       if (!kode || typeof kode !== "string") {
@@ -79,6 +80,7 @@ export function parseExcelFile(buffer: Buffer): ImportResult {
         kode: String(kode).trim().toUpperCase(),
         nama: String(nama).trim(),
         kategori: String(kategori).trim(),
+        jenis: jenis ? String(jenis).trim() : "",
         satuan: satuan ? String(satuan).trim() : "pcs",
         stok: stokNum,
         min_stok: minStokNum,
@@ -107,9 +109,9 @@ export function parseExcelFile(buffer: Buffer): ImportResult {
  */
 export function generateTemplate(): Buffer {
   const data = [
-    ["Kode", "Nama", "Kategori", "Satuan", "Stok", "Min Stok"],
-    ["ATK-XXX", "Contoh Barang", "Alat Tulis", "pcs", 50, 10],
-    ["KRT-XXX", "Contoh Kertas", "Kertas", "rim", 30, 5],
+    ["Kode", "Nama", "Kategori", "Jenis", "Satuan", "Stok", "Min Stok"],
+    ["ATK-XXX", "Contoh Barang", "Barang Konsumsi", "Alat Tulis", "pcs", 50, 10],
+    ["KRT-XXX", "Contoh Kertas", "Barang Konsumsi", "Kertas HVS", "rim", 30, 5],
   ];
 
   const worksheet = XLSX.utils.aoa_to_sheet(data);
@@ -118,7 +120,8 @@ export function generateTemplate(): Buffer {
   worksheet["!cols"] = [
     { wch: 15 }, // Kode
     { wch: 30 }, // Nama
-    { wch: 15 }, // Kategori
+    { wch: 20 }, // Kategori
+    { wch: 25 }, // Jenis
     { wch: 10 }, // Satuan
     { wch: 10 }, // Stok
     { wch: 10 }, // Min Stok

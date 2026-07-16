@@ -145,6 +145,7 @@ export default function ImportBarangPage() {
                   <th>Kode</th>
                   <th>Nama</th>
                   <th>Kategori</th>
+                  <th>Jenis</th>
                   <th>Satuan</th>
                   <th>Stok</th>
                   <th>Min Stok</th>
@@ -156,6 +157,7 @@ export default function ImportBarangPage() {
                     <td className="font-mono text-[13px] font-semibold">{item.kode}</td>
                     <td className="font-semibold">{item.nama}</td>
                     <td className="text-text-muted">{item.kategori}</td>
+                    <td className="text-text-muted">{item.jenis}</td>
                     <td className="text-text-muted">{item.satuan}</td>
                     <td className="tnum">{item.stok}</td>
                     <td className="tnum">{item.min_stok}</td>

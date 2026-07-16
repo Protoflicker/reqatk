@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { db } from "@/lib/db";
 import { hapusBarang, ubahStok } from "@/lib/actions";
 import { PageHeader } from "@/components/page-header";
@@ -31,13 +31,14 @@ export default async function AdminBarangPage({
   const sql = db();
 
   const rows = (await sql`
-    SELECT id, kode, nama, kategori, satuan, stok, created_at
+    SELECT id, kode, nama, kategori, jenis, satuan, stok, created_at
     FROM barang
     WHERE (${q}::text IS NULL
            OR nama     ILIKE '%' || ${q} || '%'
            OR kode     ILIKE '%' || ${q} || '%'
-           OR kategori ILIKE '%' || ${q} || '%')
-    ORDER BY kategori ASC, nama ASC
+           OR kategori ILIKE '%' || ${q} || '%'
+           OR jenis    ILIKE '%' || ${q} || '%')
+    ORDER BY kategori ASC, jenis ASC, nama ASC
   `) as unknown as Barang[];
 
   const editId = params.edit ? Number(params.edit) : null;
@@ -74,7 +75,7 @@ export default async function AdminBarangPage({
             name="q"
             type="search"
             defaultValue={q ?? ""}
-            placeholder="kode / nama / kategori..."
+            placeholder="kode / nama / kategori / jenis..."
             className="input"
           />
         </div>
@@ -114,6 +115,7 @@ export default async function AdminBarangPage({
                 <th>Kode</th>
                 <th>Nama Barang</th>
                 <th>Kategori</th>
+                <th>Jenis</th>
                 <th>Stok</th>
                 <th>Satuan</th>
                 <th>Stok Cepat</th>
@@ -130,6 +132,7 @@ export default async function AdminBarangPage({
                   <td>
                     <span className="badge">{b.kategori}</span>
                   </td>
+                  <td className="text-text-muted text-[13px]">{b.jenis}</td>
                   <td
                     className={`tnum font-bold ${b.stok === 0 ? "text-danger" : ""}`}
                   >

@@ -10,7 +10,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "db:setup": "node scripts/setup-db.mjs"
+    "db:setup": "node scripts/setup-db.mjs",
+    "db:seed-excel": "node scripts/seed-from-excel.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",

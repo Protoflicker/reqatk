@@ -43,11 +43,11 @@ export function BarangForm({ editData }: { editData: Barang | null }) {
 
       {editData && <input type="hidden" name="id" value={editData.id} />}
 
-      <div className="grid gap-5 p-5 md:grid-cols-4">
+      <div className="grid gap-5 p-5 md:grid-cols-6">
         {state.error && (
           <div
             role="alert"
-            className="flex items-start gap-2.5 rounded-[var(--radius)] border border-[rgba(224,62,62,0.3)] bg-[rgba(224,62,62,0.1)] p-3 text-sm font-medium text-danger md:col-span-4"
+            className="flex items-start gap-2.5 rounded-[var(--radius)] border border-[rgba(224,62,62,0.3)] bg-[rgba(224,62,62,0.1)] p-3 text-sm font-medium text-danger md:col-span-6"
           >
             <Icon name="alert" className="mt-0.5 shrink-0" />
             <span>{state.error}</span>
@@ -70,7 +70,7 @@ export function BarangForm({ editData }: { editData: Barang | null }) {
           />
         </div>
 
-        <div className="md:col-span-2">
+        <div className="md:col-span-3">
           <label htmlFor="nama" className="label">
             Nama Barang
           </label>
@@ -95,6 +95,20 @@ export function BarangForm({ editData }: { editData: Barang | null }) {
             type="text"
             required
             defaultValue={editData?.kategori ?? ""}
+            placeholder="cth. Barang Konsumsi"
+            className="input"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="jenis" className="label">
+            Jenis
+          </label>
+          <input
+            id="jenis"
+            name="jenis"
+            type="text"
+            defaultValue={editData?.jenis ?? ""}
             placeholder="cth. Alat Tulis"
             className="input"
           />
@@ -130,7 +144,7 @@ export function BarangForm({ editData }: { editData: Barang | null }) {
           />
         </div>
 
-        <div className="flex items-end md:col-span-2">
+        <div className="flex items-end md:col-span-6">
           <button
             type="submit"
             disabled={pending}

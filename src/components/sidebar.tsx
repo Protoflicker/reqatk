@@ -103,7 +103,7 @@ export function Sidebar({
   return (
     <>
       {/* ===== Desktop: sidebar tetap di kiri ===== */}
-      <aside className={`fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-border-light bg-surface transition-all duration-300 md:flex ${isCollapsed ? 'w-[4.5rem]' : 'w-[16rem]'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-border-light bg-surface md:flex ${isCollapsed ? 'w-[4.5rem]' : 'w-[16rem]'}`}>
         {/* Header / Logo + Toggle */}
         <div className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-5' : 'justify-between p-6'}`}>
           {!isCollapsed && (
@@ -113,7 +113,7 @@ export function Sidebar({
           )}
           <button 
             onClick={onToggleCollapse}
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-all ${
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
               isCollapsed 
                 ? 'bg-primary text-white shadow-md hover:bg-primary-dark' 
                 : 'bg-bg-mid text-text-muted hover:bg-border'
@@ -147,7 +147,7 @@ export function Sidebar({
                         href={item.href}
                         title={isCollapsed ? item.label : undefined}
                         aria-current={active ? "page" : undefined}
-                        className={`group flex items-center transition-all ${
+                        className={`group flex items-center hover:-translate-y-0.5 transition-transform ${
                           isCollapsed 
                             ? `justify-center rounded-xl p-2.5 ${
                                 active 

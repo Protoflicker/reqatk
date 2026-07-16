@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Setup database Neon untuk PINJAM/ATK.
  *
  * Jalankan:  npm run db:setup
@@ -51,23 +51,9 @@ if (!url) {
 
 const sql = neon(url);
 
-const BARANG_CONTOH = [
-  ["ATK-001", "Pulpen Gel Hitam 0.5", "Alat Tulis", "pcs", 60],
-  ["ATK-002", "Pensil 2B", "Alat Tulis", "pcs", 48],
-  ["ATK-003", "Spidol Whiteboard Hitam", "Alat Tulis", "pcs", 24],
-  ["ATK-004", "Penghapus Whiteboard", "Alat Tulis", "pcs", 10],
-  ["KRT-001", "Kertas HVS A4 70gsm", "Kertas", "rim", 30],
-  ["KRT-002", "Kertas HVS F4 70gsm", "Kertas", "rim", 20],
-  ["KRT-003", "Amplop Putih Panjang", "Kertas", "box", 15],
-  ["KRT-004", "Sticky Notes 76x76", "Kertas", "pad", 40],
-  ["ARS-001", "Map Ordner Besar", "Arsip", "pcs", 25],
-  ["ARS-002", "Stopmap Folio", "Arsip", "pcs", 100],
-  ["ARS-003", "Binder Clip No. 200", "Arsip", "box", 18],
-  ["PRK-001", "Stapler HD-10", "Perkakas", "pcs", 12],
-  ["PRK-002", "Isi Staples No. 10", "Perkakas", "box", 50],
-  ["PRK-003", "Gunting Kertas Sedang", "Perkakas", "pcs", 8],
-  ["PRK-004", "Cutter Besar + Isi", "Perkakas", "pcs", 6],
-];
+const BARANG_CONTOH = [];
+// Sekarang seed barang dikelola oleh scripts/seed-from-excel.mjs
+// Data dari Data Persediaan.xlsx
 
 async function main() {
   console.log(">>> PINJAM/ATK — setup database Neon");
@@ -160,6 +146,19 @@ async function main() {
         WHERE table_name = 'barang' AND column_name = 'min_stok'
       ) THEN
         ALTER TABLE barang ADD COLUMN min_stok INTEGER NOT NULL DEFAULT 10;
+      END IF;
+    END $$;
+  `;
+
+  // Add jenis column to existing barang table if not exists
+  await sql`
+    DO $$ 
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'barang' AND column_name = 'jenis'
+      ) THEN
+        ALTER TABLE barang ADD COLUMN jenis VARCHAR(100) NOT NULL DEFAULT '';
       END IF;
     END $$;
   `;

@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
@@ -15,13 +15,14 @@ export default async function BarangUserPage({
 
   const sql = db();
   const rows = (await sql`
-    SELECT id, kode, nama, kategori, satuan, stok
+    SELECT id, kode, nama, kategori, jenis, satuan, stok
     FROM barang
     WHERE (${q}::text IS NULL
            OR nama     ILIKE '%' || ${q} || '%'
            OR kode     ILIKE '%' || ${q} || '%'
-           OR kategori ILIKE '%' || ${q} || '%')
-    ORDER BY kategori ASC, nama ASC
+           OR kategori ILIKE '%' || ${q} || '%'
+           OR jenis    ILIKE '%' || ${q} || '%')
+    ORDER BY kategori ASC, jenis ASC, nama ASC
   `) as unknown as Barang[];
 
   const habis = rows.filter((b) => b.stok === 0).length;
@@ -91,6 +92,7 @@ export default async function BarangUserPage({
                 <th>Kode</th>
                 <th>Nama Barang</th>
                 <th>Kategori</th>
+                <th>Jenis</th>
                 <th>Stok</th>
                 <th>Satuan</th>
                 <th>Ketersediaan</th>
@@ -106,6 +108,7 @@ export default async function BarangUserPage({
                   <td>
                     <span className="badge">{b.kategori}</span>
                   </td>
+                  <td className="text-text-muted text-[13px]">{b.jenis}</td>
                   <td
                     className={`tnum font-bold ${b.stok === 0 ? "text-danger" : ""}`}
                   >

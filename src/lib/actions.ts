@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
@@ -630,6 +630,7 @@ export async function simpanBarang(
   const kode = String(formData.get("kode") ?? "").trim().toUpperCase();
   const nama = String(formData.get("nama") ?? "").trim();
   const kategori = String(formData.get("kategori") ?? "").trim();
+  const jenis = String(formData.get("jenis") ?? "").trim();
   const satuan = String(formData.get("satuan") ?? "").trim() || "pcs";
   const stok = Number(formData.get("stok"));
 
@@ -652,7 +653,7 @@ export async function simpanBarang(
       await sql`
         UPDATE barang
         SET kode = ${kode}, nama = ${nama}, kategori = ${kategori},
-            satuan = ${satuan}, stok = ${stok}
+            jenis = ${jenis}, satuan = ${satuan}, stok = ${stok}
         WHERE id = ${id}
       `;
       
@@ -662,12 +663,12 @@ export async function simpanBarang(
         "UPDATE_BARANG",
         "barang",
         id,
-        { kode, nama, kategori, satuan, stok }
+        { kode, nama, kategori, jenis, satuan, stok }
       );
     } else {
       const result = await sql`
-        INSERT INTO barang (kode, nama, kategori, satuan, stok)
-        VALUES (${kode}, ${nama}, ${kategori}, ${satuan}, ${stok})
+        INSERT INTO barang (kode, nama, kategori, jenis, satuan, stok)
+        VALUES (${kode}, ${nama}, ${kategori}, ${jenis}, ${satuan}, ${stok})
         RETURNING id
       `;
       
@@ -679,7 +680,7 @@ export async function simpanBarang(
         "CREATE_BARANG",
         "barang",
         newId,
-        { kode, nama, kategori, satuan, stok }
+        { kode, nama, kategori, jenis, satuan, stok }
       );
     }
   } catch (e: unknown) {

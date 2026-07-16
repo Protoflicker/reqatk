@@ -1,4 +1,4 @@
-﻿export type Role = "admin" | "user";
+export type Role = "admin" | "user";
 
 export type StatusPermintaan = "MENUNGGU" | "DISETUJUI" | "DITOLAK";
 
@@ -26,6 +26,7 @@ export interface Barang {
   kode: string;
   nama: string;
   kategori: string;
+  jenis: string;
   satuan: string;
   stok: number;
   created_at: string;

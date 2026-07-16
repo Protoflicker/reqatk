@@ -24,11 +24,12 @@ export async function POST(request: NextRequest) {
     for (const item of data as ImportRow[]) {
       try {
         await sql`
-          INSERT INTO barang (kode, nama, kategori, satuan, stok, min_stok)
+          INSERT INTO barang (kode, nama, kategori, jenis, satuan, stok, min_stok)
           VALUES (
             ${item.kode},
             ${item.nama},
             ${item.kategori},
+            ${item.jenis},
             ${item.satuan},
             ${item.stok},
             ${item.min_stok}

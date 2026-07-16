@@ -118,9 +118,6 @@ async function main() {
     UPDATE permintaan SET status = 'DISETUJUI' WHERE status = 'DIKEMBALIKAN'
   `;
   await sql`
-    ALTER TABLE permintaan DROP COLUMN IF EXISTS tanggal_kembali
-  `;
-  await sql`
     ALTER TABLE permintaan DROP CONSTRAINT IF EXISTS permintaan_status_check
   `;
   await sql`
@@ -214,10 +211,21 @@ async function main() {
         SELECT 1 FROM information_schema.columns 
         WHERE table_name = 'permintaan' AND column_name = 'status_return'
       ) THEN
-        ALTER TABLE permintaan 
-        ADD COLUMN status_return VARCHAR(20) DEFAULT 'BELUM_DIKEMBALIKAN',
-        ADD COLUMN tanggal_kembali DATE,
-        ADD COLUMN catatan_kembali TEXT;
+        ALTER TABLE permintaan ADD COLUMN status_return VARCHAR(20) DEFAULT 'BELUM_DIKEMBALIKAN';
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'permintaan' AND column_name = 'tanggal_kembali'
+      ) THEN
+        ALTER TABLE permintaan ADD COLUMN tanggal_kembali DATE;
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'permintaan' AND column_name = 'catatan_kembali'
+      ) THEN
+        ALTER TABLE permintaan ADD COLUMN catatan_kembali TEXT;
       END IF;
     END $$;
   `;

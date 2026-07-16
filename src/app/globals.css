@@ -511,6 +511,12 @@ html[data-theme="dark"] {
     border-radius: var(--radius);
     padding: 1.15rem 1.25rem;
     box-shadow: var(--shadow-sm);
+    transition: transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+  }
+  
+  .sesd-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
   }
 
   .sesd-stat-num {

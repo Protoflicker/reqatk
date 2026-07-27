@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useRef, useEffect } from "react";
 import { ajukanPermintaan } from "@/lib/actions";
 import type { ActionState, Barang } from "@/lib/definitions";
 import { Icon } from "./icon";
@@ -20,50 +20,59 @@ export function PermintaanForm({
   );
   
   const [searchQuery, setSearchQuery] = useState("");
-  const [barangId, setBarangId] = useState<string>("");
-  const [jumlahStr, setJumlahStr] = useState<string>("1");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  
   const [cart, setCart] = useState<{barang_id: number; jumlah: number; nama: string; satuan: string; kode: string; maxStok: number}[]>([]);
+
+  // Tutup dropdown jika klik di luar area
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const filteredBarang = barangList.filter((b) =>
     (b.nama.toLowerCase() + " " + b.kode.toLowerCase()).includes(searchQuery.toLowerCase())
   );
 
-  const dipilih = barangList.find((b) => String(b.id) === barangId);
-  const jumlah = parseInt(jumlahStr) || 0;
-
-  const handleAddToCart = () => {
-    if (!dipilih || jumlah <= 0) return;
+  const handleSelectBarang = (b: typeof barangList[0]) => {
+    if (b.stok <= 0) return; // Tidak bisa pilih barang habis
     
-    // Check if already in cart
-    const existingIndex = cart.findIndex((c) => c.barang_id === dipilih.id);
-    let newCart = [...cart];
-    
-    if (existingIndex >= 0) {
-      const newJumlah = newCart[existingIndex].jumlah + jumlah;
-      if (newJumlah > dipilih.stok) {
-        alert(`Total permintaan untuk ${dipilih.nama} melebihi stok (${dipilih.stok}).`);
-        return;
+    setCart((prev) => {
+      const existing = prev.find(item => item.barang_id === b.id);
+      if (existing) {
+        if (existing.jumlah >= b.stok) return prev; // Maksimal stok
+        return prev.map(item => 
+          item.barang_id === b.id ? { ...item, jumlah: item.jumlah + 1 } : item
+        );
       }
-      newCart[existingIndex].jumlah = newJumlah;
-    } else {
-      if (jumlah > dipilih.stok) {
-        alert(`Jumlah melebihi stok (${dipilih.stok}).`);
-        return;
-      }
-      newCart.push({
-        barang_id: dipilih.id,
-        jumlah,
-        nama: dipilih.nama,
-        satuan: dipilih.satuan,
-        kode: dipilih.kode,
-        maxStok: dipilih.stok,
-      });
-    }
+      return [...prev, {
+        barang_id: b.id,
+        jumlah: 1,
+        nama: b.nama,
+        satuan: b.satuan,
+        kode: b.kode,
+        maxStok: b.stok
+      }];
+    });
     
-    setCart(newCart);
-    setBarangId("");
-    setJumlahStr("1");
     setSearchQuery("");
+    setIsDropdownOpen(false);
+  };
+
+  const updateQuantity = (id: number, newJumlah: number) => {
+    setCart(prev => prev.map(item => {
+      if (item.barang_id === id) {
+        const validJumlah = Math.max(1, Math.min(newJumlah, item.maxStok));
+        return { ...item, jumlah: validJumlah };
+      }
+      return item;
+    }));
   };
 
   const removeFromCart = (idToRemove: number) => {
@@ -74,232 +83,191 @@ export function PermintaanForm({
     <form
       action={formAction}
       noValidate
-      className="space-y-6 md:space-y-8"
+      className="overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface shadow-(--shadow-card)"
     >
-      {state.error && (
-        <div
-          role="alert"
-          className="flex items-start gap-3 rounded-xl border-2 border-[rgba(224,62,62,0.3)] bg-[rgba(224,62,62,0.1)] p-4 text-base font-bold text-danger"
-        >
-          <Icon name="alert" className="mt-0.5 shrink-0 text-xl" />
-          <span>{state.error}</span>
-        </div>
-      )}
-
-      {/* Input Hidden untuk Keranjang */}
-      <input type="hidden" name="cart_data" value={JSON.stringify(cart)} />
-
-      {/* Langkah 1 */}
-      <div className="overflow-hidden rounded-2xl border-2 border-border bg-surface shadow-sm">
-        <div className="border-b-2 border-border bg-bg-mid px-5 py-4 sm:px-6 sm:py-5">
-          <h3 className="flex items-center gap-3 text-lg sm:text-xl font-bold text-text">
-            <span className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-primary text-white text-base sm:text-lg">1</span>
-            Pilih Barang yang Dibutuhkan
-          </h3>
-          <p className="mt-2 text-sm sm:text-base text-text-muted pl-11 sm:pl-13">
-            Cari barang yang ingin Anda minta, lalu tentukan jumlahnya.
-          </p>
-        </div>
-
-        <div className="p-5 sm:p-6 space-y-6">
-          <div className="space-y-2">
-            <label htmlFor="search_barang" className="block text-base font-semibold text-text">
-              Langkah 1A: Cari Nama / Kode Barang
-            </label>
-            <div className="relative">
-              <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted text-xl" />
-              <input
-                id="search_barang"
-                type="text"
-                placeholder="Ketik nama barang disini (contoh: Kertas A4)..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl border-2 border-border-light bg-surface py-3 sm:py-4 pl-12 pr-4 text-base sm:text-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-              />
-            </div>
-          </div>
-
-          <div className="rounded-xl border-2 border-border-light bg-bg-mid/50 p-4 sm:p-5">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-              <div className="flex-1 space-y-2">
-                <label className="block text-base font-semibold text-text">
-                  Langkah 1B: Pilih Barang dari Hasil Pencarian
-                </label>
-                <select
-                  value={barangId}
-                  onChange={(e) => setBarangId(e.target.value)}
-                  className="w-full rounded-xl border-2 border-border bg-surface p-3 sm:p-4 text-base sm:text-lg font-medium focus:border-primary focus:outline-none transition-all"
-                >
-                  <option value="">— Klik disini untuk memilih barang ({filteredBarang.length} hasil) —</option>
-                  {filteredBarang.map((b) => (
-                    <option key={b.id} value={b.id} disabled={b.stok === 0}>
-                      {b.kode} - {b.nama} {b.stok === 0 ? "(HABIS)" : `(Sisa Stok: ${b.stok} ${b.satuan})`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="w-full sm:w-32 space-y-2">
-                <label htmlFor="jumlah_temp" className="block text-base font-semibold text-text">
-                  Jumlah
-                </label>
-                <input
-                  id="jumlah_temp"
-                  type="number"
-                  min={1}
-                  max={dipilih?.stok ?? undefined}
-                  value={jumlahStr}
-                  onChange={(e) => setJumlahStr(e.target.value)}
-                  className="w-full rounded-xl border-2 border-border bg-surface p-3 sm:p-4 text-center text-lg font-bold focus:border-primary focus:outline-none transition-all disabled:opacity-50"
-                  disabled={!dipilih}
-                />
-              </div>
-
-              <div className="w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={handleAddToCart}
-                  disabled={!dipilih || jumlah <= 0 || jumlah > (dipilih?.stok || 0)}
-                  className="w-full rounded-xl bg-primary px-6 py-3 sm:py-4 text-base sm:text-lg font-bold text-white shadow-md transition-all hover:bg-primary/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  <Icon name="plus" className="text-xl" /> Tambahkan ke Daftar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="border-b border-border bg-bg-mid px-5 py-3">
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-text-muted">
+          Formulir Permintaan Alat Tulis Kantor
+        </p>
       </div>
 
-      {/* Langkah 2 */}
-      <div className="overflow-hidden rounded-2xl border-2 border-border bg-surface shadow-sm">
-        <div className="border-b-2 border-border bg-bg-mid px-5 py-4 sm:px-6 sm:py-5">
-          <h3 className="flex items-center gap-3 text-lg sm:text-xl font-bold text-text">
-            <span className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-primary text-white text-base sm:text-lg">2</span>
-            Daftar Barang yang Diminta
-          </h3>
-          <p className="mt-2 text-sm sm:text-base text-text-muted pl-11 sm:pl-13">
-            Periksa kembali barang-barang yang sudah Anda tambahkan sebelum diajukan.
-          </p>
-        </div>
+      <div className="grid gap-6 p-5 md:grid-cols-2">
+        {state.error && (
+          <div
+            role="alert"
+            className="flex items-start gap-2.5 rounded-[var(--radius)] border border-[rgba(224,62,62,0.3)] bg-[rgba(224,62,62,0.1)] p-3 text-sm font-medium text-danger md:col-span-2"
+          >
+            <Icon name="alert" className="mt-0.5 shrink-0" />
+            <span>{state.error}</span>
+          </div>
+        )}
 
-        <div className="p-5 sm:p-6">
-          {cart.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border-light bg-bg-mid/50 py-10 sm:py-16 text-center">
-              <Icon name="package" className="mb-4 text-5xl text-border" />
-              <p className="text-lg font-semibold text-text">Daftar masih kosong</p>
-              <p className="mt-1 text-base text-text-muted">
-                Silakan tambahkan barang pada Langkah 1 di atas.
-              </p>
+        {/* Input Hidden untuk Keranjang yang dikirim ke server */}
+        <input type="hidden" name="cart_data" value={JSON.stringify(cart)} />
+
+        {/* Combobox Search */}
+        <div className="md:col-span-2 relative" ref={dropdownRef}>
+          <label htmlFor="search_barang" className="label">Cari & Tambah Barang</label>
+          <div className="relative mt-1">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
+              <Icon name="search" className="text-lg" />
             </div>
-          ) : (
-            <div className="space-y-4">
-              {cart.map((item) => (
-                <div
-                  key={item.barang_id}
-                  className="flex flex-col gap-4 rounded-xl border-2 border-border-light bg-surface p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5 transition-all hover:border-primary/50 shadow-sm"
-                >
-                  <div className="flex flex-col">
-                    <span className="text-lg sm:text-xl font-bold text-text">
-                      {item.nama}
-                    </span>
-                    <span className="text-sm sm:text-base text-text-muted font-mono mt-1">
-                      Kode Barang: {item.kode}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between sm:justify-end gap-6 sm:gap-8 border-t-2 border-border-light pt-4 sm:border-t-0 sm:pt-0">
-                    <div className="text-center sm:text-right">
-                      <span className="block text-sm text-text-muted">Jumlah Diminta</span>
-                      <div className="flex items-baseline gap-1 justify-center sm:justify-end">
-                        <span className="text-2xl font-black text-primary">{item.jumlah}</span>
-                        <span className="text-base font-semibold text-text-muted">{item.satuan}</span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeFromCart(item.barang_id)}
-                      className="group flex items-center justify-center rounded-xl bg-[rgba(224,62,62,0.1)] p-3 sm:p-4 text-danger transition-all hover:bg-danger hover:text-white"
-                      title="Batal / Hapus Barang"
+            <input
+              id="search_barang"
+              type="text"
+              placeholder="Ketik nama atau kode barang, lalu pilih dari daftar drop-down..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setIsDropdownOpen(true);
+              }}
+              onFocus={() => setIsDropdownOpen(true)}
+              className="input w-full pl-10"
+              autoComplete="off"
+            />
+          </div>
+          
+          {/* Dropdown Scrollable List */}
+          {isDropdownOpen && (
+            <div className="absolute z-50 w-full mt-2 bg-surface border border-border rounded-[var(--radius)] shadow-lg max-h-60 overflow-y-auto">
+              {filteredBarang.length === 0 ? (
+                <div className="p-4 text-sm text-text-muted text-center italic">Tidak ada barang yang cocok.</div>
+              ) : (
+                <ul className="py-1">
+                  {filteredBarang.map(b => (
+                    <li 
+                      key={b.id}
+                      onClick={() => handleSelectBarang(b)}
+                      className={`px-4 py-2.5 text-sm flex justify-between items-center transition-colors ${
+                        b.stok === 0 
+                          ? 'opacity-50 cursor-not-allowed bg-bg-mid/50' 
+                          : 'hover:bg-bg-mid cursor-pointer'
+                      }`}
                     >
-                      <Icon name="trash" className="text-xl sm:text-2xl group-hover:scale-110 transition-transform" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                      <div>
+                        <span className="font-semibold text-text">{b.nama}</span>
+                        <span className="text-xs text-text-muted ml-2 font-mono bg-border px-1.5 py-0.5 rounded">{b.kode}</span>
+                      </div>
+                      <div className="text-xs">
+                        {b.stok === 0 ? (
+                          <span className="text-danger font-bold uppercase tracking-wider text-[10px]">Habis</span>
+                        ) : (
+                          <span className="text-text-muted font-medium">Stok: {b.stok} {b.satuan}</span>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
         </div>
-      </div>
 
-      {/* Langkah 3 */}
-      <div className="overflow-hidden rounded-2xl border-2 border-border bg-surface shadow-sm">
-        <div className="border-b-2 border-border bg-bg-mid px-5 py-4 sm:px-6 sm:py-5">
-          <h3 className="flex items-center gap-3 text-lg sm:text-xl font-bold text-text">
-            <span className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-primary text-white text-base sm:text-lg">3</span>
-            Keterangan & Finalisasi
-          </h3>
-          <p className="mt-2 text-sm sm:text-base text-text-muted pl-11 sm:pl-13">
-            Isi tanggal penggunaan dan untuk apa barang ini diminta.
+        {/* Tabel Keranjang */}
+        <div className="md:col-span-2">
+          <label className="label">Daftar Barang yang Diminta</label>
+          {cart.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-8 mt-1 border-2 border-dashed border-border rounded-[var(--radius)] text-text-muted text-sm bg-bg-mid/30">
+              <Icon name="package" className="text-4xl mb-2 opacity-50" />
+              <span>Belum ada barang yang dipilih.</span>
+              <span className="text-xs mt-1 opacity-75">Silakan cari dan pilih barang dari kolom pencarian di atas.</span>
+            </div>
+          ) : (
+            <div className="overflow-hidden border border-border rounded-[var(--radius)] mt-1">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-bg-mid text-text-muted text-[11px] uppercase font-bold tracking-wider">
+                  <tr>
+                    <th className="px-4 py-3 border-b border-border">Nama Barang</th>
+                    <th className="px-4 py-3 border-b border-border w-32 text-center">Jumlah</th>
+                    <th className="px-4 py-3 border-b border-border w-16 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cart.map((item) => (
+                    <tr key={item.barang_id} className="border-b border-border/50 last:border-0 hover:bg-bg-mid/30 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="font-semibold text-text">{item.nama}</div>
+                        <div className="font-mono text-xs text-text-muted mt-0.5">{item.kode}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-2">
+                           <input 
+                             type="number" 
+                             min={1} 
+                             max={item.maxStok}
+                             value={item.jumlah}
+                             onChange={(e) => updateQuantity(item.barang_id, parseInt(e.target.value) || 1)}
+                             className="w-16 bg-surface border border-border-light rounded px-2 py-1.5 text-center text-sm font-semibold text-text focus:outline-none focus:border-primary transition-colors"
+                           />
+                           <span className="text-xs text-text-muted font-medium w-8">{item.satuan}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(item.barang_id)}
+                          className="text-text-muted hover:text-danger transition-colors p-1.5 rounded hover:bg-danger/10"
+                          title="Hapus"
+                        >
+                          <Icon name="trash" className="text-base" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="md:col-span-2 h-px bg-border my-2"></div>
+
+        <div>
+          <label htmlFor="tanggal_pinjam" className="label">
+            Tanggal Pinjam
+          </label>
+          <input
+            id="tanggal_pinjam"
+            name="tanggal_pinjam"
+            type="date"
+            required
+            defaultValue={today}
+            min={today}
+            className="input font-mono mt-1"
+          />
+        </div>
+
+        <div className="md:col-span-2">
+          <label htmlFor="keperluan" className="label">
+            Keperluan (Untuk Semua Barang)
+          </label>
+          <textarea
+            id="keperluan"
+            name="keperluan"
+            rows={3}
+            required
+            minLength={5}
+            placeholder="cth. Kebutuhan rapat koordinasi bulanan divisi umum"
+            className="input resize-y mt-1"
+          />
+          <p className="helper mt-1.5">
+            Jelaskan singkat untuk apa barang-barang ini digunakan (minimal 5 karakter).
           </p>
         </div>
-
-        <div className="p-5 sm:p-6 space-y-6">
-          <div className="space-y-3">
-            <label htmlFor="tanggal_pinjam" className="block text-base sm:text-lg font-semibold text-text">
-              Tanggal Kebutuhan / Penggunaan
-            </label>
-            <input
-              id="tanggal_pinjam"
-              name="tanggal_pinjam"
-              type="date"
-              required
-              defaultValue={today}
-              min={today}
-              className="w-full sm:w-1/2 rounded-xl border-2 border-border bg-surface p-3 sm:p-4 text-base sm:text-lg font-medium focus:border-primary focus:outline-none transition-all"
-            />
-            <p className="text-sm sm:text-base text-text-muted">
-              Pilih tanggal kapan barang ini akan mulai dipakai.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <label htmlFor="keperluan" className="block text-base sm:text-lg font-semibold text-text">
-              Keperluan / Tujuan Permintaan
-            </label>
-            <textarea
-              id="keperluan"
-              name="keperluan"
-              rows={4}
-              required
-              minLength={5}
-              placeholder="Contoh: Kebutuhan ATK untuk operasional bulanan Divisi Keuangan..."
-              className="w-full rounded-xl border-2 border-border bg-surface p-4 text-base sm:text-lg focus:border-primary focus:outline-none transition-all resize-y"
-            />
-            <p className="text-sm sm:text-base text-text-muted">
-              Jelaskan secara singkat untuk kegiatan atau acara apa barang-barang ini diminta (wajib diisi).
-            </p>
-          </div>
-        </div>
       </div>
 
-      {/* Tombol Submit */}
-      <div className="pb-10 pt-4 flex flex-col items-center gap-4">
+      <div className="border-t border-border bg-bg-mid/30 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <p className="helper order-2 sm:order-1 sm:max-w-xs">
+          Permintaan berstatus <strong className="text-warning font-semibold">Menunggu</strong> sampai disetujui admin. Stok baru berkurang setelah disetujui.
+        </p>
         <button
           type="submit"
           disabled={pending || cart.length === 0}
-          className="group flex w-full sm:w-2/3 lg:w-1/2 items-center justify-center gap-3 rounded-2xl bg-primary px-6 py-4 sm:py-5 text-lg sm:text-xl font-bold text-white shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+          className="neu-btn-primary order-1 sm:order-2 w-full sm:w-auto py-2.5 px-6 text-sm disabled:cursor-wait disabled:opacity-60 flex items-center justify-center gap-2"
         >
-          {pending ? (
-            "Sedang Mengirim..."
-          ) : (
-            <>
-              Kirim Permintaan Sekarang ({cart.length} Barang)
-              <Icon name="arrow_right" className="text-2xl group-hover:translate-x-2 transition-transform" />
-            </>
-          )}
+          {pending ? "Mengirim..." : `Ajukan Permintaan (${cart.length} Item)`}
+          {!pending && <Icon name="arrow_right" />}
         </button>
-        <p className="text-center text-sm sm:text-base font-medium text-text-muted max-w-lg">
-          Setelah dikirim, permintaan ini akan masuk ke status <strong>Menunggu</strong>. Anda dapat mengambil barang setelah mendapat persetujuan dari Admin.
-        </p>
       </div>
     </form>
   );

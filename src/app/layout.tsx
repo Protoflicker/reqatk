@@ -15,7 +15,7 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PINJAM/ATK — Sistem Permintaan Alat Tulis Kantor",
+  title: "ReqATK — Sistem Permintaan Alat Tulis Kantor",
   description:
     "Sistem permintaan dan permintaan alat tulis kantor berbasis NIP.",
 };

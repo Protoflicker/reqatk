@@ -1,6 +1,10 @@
 ﻿/**
- * Notification System
- * Support: Email, In-app notifications
+ * Pemberitahuan di dalam aplikasi.
+ *
+ * Modul ini hanya boleh dipanggil dari kode server (Server Component atau
+ * Server Action di lib/actions.ts) karena menyentuh basis data secara
+ * langsung. Untuk menandai pemberitahuan sudah dibaca dari sisi klien,
+ * gunakan Server Action markNotificationAsRead / markAllNotificationsAsRead.
  */
 
 import { db } from "./db";
@@ -19,9 +23,9 @@ export interface Notification {
 }
 
 /**
- * Send in-app notification
+ * Menyimpan satu pemberitahuan untuk seorang pengguna.
  */
-export async function sendNotification(
+async function sendNotification(
   userId: number,
   type: NotificationType,
   title: string,
@@ -34,72 +38,6 @@ export async function sendNotification(
     INSERT INTO notifications (user_id, type, title, message, link)
     VALUES (${userId}, ${type}, ${title}, ${message}, ${link || null})
   `;
-}
-
-/**
- * Get unread notifications for user
- */
-export async function getUnreadNotifications(userId: number): Promise<Notification[]> {
-  const sql = db();
-  
-  const rows = await sql`
-    SELECT * FROM notifications
-    WHERE user_id = ${userId} AND read = false
-    ORDER BY created_at DESC
-    LIMIT 20
-  `;
-  
-  return rows as unknown as Notification[];
-}
-
-/**
- * Mark notification as read
- */
-export async function markAsRead(notificationId: number): Promise<void> {
-  const sql = db();
-  
-  await sql`
-    UPDATE notifications
-    SET read = true
-    WHERE id = ${notificationId}
-  `;
-}
-
-/**
- * Mark all notifications as read for user
- */
-export async function markAllAsRead(userId: number): Promise<void> {
-  const sql = db();
-  
-  await sql`
-    UPDATE notifications
-    SET read = true
-    WHERE user_id = ${userId} AND read = false
-  `;
-}
-
-/**
- * Send email notification (placeholder - need to configure SMTP)
- */
-export async function sendEmailNotification(
-  to: string,
-  subject: string,
-  htmlContent: string
-): Promise<void> {
-  // TODO: Configure nodemailer with SMTP settings
-  // For now, just log
-  console.log(`[EMAIL] To: ${to}, Subject: ${subject}`);
-  
-  // Example implementation:
-  // const transporter = nodemailer.createTransport({
-  //   host: process.env.SMTP_HOST,
-  //   port: Number(process.env.SMTP_PORT),
-  //   auth: {
-  //     user: process.env.SMTP_USER,
-  //     pass: process.env.SMTP_PASS,
-  //   },
-  // });
-  // await transporter.sendMail({ from: process.env.SMTP_FROM, to, subject, html: htmlContent });
 }
 
 /**

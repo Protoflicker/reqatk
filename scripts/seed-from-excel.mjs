@@ -54,71 +54,9 @@ if (!url) {
 const sql = neon(url);
 
 // ---- Parse Excel ----
+// Hierarki berkas sumber: Kategori (117xxx) -> Jenis (1010xxxxxx) -> Barang.
+// Kode barang dibentuk dari kode jenis + nomor urut tiga digit.
 function parseExcel() {
-  const filePath = resolve(process.cwd(), "Data Persediaan.xlsx");
-  if (!existsSync(filePath)) {
-    console.error(`[GAGAL] File tidak ditemukan: ${filePath}`);
-    process.exit(1);
-  }
-
-  const wb = XLSX.readFile(filePath);
-  const ws = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-
-  const items = [];
-  let currentKategori = null;
-  let currentJenis = null;
-  let itemCounter = 0;
-
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
-    const kode = row[0];
-    const nama = (row[2] || row[1] || "").toString().trim();
-
-    if (!nama || nama === "") continue;
-
-    // Kategori: kode 117xxx (6 digit, 117000-117999)
-    if (typeof kode === "number" && kode >= 117000 && kode < 118000) {
-      currentKategori = nama;
-      currentJenis = null;
-      itemCounter = 0;
-      continue;
-    }
-
-    // Jenis: kode 1010xxxxxx (10 digit, starts with 1010)
-    if (typeof kode === "number" && kode >= 1010000000 && kode < 1020000000) {
-      currentJenis = nama;
-      itemCounter = 0;
-      continue;
-    }
-
-    // Skip header rows and summary rows
-    if (typeof kode === "string") continue;
-    if (currentKategori === null || currentJenis === null) continue;
-
-    // This is a barang item (has a numeric code that's not a kategori/jenis code)
-    if (typeof kode === "number" && kode < 117000) {
-      itemCounter++;
-      // Format kode: kode_jenis + nomor_urut (3 digit, padded)
-      // Find the jenis kode from context — we need to track it
-      const kodeBarang = `${currentJenis.replace(/[^a-zA-Z0-9]/g, "").substring(0, 10)}${String(itemCounter).padStart(3, "0")}`;
-
-      items.push({
-        kode: kodeBarang,
-        nama,
-        kategori: currentKategori,
-        jenis: currentJenis,
-        satuan: "pcs",
-        stok: 0,
-      });
-    }
-  }
-
-  return items;
-}
-
-// Better approach: track jenis code number for the kode_barang
-function parseExcelV2() {
   const filePath = resolve(process.cwd(), "Data Persediaan.xlsx");
   if (!existsSync(filePath)) {
     console.error(`[GAGAL] File tidak ditemukan: ${filePath}`);
@@ -184,7 +122,7 @@ function parseExcelV2() {
 }
 
 async function main() {
-  console.log(">>> PINJAM/ATK — seed data dari Data Persediaan.xlsx\n");
+  console.log(">>> ReqATK — seed data dari Data Persediaan.xlsx\n");
 
   // ---- Step 1: Add jenis column ----
   console.log(">>> Menambah kolom jenis ke tabel barang...");
@@ -210,7 +148,7 @@ async function main() {
 
   // ---- Step 3: Parse Excel ----
   console.log(">>> Membaca Data Persediaan.xlsx...");
-  const items = parseExcelV2();
+  const items = parseExcel();
   console.log(`    Ditemukan ${items.length} barang dari Excel.\n`);
 
   // Show summary

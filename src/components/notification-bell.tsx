@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { markAsRead, markAllAsRead } from "@/lib/notifications";
+import {
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
+} from "@/lib/actions";
 import type { Notification } from "@/lib/notifications";
 import { Icon, type IconName } from "./icon";
 
@@ -17,7 +20,7 @@ export function NotificationBell({ userId, initialNotifications }: NotificationB
 
   const handleMarkAsRead = async (notificationId: number) => {
     try {
-      await markAsRead(notificationId);
+      await markNotificationAsRead(notificationId);
       setNotifications((prev) =>
         prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
       );
@@ -28,7 +31,7 @@ export function NotificationBell({ userId, initialNotifications }: NotificationB
 
   const handleMarkAllAsRead = async () => {
     try {
-      await markAllAsRead(userId);
+      await markAllNotificationsAsRead(userId);
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (error) {
       console.error("Failed to mark all as read:", error);

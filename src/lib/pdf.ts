@@ -39,7 +39,7 @@ export function buatLaporanPdf({
   doc.setTextColor(...PAPER);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.text("PINJAM/ATK — LAPORAN PERMINTAAN", 14, 11);
+  doc.text("ReqATK — LAPORAN PERMINTAAN", 14, 11);
 
   doc.setFont("courier", "normal");
   doc.setFontSize(8);
@@ -149,7 +149,7 @@ export function buatLaporanPdf({
     doc.setFontSize(7);
     doc.setTextColor(...INK);
     doc.text(
-      `PINJAM/ATK (c) ${new Date().getFullYear()} /// DOKUMEN INTERNAL`,
+      `ReqATK (c) ${new Date().getFullYear()} /// DOKUMEN INTERNAL`,
       14,
       tinggi - 8
     );

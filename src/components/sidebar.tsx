@@ -108,7 +108,7 @@ export function Sidebar({
         <div className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-5' : 'justify-between p-6'}`}>
           {!isCollapsed && (
             <p className="font-display text-2xl font-extrabold tracking-tight text-text">
-              PINJAM<span className="text-primary">/ATK</span>
+              Req<span className="text-primary">ATK</span>
             </p>
           )}
           <button 
@@ -219,7 +219,7 @@ export function Sidebar({
       <header data-mobilebar className="sticky top-0 z-40 border-b border-border bg-surface md:hidden">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <p className="font-display text-lg font-extrabold tracking-tight text-text">
-            PINJAM<span className="text-primary">/ATK</span>
+            Req<span className="text-primary">ATK</span>
           </p>
           <div className="flex items-center gap-2">
             <ThemeToggle className="!h-[34px] !w-[34px]" />

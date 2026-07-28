@@ -89,7 +89,7 @@ export default async function AdminDashboardPage() {
   return (
     <>
       <header className="sesd-greet animate-fade-up mb-8">
-        <p className="sesd-greet-eyebrow">Panel Admin · PINJAM/ATK</p>
+        <p className="sesd-greet-eyebrow">Panel Admin · ReqATK</p>
         <h1 className="sesd-greet-title">
           Halo, {session.nama.split(" ")[0]}
         </h1>

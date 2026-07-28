@@ -1,5 +1,5 @@
 /**
- * Setup database Neon untuk PINJAM/ATK.
+ * Setup database Neon untuk ReqATK.
  *
  * Jalankan:  npm run db:setup
  *
@@ -51,12 +51,8 @@ if (!url) {
 
 const sql = neon(url);
 
-const BARANG_CONTOH = [];
-// Sekarang seed barang dikelola oleh scripts/seed-from-excel.mjs
-// Data dari Data Persediaan.xlsx
-
 async function main() {
-  console.log(">>> PINJAM/ATK — setup database Neon");
+  console.log(">>> ReqATK — setup database Neon");
   console.log(">>> Membuat tabel...");
 
   await sql`
@@ -253,22 +249,18 @@ async function main() {
     console.log(`>>> Lewati seed pengguna (sudah ada ${jumlahPengguna} akun).`);
   }
 
-  // ---- seed barang ----
+  // ---- katalog barang ----
+  // Isi katalog ditangani scripts/seed-from-excel.mjs (sumber:
+  // "Data Persediaan.xlsx"), bukan skrip ini.
   const [{ n: jumlahBarang }] = await sql`
     SELECT COUNT(*)::int AS n FROM barang
   `;
 
   if (jumlahBarang === 0) {
-    console.log(">>> Menanam katalog barang contoh...");
-    for (const [kode, nama, kategori, satuan, stok] of BARANG_CONTOH) {
-      await sql`
-        INSERT INTO barang (kode, nama, kategori, satuan, stok)
-        VALUES (${kode}, ${nama}, ${kategori}, ${satuan}, ${stok})
-      `;
-    }
-    console.log(`    ${BARANG_CONTOH.length} barang ditambahkan.`);
+    console.log(">>> Katalog barang masih kosong.");
+    console.log("    Jalankan: npm run db:seed-excel");
   } else {
-    console.log(`>>> Lewati seed barang (sudah ada ${jumlahBarang} barang).`);
+    console.log(`>>> Katalog berisi ${jumlahBarang} barang.`);
   }
 
   console.log(">>> Selesai. Jalankan: npm run dev");

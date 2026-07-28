@@ -1,7 +1,13 @@
 ﻿import { requireAdmin } from "@/lib/auth";
 import { PageHeader } from "@/components/page-header";
-import { getActivityLogs, getActivityStats } from "@/lib/audit";
-import { Pagination } from "@/components/pagination";
+import {
+  ACTION_LABELS,
+  getActivityLogs,
+  getActivityStats,
+  parseActionType,
+  type ActionType,
+} from "@/lib/audit";
+import { PaginationLinks } from "@/components/pagination-links";
 import Link from "next/link";
 
 export default async function ActivityLogsPage({
@@ -11,40 +17,24 @@ export default async function ActivityLogsPage({
 }) {
   await requireAdmin();
   const params = await searchParams;
-  
-  const currentPage = Number(params.page) || 1;
+
+  // Saringan dari URL hanya diteruskan bila cocok dengan aksi yang dikenal.
+  const actionFilter = parseActionType(params.action);
+  const currentPage = Math.max(Number(params.page) || 1, 1);
   const itemsPerPage = 50;
   const offset = (currentPage - 1) * itemsPerPage;
 
   const { logs, total } = await getActivityLogs({
-    action: params.action as any,
+    action: actionFilter ?? undefined,
     limit: itemsPerPage,
     offset,
   });
 
   const stats = await getActivityStats();
-  const totalPages = Math.ceil(total / itemsPerPage);
+  const totalPages = Math.max(Math.ceil(total / itemsPerPage), 1);
 
-  const getActionLabel = (action: string) => {
-    const labels: Record<string, string> = {
-      LOGIN: "Login",
-      LOGOUT: "Logout",
-      CREATE_BARANG: "Tambah Barang",
-      UPDATE_BARANG: "Update Barang",
-      DELETE_BARANG: "Hapus Barang",
-      CREATE_PERMINTAAN: "Ajukan Permintaan",
-      APPROVE_PERMINTAAN: "Setujui Permintaan",
-      REJECT_PERMINTAAN: "Tolak Permintaan",
-      RETURN_PERMINTAAN: "Kembalikan Barang",
-      CREATE_PENGGUNA: "Tambah Pengguna",
-      UPDATE_PENGGUNA: "Update Pengguna",
-      DELETE_PENGGUNA: "Hapus Pengguna",
-      ADJUST_STOCK: "Sesuaikan Stok",
-      UPDATE_PROFILE: "Update Profil",
-      CHANGE_PASSWORD: "Ubah Password",
-    };
-    return labels[action] || action;
-  };
+  const getActionLabel = (action: string) =>
+    ACTION_LABELS[action as ActionType] ?? action;
 
   const getActionColor = (action: string) => {
     if (action.includes("CREATE") || action.includes("APPROVE") || action.includes("ACTIVATE")) return "text-success";
@@ -81,15 +71,15 @@ export default async function ActivityLogsPage({
         <div className="flex flex-wrap gap-2">
           <Link
             href="/admin/logs"
-            className={`${!params.action ? "neu-btn-primary" : "btn"} px-4 py-1.5 text-xs`}
+            className={`${!actionFilter ? "neu-btn-primary" : "btn"} px-4 py-1.5 text-xs`}
           >
             Semua
           </Link>
           {Object.keys(stats.byAction).slice(0, 8).map((action) => (
             <Link
               key={action}
-              href={`/admin/logs?action=${action}`}
-              className={`${params.action === action ? "neu-btn-primary" : "btn"} px-4 py-1.5 text-xs`}
+              href={`/admin/logs?action=${encodeURIComponent(action)}`}
+              className={`${actionFilter === action ? "neu-btn-primary" : "btn"} px-4 py-1.5 text-xs`}
             >
               {getActionLabel(action)} ({stats.byAction[action]})
             </Link>
@@ -155,19 +145,14 @@ export default async function ActivityLogsPage({
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-6">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={(page) => {
-              const url = new URL(window.location.href);
-              url.searchParams.set("page", page.toString());
-              window.location.href = url.toString();
-            }}
-          />
-        </div>
-      )}
+      <div className="mt-6">
+        <PaginationLinks
+          currentPage={currentPage}
+          totalPages={totalPages}
+          basePath="/admin/logs"
+          params={{ action: actionFilter ?? undefined }}
+        />
+      </div>
 
       <p className="mt-6 text-center text-xs text-text-muted">
         Total {total} aktivitas tercatat

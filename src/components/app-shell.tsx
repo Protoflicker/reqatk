@@ -185,7 +185,7 @@ export function AppShell({
         </main>
         <footer className="mt-10 border-t border-border px-4 py-6 text-center md:px-8">
           <p className="text-xs font-medium text-text-muted">
-            PINJAM/ATK © {currentYear} · Sistem internal akses berdasarkan NIP
+            ReqATK © {currentYear} · Sistem internal akses berdasarkan NIP
           </p>
         </footer>
       </div>

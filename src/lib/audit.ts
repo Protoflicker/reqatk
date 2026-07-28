@@ -4,30 +4,47 @@
 
 import { db } from "./db";
 
-export type ActionType =
-  | "LOGIN"
-  | "LOGOUT"
-  | "CREATE_BARANG"
-  | "UPDATE_BARANG"
-  | "DELETE_BARANG"
-  | "CREATE_REQUEST"
-  | "APPROVE_REQUEST"
-  | "REJECT_REQUEST"
-  | "CREATE_PERMINTAAN"
-  | "APPROVE_PERMINTAAN"
-  | "REJECT_PERMINTAAN"
-  | "RETURN_PERMINTAAN"
-  | "CREATE_USER"
-  | "UPDATE_USER"
-  | "DELETE_USER"
-  | "ACTIVATE_ACCOUNT"
-  | "RESET_USER"
-  | "CREATE_PENGGUNA"
-  | "UPDATE_PENGGUNA"
-  | "DELETE_PENGGUNA"
-  | "ADJUST_STOCK"
-  | "UPDATE_PROFILE"
-  | "CHANGE_PASSWORD";
+/** Hanya aksi yang benar-benar ditulis lewat logActivity. */
+export const ACTION_TYPES = [
+  "LOGIN",
+  "ACTIVATE_ACCOUNT",
+  "CREATE_BARANG",
+  "UPDATE_BARANG",
+  "DELETE_BARANG",
+  "CREATE_REQUEST",
+  "APPROVE_REQUEST",
+  "REJECT_REQUEST",
+  "CREATE_USER",
+  "UPDATE_USER",
+  "DELETE_USER",
+  "RESET_USER",
+] as const;
+
+export type ActionType = (typeof ACTION_TYPES)[number];
+
+/** Label bahasa Indonesia untuk setiap aksi, dipakai halaman Activity Log. */
+export const ACTION_LABELS: Record<ActionType, string> = {
+  LOGIN: "Login",
+  ACTIVATE_ACCOUNT: "Aktivasi Akun",
+  CREATE_BARANG: "Tambah Barang",
+  UPDATE_BARANG: "Ubah Barang",
+  DELETE_BARANG: "Hapus Barang",
+  CREATE_REQUEST: "Ajukan Permintaan",
+  APPROVE_REQUEST: "Setujui Permintaan",
+  REJECT_REQUEST: "Tolak Permintaan",
+  CREATE_USER: "Daftarkan NIP",
+  UPDATE_USER: "Ubah Pengguna",
+  DELETE_USER: "Hapus Pengguna",
+  RESET_USER: "Nonaktifkan Akun",
+};
+
+/** Mengembalikan aksi hanya bila dikenal — dipakai untuk menyaring input URL. */
+export function parseActionType(value: unknown): ActionType | null {
+  return typeof value === "string" &&
+    (ACTION_TYPES as readonly string[]).includes(value)
+    ? (value as ActionType)
+    : null;
+}
 
 export interface ActivityLog {
   id: number;
@@ -83,42 +100,36 @@ export async function getActivityLogs(filters?: {
   offset?: number;
 }): Promise<{ logs: ActivityLog[]; total: number }> {
   const sql = db();
-  const limit = filters?.limit || 50;
-  const offset = filters?.offset || 0;
+  const limit = Math.min(Math.max(filters?.limit ?? 50, 1), 200);
+  const offset = Math.max(filters?.offset ?? 0, 0);
 
-  let whereConditions = [];
-  let params: any = {};
-
-  if (filters?.userId) {
-    whereConditions.push(`user_id = ${filters.userId}`);
-  }
-  if (filters?.action) {
-    whereConditions.push(`action = '${filters.action}'`);
-  }
-  if (filters?.entityType) {
-    whereConditions.push(`entity_type = '${filters.entityType}'`);
-  }
-  if (filters?.startDate) {
-    whereConditions.push(`created_at >= '${filters.startDate}'`);
-  }
-  if (filters?.endDate) {
-    whereConditions.push(`created_at <= '${filters.endDate}'`);
-  }
-
-  const whereClause =
-    whereConditions.length > 0 ? `WHERE ${whereConditions.join(" AND ")}` : "";
+  // Setiap saringan dikirim sebagai parameter, bukan disambung ke dalam SQL:
+  // nilainya berasal dari query string sehingga tidak boleh menyentuh query.
+  const userId = filters?.userId ?? null;
+  const action = filters?.action ?? null;
+  const entityType = filters?.entityType ?? null;
+  const startDate = filters?.startDate ?? null;
+  const endDate = filters?.endDate ?? null;
 
   const [logs, countResult] = await Promise.all([
     sql`
       SELECT * FROM activity_logs
-      ${whereClause ? sql.unsafe(whereClause) : sql``}
+      WHERE (${userId}::int IS NULL         OR user_id = ${userId})
+        AND (${action}::text IS NULL        OR action = ${action})
+        AND (${entityType}::text IS NULL    OR entity_type = ${entityType})
+        AND (${startDate}::timestamptz IS NULL OR created_at >= ${startDate})
+        AND (${endDate}::timestamptz IS NULL   OR created_at <= ${endDate})
       ORDER BY created_at DESC
       LIMIT ${limit}
       OFFSET ${offset}
     `,
     sql`
-      SELECT COUNT(*)::int as total FROM activity_logs
-      ${whereClause ? sql.unsafe(whereClause) : sql``}
+      SELECT COUNT(*)::int AS total FROM activity_logs
+      WHERE (${userId}::int IS NULL         OR user_id = ${userId})
+        AND (${action}::text IS NULL        OR action = ${action})
+        AND (${entityType}::text IS NULL    OR entity_type = ${entityType})
+        AND (${startDate}::timestamptz IS NULL OR created_at >= ${startDate})
+        AND (${endDate}::timestamptz IS NULL   OR created_at <= ${endDate})
     `,
   ]);
 
@@ -126,25 +137,6 @@ export async function getActivityLogs(filters?: {
     logs: logs as unknown as ActivityLog[],
     total: (countResult[0] as { total: number }).total,
   };
-}
-
-/**
- * Get recent activities for a user
- */
-export async function getUserRecentActivities(
-  userId: number,
-  limit: number = 10
-): Promise<ActivityLog[]> {
-  const sql = db();
-
-  const logs = await sql`
-    SELECT * FROM activity_logs
-    WHERE user_id = ${userId}
-    ORDER BY created_at DESC
-    LIMIT ${limit}
-  `;
-
-  return logs as unknown as ActivityLog[];
 }
 
 /**

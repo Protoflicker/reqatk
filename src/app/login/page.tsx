@@ -3,7 +3,7 @@ import { LoginForm } from "@/components/login-form";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export const metadata: Metadata = {
-  title: "Masuk — PINJAM/ATK",
+  title: "Masuk — ReqATK",
 };
 
 export const runtime = 'nodejs';
@@ -36,9 +36,9 @@ export default function LoginPage() {
             className="font-display text-[clamp(3.5rem,9vw,9rem)] font-extrabold leading-[0.85] text-text"
             style={{ letterSpacing: "-0.03em" }}
           >
-            Pinjam
+            Req
             <br />
-            <span className="text-primary">/ATK</span>
+            <span className="text-primary">ATK</span>
           </h1>
           <p className="mt-8 max-w-[46ch] text-base leading-relaxed text-text-muted">
             Sistem permintaan dan permintaan alat tulis kantor. Ajukan
@@ -52,7 +52,7 @@ export default function LoginPage() {
             Akses terbatas — Pegawai terdaftar
           </p>
           <p className="font-mono text-xs text-text-muted">
-            © {currentYear} PINJAM/ATK
+            © {currentYear} ReqATK
           </p>
         </div>
       </section>

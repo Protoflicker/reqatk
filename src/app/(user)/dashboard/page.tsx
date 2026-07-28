@@ -71,7 +71,7 @@ export default async function DashboardPage() {
   return (
     <>
       <header className="sesd-greet animate-fade-up mb-8">
-        <p className="sesd-greet-eyebrow">Dasbor Pegawai · PINJAM/ATK</p>
+        <p className="sesd-greet-eyebrow">Dasbor Pegawai · ReqATK</p>
         <h1 className="sesd-greet-title">Halo, {namaDepan}</h1>
         <p className="sesd-greet-sub">
           Ringkasan permintaan alat tulis kantor Anda. Ajukan permintaan baru

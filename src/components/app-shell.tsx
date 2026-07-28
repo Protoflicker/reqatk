@@ -169,7 +169,7 @@ export function AppShell({
             </div>
 
             {/* 4. Notification Bell */}
-            <NotificationBell userId={session.id} initialNotifications={notifications} />
+            <NotificationBell initialNotifications={notifications} />
 
             {/* 5. User Profile Icon */}
             <div

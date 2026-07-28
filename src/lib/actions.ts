@@ -18,41 +18,56 @@ import { logActivity } from "./audit";
    NOTIFICATIONS
    ============================================================ */
 
-export async function getNotifications(userId: number): Promise<Notification[]> {
+/**
+ * Ketiga fungsi di bawah adalah Server Action, yang berarti tiap fungsi
+ * menjadi endpoint POST yang bisa dipanggil siapa pun. Karena itu pemilik
+ * pemberitahuan SELALU diambil dari sesi, tidak pernah dari argumen: kalau
+ * id pengguna diterima sebagai parameter, siapa saja bisa membaca atau
+ * mengubah pemberitahuan milik orang lain hanya dengan menebak angkanya.
+ */
+
+export async function getNotifications(): Promise<Notification[]> {
+  const session = await requireSession();
   const sql = db();
-  
+
   const rows = await sql`
     SELECT * FROM notifications
-    WHERE user_id = ${userId}
+    WHERE user_id = ${session.id}
     ORDER BY created_at DESC
     LIMIT 50
   `;
-  
+
   return rows as unknown as Notification[];
 }
 
-export async function markNotificationAsRead(notificationId: number): Promise<void> {
+export async function markNotificationAsRead(
+  notificationId: number
+): Promise<void> {
+  const session = await requireSession();
+  if (!Number.isInteger(notificationId)) return;
+
   const sql = db();
-  
+  // Syarat user_id memastikan pemberitahuan milik orang lain tidak tersentuh.
   await sql`
     UPDATE notifications
     SET read = true
-    WHERE id = ${notificationId}
+    WHERE id = ${notificationId} AND user_id = ${session.id}
   `;
-  
+
   revalidatePath("/admin");
   revalidatePath("/dashboard");
 }
 
-export async function markAllNotificationsAsRead(userId: number): Promise<void> {
+export async function markAllNotificationsAsRead(): Promise<void> {
+  const session = await requireSession();
   const sql = db();
-  
+
   await sql`
     UPDATE notifications
     SET read = true
-    WHERE user_id = ${userId} AND read = false
+    WHERE user_id = ${session.id} AND read = false
   `;
-  
+
   revalidatePath("/admin");
   revalidatePath("/dashboard");
 }

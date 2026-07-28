@@ -11,7 +11,7 @@ export default async function UserAreaLayout({
   const session = await requireSession();
   if (session.role === "admin") redirect("/admin");
   
-  const notifications = await getNotifications(session.id);
+  const notifications = await getNotifications();
   
   return <AppShell session={session} notifications={notifications}>{children}</AppShell>;
 }

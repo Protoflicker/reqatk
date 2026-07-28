@@ -8,7 +8,7 @@ export default async function AdminAreaLayout({
   children: React.ReactNode;
 }) {
   const session = await requireAdmin();
-  const notifications = await getNotifications(session.id);
+  const notifications = await getNotifications();
   
   return <AppShell session={session} notifications={notifications}>{children}</AppShell>;
 }

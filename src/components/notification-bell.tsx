@@ -9,11 +9,10 @@ import type { Notification } from "@/lib/notifications";
 import { Icon, type IconName } from "./icon";
 
 interface NotificationBellProps {
-  userId: number;
   initialNotifications: Notification[];
 }
 
-export function NotificationBell({ userId, initialNotifications }: NotificationBellProps) {
+export function NotificationBell({ initialNotifications }: NotificationBellProps) {
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const [isOpen, setIsOpen] = useState(false);
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -31,7 +30,7 @@ export function NotificationBell({ userId, initialNotifications }: NotificationB
 
   const handleMarkAllAsRead = async () => {
     try {
-      await markAllNotificationsAsRead(userId);
+      await markAllNotificationsAsRead();
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (error) {
       console.error("Failed to mark all as read:", error);

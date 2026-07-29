@@ -564,19 +564,33 @@ export async function tolakPermintaan(
    BULK OPERATIONS — PERMINTAAN
    ============================================================ */
 
-export async function bulkApprovePermintaan(ids: number[]): Promise<void> {
-  await requireAdmin();
+/**
+ * Persetujuan massal. Mengembalikan ringkasan alih-alih memanggil redirect()
+ * karena dipanggil dari komponen klien yang menunggu Promise, bukan lewat
+ * <form action>.
+ */
+export async function bulkApprovePermintaan(
+  ids: number[]
+): Promise<{ disetujui: number; gagalStok: number }> {
+  const session = await requireAdmin();
 
   if (!Array.isArray(ids) || ids.length === 0) {
-    throw new Error("No IDs provided");
+    return { disetujui: 0, gagalStok: 0 };
   }
 
-  try {
-    const sql = db();
-    
-    // Process each approval with atomic stock deduction
-    for (const id of ids) {
-      await sql`
+  const sql = db();
+  const disetujui: {
+    pengguna_id: number;
+    jumlah: number;
+    barang_id: number;
+    barang_nama: string;
+  }[] = [];
+  let gagalStok = 0;
+
+  for (const id of ids) {
+    if (!Number.isInteger(id) || id <= 0) continue;
+    try {
+      const rows = (await sql`
         WITH ambil AS (
           SELECT barang_id, jumlah
           FROM permintaan
@@ -587,43 +601,107 @@ export async function bulkApprovePermintaan(ids: number[]): Promise<void> {
           SET stok = b.stok - a.jumlah
           FROM ambil a
           WHERE b.id = a.barang_id AND b.stok >= a.jumlah
-          RETURNING b.id
+          RETURNING b.id, b.nama
         )
         UPDATE permintaan p
         SET status = 'DISETUJUI', updated_at = now()
         FROM kurangi k
         WHERE p.id = ${id}
-      `;
+        RETURNING p.pengguna_id, p.jumlah, k.id AS barang_id, k.nama AS barang_nama
+      `) as {
+        pengguna_id: number;
+        jumlah: number;
+        barang_id: number;
+        barang_nama: string;
+      }[];
+
+      if (rows.length > 0) {
+        disetujui.push(rows[0]);
+        // Jalur satuan menulis audit log; tanpa ini persetujuan massal
+        // hilang sama sekali dari Activity Log.
+        await logActivity(session.id, "APPROVE_REQUEST", "permintaan", id, {
+          status: "DISETUJUI",
+          massal: true,
+        });
+      } else {
+        // Stok tidak cukup, atau sudah diproses admin lain. Sebelumnya
+        // kegagalan ini tidak terlihat sama sekali oleh admin.
+        gagalStok++;
+      }
+    } catch (e) {
+      console.error(`bulkApprovePermintaan gagal untuk id ${id}:`, e);
+      gagalStok++;
     }
-  } catch (e) {
-    console.error("bulkApprovePermintaan gagal:", e);
-    throw e;
   }
 
   revalidatePath("/admin/permintaan");
   revalidatePath("/admin");
   revalidatePath("/admin/barang");
+
+  try {
+    const { notifyRequestApproved } = await import("./notifications");
+    for (const d of disetujui) {
+      await notifyRequestApproved(d.pengguna_id, d.barang_nama, d.jumlah);
+    }
+  } catch (e) {
+    console.error("Failed to send notification:", e);
+  }
+
+  await periksaStokMenipis(disetujui.map((d) => d.barang_id));
+
+  return { disetujui: disetujui.length, gagalStok };
 }
 
+/**
+ * Penolakan massal. Sama seperti persetujuan massal, mengembalikan ringkasan
+ * agar komponen klien bisa melaporkan berapa yang benar-benar berubah.
+ */
 export async function bulkRejectPermintaan(
   ids: number[],
   catatan: string | null
-): Promise<void> {
-  await requireAdmin();
+): Promise<{ ditolak: number }> {
+  const session = await requireAdmin();
 
-  if (!Array.isArray(ids) || ids.length === 0) {
-    throw new Error("No IDs provided");
-  }
+  if (!Array.isArray(ids) || ids.length === 0) return { ditolak: 0 };
+
+  const bersih = ids.filter((id) => Number.isInteger(id) && id > 0);
+  if (bersih.length === 0) return { ditolak: 0 };
+
+  let ditolak: {
+    id: number;
+    pengguna_id: number;
+    jumlah: number;
+    barang_nama: string;
+  }[] = [];
 
   try {
     const sql = db();
-    
-    // Reject all selected items with the same note
-    await sql`
-      UPDATE permintaan
-      SET status = 'DITOLAK', catatan_admin = ${catatan}, updated_at = now()
-      WHERE id = ANY(${ids}) AND status = 'MENUNGGU'
-    `;
+    // RETURNING menyaring baris yang sudah diproses admin lain, supaya log
+    // dan notifikasi hanya terbit untuk penolakan yang sungguh terjadi.
+    ditolak = (await sql`
+      WITH diubah AS (
+        UPDATE permintaan
+        SET status = 'DITOLAK', catatan_admin = ${catatan}, updated_at = now()
+        WHERE id = ANY(${bersih}) AND status = 'MENUNGGU'
+        RETURNING id, pengguna_id, barang_id, jumlah
+      )
+      SELECT d.id, d.pengguna_id, d.jumlah, b.nama AS barang_nama
+      FROM diubah d
+      JOIN barang b ON b.id = d.barang_id
+    `) as {
+      id: number;
+      pengguna_id: number;
+      jumlah: number;
+      barang_nama: string;
+    }[];
+
+    for (const d of ditolak) {
+      await logActivity(session.id, "REJECT_REQUEST", "permintaan", d.id, {
+        status: "DITOLAK",
+        catatan,
+        massal: true,
+      });
+    }
   } catch (e) {
     console.error("bulkRejectPermintaan gagal:", e);
     throw e;
@@ -631,6 +709,22 @@ export async function bulkRejectPermintaan(
 
   revalidatePath("/admin/permintaan");
   revalidatePath("/admin");
+
+  try {
+    const { notifyRequestRejected } = await import("./notifications");
+    for (const d of ditolak) {
+      await notifyRequestRejected(
+        d.pengguna_id,
+        d.barang_nama,
+        d.jumlah,
+        catatan || undefined
+      );
+    }
+  } catch (e) {
+    console.error("Failed to send notification:", e);
+  }
+
+  return { ditolak: ditolak.length };
 }
 
 /* ============================================================

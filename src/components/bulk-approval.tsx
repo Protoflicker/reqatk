@@ -21,10 +21,19 @@ export function BulkApproval({ selectedIds, onClear }: BulkApprovalProps) {
 
     setLoading(true);
     try {
-      await bulkApprovePermintaan(selectedIds);
+      const hasil = await bulkApprovePermintaan(selectedIds);
+      // Sebelumnya kegagalan karena stok tidak terlihat sama sekali — admin
+      // tetap melihat operasinya seolah berhasil seluruhnya.
+      if (hasil.gagalStok > 0) {
+        alert(
+          `${hasil.disetujui} permintaan disetujui. ` +
+            `${hasil.gagalStok} tidak dapat diproses karena stoknya tidak ` +
+            `mencukupi atau sudah diproses admin lain.`
+        );
+      }
       onClear();
     } catch {
-      alert("Gagal menyetujui beberapa permintaan. Periksa stok barang.");
+      alert("Gagal menyetujui permintaan. Coba lagi.");
     } finally {
       setLoading(false);
     }
@@ -33,7 +42,16 @@ export function BulkApproval({ selectedIds, onClear }: BulkApprovalProps) {
   const handleBulkReject = async () => {
     setLoading(true);
     try {
-      await bulkRejectPermintaan(selectedIds, rejectNote.trim() || null);
+      const hasil = await bulkRejectPermintaan(
+        selectedIds,
+        rejectNote.trim() || null
+      );
+      if (hasil.ditolak < selectedIds.length) {
+        alert(
+          `${hasil.ditolak} permintaan ditolak. ` +
+            `${selectedIds.length - hasil.ditolak} sudah diproses admin lain.`
+        );
+      }
       setShowRejectModal(false);
       setRejectNote("");
       onClear();

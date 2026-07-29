@@ -15,7 +15,7 @@ export default async function BarangUserPage({
 
   const sql = db();
   const rows = (await sql`
-    SELECT id, kode, nama, kategori, jenis, satuan, stok
+    SELECT id, kode, nama, kategori, jenis, satuan, stok, min_stok
     FROM barang
     WHERE (${q}::text IS NULL
            OR nama     ILIKE '%' || ${q} || '%'

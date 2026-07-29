@@ -43,11 +43,11 @@ export function BarangForm({ editData }: { editData: Barang | null }) {
 
       {editData && <input type="hidden" name="id" value={editData.id} />}
 
-      <div className="grid gap-5 p-5 md:grid-cols-6">
+      <div className="grid gap-5 p-5 md:grid-cols-7">
         {state.error && (
           <div
             role="alert"
-            className="flex items-start gap-2.5 rounded-[var(--radius)] border border-[rgba(224,62,62,0.3)] bg-[rgba(224,62,62,0.1)] p-3 text-sm font-medium text-danger md:col-span-6"
+            className="flex items-start gap-2.5 rounded-[var(--radius)] border border-[rgba(224,62,62,0.3)] bg-[rgba(224,62,62,0.1)] p-3 text-sm font-medium text-danger md:col-span-7"
           >
             <Icon name="alert" className="mt-0.5 shrink-0" />
             <span>{state.error}</span>
@@ -144,7 +144,23 @@ export function BarangForm({ editData }: { editData: Barang | null }) {
           />
         </div>
 
-        <div className="flex items-end md:col-span-6">
+        <div>
+          <label htmlFor="min_stok" className="label">
+            Stok Minimum
+          </label>
+          <input
+            id="min_stok"
+            name="min_stok"
+            type="number"
+            min={0}
+            required
+            defaultValue={editData?.min_stok ?? 10}
+            className="input"
+          />
+          <p className="helper mt-1">Peringatan muncul bila stok ≤ nilai ini.</p>
+        </div>
+
+        <div className="flex items-end md:col-span-7">
           <button
             type="submit"
             disabled={pending}

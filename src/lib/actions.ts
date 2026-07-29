@@ -783,6 +783,7 @@ export async function simpanBarang(
   const jenis = String(formData.get("jenis") ?? "").trim();
   const satuan = String(formData.get("satuan") ?? "").trim() || "pcs";
   const stok = Number(formData.get("stok"));
+  const minStok = Number(formData.get("min_stok"));
 
   if (!kode || kode.length > 20) {
     return { error: "Kode barang wajib diisi (maks. 20 karakter)." };
@@ -796,6 +797,9 @@ export async function simpanBarang(
   if (!Number.isInteger(stok) || stok < 0) {
     return { error: "Stok harus bilangan bulat nol atau lebih." };
   }
+  if (!Number.isInteger(minStok) || minStok < 0) {
+    return { error: "Stok minimum harus bilangan bulat nol atau lebih." };
+  }
 
   try {
     const sql = db();
@@ -803,34 +807,35 @@ export async function simpanBarang(
       await sql`
         UPDATE barang
         SET kode = ${kode}, nama = ${nama}, kategori = ${kategori},
-            jenis = ${jenis}, satuan = ${satuan}, stok = ${stok}
+            jenis = ${jenis}, satuan = ${satuan}, stok = ${stok},
+            min_stok = ${minStok}
         WHERE id = ${id}
       `;
-      
+
       // Log update activity
       await logActivity(
         session.id,
         "UPDATE_BARANG",
         "barang",
         id,
-        { kode, nama, kategori, jenis, satuan, stok }
+        { kode, nama, kategori, jenis, satuan, stok, min_stok: minStok }
       );
     } else {
       const result = await sql`
-        INSERT INTO barang (kode, nama, kategori, jenis, satuan, stok)
-        VALUES (${kode}, ${nama}, ${kategori}, ${jenis}, ${satuan}, ${stok})
+        INSERT INTO barang (kode, nama, kategori, jenis, satuan, stok, min_stok)
+        VALUES (${kode}, ${nama}, ${kategori}, ${jenis}, ${satuan}, ${stok}, ${minStok})
         RETURNING id
       `;
-      
+
       const newId = (result[0] as { id: number }).id;
-      
+
       // Log create activity
       await logActivity(
         session.id,
         "CREATE_BARANG",
         "barang",
         newId,
-        { kode, nama, kategori, jenis, satuan, stok }
+        { kode, nama, kategori, jenis, satuan, stok, min_stok: minStok }
       );
     }
   } catch (e: unknown) {

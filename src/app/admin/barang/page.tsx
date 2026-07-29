@@ -31,7 +31,7 @@ export default async function AdminBarangPage({
   const sql = db();
 
   const rows = (await sql`
-    SELECT id, kode, nama, kategori, jenis, satuan, stok, created_at
+    SELECT id, kode, nama, kategori, jenis, satuan, stok, min_stok, created_at
     FROM barang
     WHERE (${q}::text IS NULL
            OR nama     ILIKE '%' || ${q} || '%'

@@ -29,6 +29,8 @@ export interface Barang {
   jenis: string;
   satuan: string;
   stok: number;
+  /** Ambang peringatan stok menipis; memicu notifikasi LOW_STOCK. */
+  min_stok: number;
   created_at: string;
 }
 

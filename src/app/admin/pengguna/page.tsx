@@ -10,9 +10,12 @@ import { formatTanggal, type Pengguna } from "@/lib/definitions";
 
 const OK_MSG: Record<string, string> = {
   nip: "NIP berhasil didaftarkan. Pemilik NIP tinggal melakukan aktivasi saat login pertama.",
+  "nip-pulih":
+    "NIP dipulihkan beserta riwayat permintaannya. Pemilik NIP tinggal melakukan aktivasi ulang saat login.",
   role: "Role pengguna berhasil diperbarui.",
   reset:
     "Akun dinonaktifkan. Pemilik NIP harus mendaftarkan ulang nama dan kata sandi saat login berikutnya.",
+  hapus: "Pengguna dihapus. Riwayat permintaannya tetap tersimpan di Laporan.",
 };
 
 const ERR_MSG: Record<string, string> = {
@@ -24,8 +27,8 @@ const ERR_MSG: Record<string, string> = {
     "Anda tidak dapat mengubah role akun yang sedang dipakai. Minta admin lain melakukannya.",
   "role-nonaktif":
     "Akun yang belum aktivasi tidak bisa dijadikan admin — akun tanpa kata sandi masih bisa diklaim siapa pun yang tahu NIP-nya. Tunggu pemiliknya aktivasi lebih dulu.",
-  terpakai:
-    "Pengguna tidak bisa dihapus karena punya riwayat permintaan. Gunakan Reset untuk mencabut aksesnya.",
+  "hapus-admin":
+    "Akun admin tidak bisa dihapus. Jadikan User dulu lewat tombol di baris ini.",
   gagal: "Operasi gagal. Coba lagi.",
 };
 
@@ -42,6 +45,7 @@ export default async function AdminPenggunaPage({
     SELECT id, nip, nama, role, created_at,
            password_hash IS NOT NULL AS aktif
     FROM pengguna
+    WHERE dihapus_pada IS NULL
     ORDER BY role ASC, aktif ASC, nama ASC, nip ASC
   `) as unknown as Pengguna[];
 
@@ -192,7 +196,8 @@ export default async function AdminPenggunaPage({
       <p className="helper mt-3">
         Akun berstatus <strong>Belum aktivasi</strong> hanya berisi NIP.
         Pemiliknya diminta mengisi nama dan kata sandi ketika login pertama
-        kali.
+        kali. Pengguna yang dihapus tidak lagi muncul di sini, tetapi riwayat
+        permintaannya tetap tersimpan di Laporan.
       </p>
     </>
   );

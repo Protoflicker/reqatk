@@ -83,7 +83,7 @@ export async function notifyAdminsNewRequest(pemohonNama: string, barangNama: st
   
   // Get all admin users
   const admins = await sql`
-    SELECT id FROM pengguna WHERE role = 'admin'
+    SELECT id FROM pengguna WHERE role = 'admin' AND dihapus_pada IS NULL
   `;
   
   for (const admin of admins) {
@@ -104,7 +104,7 @@ export async function notifyAdminsLowStock(barangNama: string, stok: number, min
   const sql = db();
   
   const admins = await sql`
-    SELECT id FROM pengguna WHERE role = 'admin'
+    SELECT id FROM pengguna WHERE role = 'admin' AND dihapus_pada IS NULL
   `;
   
   for (const admin of admins) {

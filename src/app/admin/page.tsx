@@ -20,7 +20,7 @@ export default async function AdminDashboardPage() {
          WHERE status = 'DISETUJUI'
            AND to_char(tanggal_pinjam, 'YYYY-MM') = to_char(CURRENT_DATE, 'YYYY-MM')
         )                                                             AS disetujui_bulan_ini,
-        (SELECT COUNT(*) FROM pengguna)                               AS total_pengguna
+        (SELECT COUNT(*) FROM pengguna WHERE dihapus_pada IS NULL)    AS total_pengguna
     `,
     sql`
       SELECT p.id, p.jumlah, p.keperluan, p.tanggal_pinjam,

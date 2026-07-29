@@ -98,7 +98,7 @@ export async function cekNip(
     const rows = (await sql`
       SELECT nama, password_hash IS NOT NULL AS aktif
       FROM pengguna
-      WHERE nip = ${nip}
+      WHERE nip = ${nip} AND dihapus_pada IS NULL
       LIMIT 1
     `) as { nama: string; aktif: boolean }[];
 
@@ -162,6 +162,7 @@ export async function aktivasiAkun(
       UPDATE pengguna
       SET nama = ${nama}, password_hash = ${hash}
       WHERE nip = ${nip} AND password_hash IS NULL AND role = 'user'
+        AND dihapus_pada IS NULL
       RETURNING id, nip, nama, role
     `) as { id: number; nip: string; nama: string; role: Role }[];
 
@@ -213,7 +214,7 @@ export async function login(
     const rows = (await sql`
       SELECT id, nip, nama, password_hash, role
       FROM pengguna
-      WHERE nip = ${nip}
+      WHERE nip = ${nip} AND dihapus_pada IS NULL
       LIMIT 1
     `) as {
       id: number;
@@ -860,19 +861,45 @@ export async function daftarkanNip(
     return { error: "NIP harus berupa angka 5–30 digit." };
   }
 
+  let hasil = "nip";
   try {
     const sql = db();
-    const result = await sql`
-      INSERT INTO pengguna (nip, nama, password_hash, role)
-      VALUES (${nip}, '', NULL, 'user')
-      RETURNING id
-    `;
+    const ada = (await sql`
+      SELECT id, dihapus_pada FROM pengguna WHERE nip = ${nip} LIMIT 1
+    `) as { id: number; dihapus_pada: string | null }[];
 
-    const newId = (result[0] as { id: number }).id;
-    await logActivity(session.id, "CREATE_USER", "pengguna", newId, {
-      nip,
-      status: "belum_aktivasi",
-    });
+    if (ada.length > 0 && ada[0].dihapus_pada === null) {
+      return { error: `NIP ${nip} sudah terdaftar.` };
+    }
+
+    if (ada.length > 0) {
+      // NIP menandai orang yang sama, jadi barisnya dipulihkan apa adanya
+      // dan riwayat permintaan lamanya ikut tersambung kembali. Tanpa ini,
+      // admin akan melihat "sudah terdaftar" untuk akun yang tidak tampak
+      // di mana pun karena NIP tetap dipegang baris yang sudah dihapus.
+      await sql`
+        UPDATE pengguna
+        SET dihapus_pada = NULL, nama = '', password_hash = NULL, role = 'user'
+        WHERE id = ${ada[0].id}
+      `;
+      await logActivity(session.id, "CREATE_USER", "pengguna", ada[0].id, {
+        nip,
+        status: "dipulihkan",
+      });
+      hasil = "nip-pulih";
+    } else {
+      const result = await sql`
+        INSERT INTO pengguna (nip, nama, password_hash, role)
+        VALUES (${nip}, '', NULL, 'user')
+        RETURNING id
+      `;
+
+      const newId = (result[0] as { id: number }).id;
+      await logActivity(session.id, "CREATE_USER", "pengguna", newId, {
+        nip,
+        status: "belum_aktivasi",
+      });
+    }
   } catch (e: unknown) {
     if (isUniqueViolation(e)) {
       return { error: `NIP ${nip} sudah terdaftar.` };
@@ -882,7 +909,7 @@ export async function daftarkanNip(
   }
 
   revalidatePath("/admin/pengguna");
-  redirect("/admin/pengguna?ok=nip");
+  redirect(`/admin/pengguna?ok=${hasil}`);
 }
 
 /**
@@ -906,7 +933,9 @@ export async function resetAktivasi(
     try {
       const sql = db();
       const target = (await sql`
-        SELECT nip, role FROM pengguna WHERE id = ${id} LIMIT 1
+        SELECT nip, role FROM pengguna
+        WHERE id = ${id} AND dihapus_pada IS NULL
+        LIMIT 1
       `) as { nip: string; role: Role }[];
 
       if (target.length === 0) {
@@ -917,7 +946,7 @@ export async function resetAktivasi(
         await sql`
           UPDATE pengguna
           SET password_hash = NULL
-          WHERE id = ${id} AND role = 'user'
+          WHERE id = ${id} AND role = 'user' AND dihapus_pada IS NULL
         `;
         await logActivity(session.id, "RESET_USER", "pengguna", id, {
           nip: target[0].nip,
@@ -988,6 +1017,12 @@ export async function ubahRole(id: number, formData: FormData): Promise<void> {
   redirect(err ? `/admin/pengguna?err=${err}` : "/admin/pengguna?ok=role");
 }
 
+/**
+ * Penghapusan pengguna bersifat soft delete: barisnya dipertahankan supaya
+ * riwayat permintaan tetap memiliki nama dan NIP pemohonnya. password_hash
+ * dikosongkan agar akun langsung tidak bisa dipakai login, dan sesi yang
+ * sedang berjalan ikut putus lewat pemeriksaan di requireSession().
+ */
 export async function hapusPengguna(
   id: number,
   _formData: FormData
@@ -1000,36 +1035,36 @@ export async function hapusPengguna(
   } else {
     try {
       const sql = db();
-      
-      // Get user info before deletion for logging
-      const user = (await sql`
-        SELECT nip, nama, role FROM pengguna WHERE id = ${id} LIMIT 1
-      `) as { nip: string; nama: string; role: string }[];
-      
-      await sql`DELETE FROM pengguna WHERE id = ${id}`;
-      
-      if (user.length > 0) {
-        // Log delete activity
-        await logActivity(
-          session.id,
-          "DELETE_USER",
-          "pengguna",
-          id,
-          { nip: user[0].nip, nama: user[0].nama, role: user[0].role }
-        );
-      }
-    } catch (e: unknown) {
-      if (isForeignKeyViolation(e)) {
-        err = "terpakai";
-      } else {
-        console.error("hapusPengguna gagal:", e);
+      const target = (await sql`
+        SELECT nip, nama, role FROM pengguna
+        WHERE id = ${id} AND dihapus_pada IS NULL
+        LIMIT 1
+      `) as { nip: string; nama: string; role: Role }[];
+
+      if (target.length === 0) {
         err = "gagal";
+      } else if (target[0].role === "admin") {
+        err = "hapus-admin";
+      } else {
+        await sql`
+          UPDATE pengguna
+          SET dihapus_pada = now(), password_hash = NULL
+          WHERE id = ${id} AND dihapus_pada IS NULL
+        `;
+        await logActivity(session.id, "DELETE_USER", "pengguna", id, {
+          nip: target[0].nip,
+          nama: target[0].nama,
+          role: target[0].role,
+        });
       }
+    } catch (e) {
+      console.error("hapusPengguna gagal:", e);
+      err = "gagal";
     }
   }
 
   revalidatePath("/admin/pengguna");
-  if (err) redirect(`/admin/pengguna?err=${err}`);
+  redirect(err ? `/admin/pengguna?err=${err}` : "/admin/pengguna?ok=hapus");
 }
 
 /* ============================================================

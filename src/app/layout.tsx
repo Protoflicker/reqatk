@@ -17,7 +17,7 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "ReqATK — Sistem Permintaan Alat Tulis Kantor",
   description:
-    "Sistem permintaan dan permintaan alat tulis kantor berbasis NIP.",
+    "Sistem permintaan dan pengelolaan alat tulis kantor berbasis NIP.",
 };
 
 export default function RootLayout({

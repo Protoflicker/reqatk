@@ -1,6 +1,7 @@
 ﻿import type { Metadata } from "next";
 import { LoginForm } from "@/components/login-form";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Alert } from "@/components/alert";
 
 export const metadata: Metadata = {
   title: "Masuk — ReqATK",
@@ -9,7 +10,12 @@ export const metadata: Metadata = {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ err?: string }>;
+}) {
+  const params = await searchParams;
   const currentYear = new Date().getFullYear();
 
   return (
@@ -41,7 +47,7 @@ export default function LoginPage() {
             <span className="text-primary">ATK</span>
           </h1>
           <p className="mt-8 max-w-[46ch] text-base leading-relaxed text-text-muted">
-            Sistem permintaan dan permintaan alat tulis kantor. Ajukan
+            Sistem permintaan dan pengelolaan alat tulis kantor. Ajukan
             kebutuhan, pantau persetujuan, dan lihat riwayat — semua tercatat
             berdasarkan NIP.
           </p>
@@ -61,6 +67,14 @@ export default function LoginPage() {
       <section className="flex items-center p-6 md:p-10">
         <div className="w-full max-w-md">
           <div className="animate-bounce-in rounded-[var(--radius-xl)] border border-border bg-surface p-8 shadow-(--shadow-hover) md:p-10">
+            {params.err === "sesi" && (
+              <div className="mb-5">
+                <Alert variant="error">
+                  Sesi Anda berakhir karena ada perubahan pada akun. Silakan
+                  masuk kembali.
+                </Alert>
+              </div>
+            )}
             <LoginForm />
           </div>
           <p className="mt-4 text-center text-xs text-text-muted">

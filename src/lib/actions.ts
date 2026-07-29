@@ -393,6 +393,32 @@ export async function ajukanPermintaan(
    PERMINTAAN — SISI ADMIN
    ============================================================ */
 
+/**
+ * Memberi tahu admin untuk setiap barang yang stoknya menyentuh batas
+ * minimum. Dipakai bersama oleh persetujuan satuan, persetujuan massal, dan
+ * penyesuaian stok manual supaya ambangnya diperlakukan sama di mana pun.
+ */
+async function periksaStokMenipis(barangIds: number[]): Promise<void> {
+  if (barangIds.length === 0) return;
+  try {
+    const sql = db();
+    const menipis = (await sql`
+      SELECT nama, stok, min_stok
+      FROM barang
+      WHERE id = ANY(${barangIds}) AND stok <= min_stok
+    `) as { nama: string; stok: number; min_stok: number }[];
+
+    if (menipis.length === 0) return;
+
+    const { notifyAdminsLowStock } = await import("./notifications");
+    for (const b of menipis) {
+      await notifyAdminsLowStock(b.nama, b.stok, b.min_stok);
+    }
+  } catch (e) {
+    console.error("Gagal memeriksa stok menipis:", e);
+  }
+}
+
 export async function setujuiPermintaan(
   id: number,
   _formData: FormData
@@ -400,6 +426,7 @@ export async function setujuiPermintaan(
   const session = await requireAdmin();
 
   let berhasil = false;
+  let barangId: number | null = null;
   try {
     const sql = db();
     // Satu statement atomik: stok hanya berkurang bila mencukupi,
@@ -421,10 +448,11 @@ export async function setujuiPermintaan(
       SET status = 'DISETUJUI', updated_at = now()
       FROM kurangi k
       WHERE p.id = ${id}
-      RETURNING p.id
-    `) as { id: number }[];
+      RETURNING p.id, p.barang_id
+    `) as { id: number; barang_id: number }[];
     berhasil = rows.length > 0;
-    
+    barangId = berhasil ? rows[0].barang_id : null;
+
     // Log activity if successful
     if (berhasil) {
       await logActivity(
@@ -464,6 +492,10 @@ export async function setujuiPermintaan(
   } catch (e) {
     console.error("Failed to send notification:", e);
   }
+
+  // Persetujuan adalah jalur yang paling sering menurunkan stok, tetapi
+  // sebelumnya hanya penyesuaian manual yang memicu peringatan.
+  if (barangId !== null) await periksaStokMenipis([barangId]);
 }
 
 export async function tolakPermintaan(
@@ -474,44 +506,55 @@ export async function tolakPermintaan(
 
   const catatan = String(formData.get("catatan") ?? "").trim() || null;
 
+  let ditolak: {
+    pengguna_id: number;
+    jumlah: number;
+    barang_nama: string;
+  } | null = null;
+
   try {
     const sql = db();
-    await sql`
-      UPDATE permintaan
-      SET status = 'DITOLAK', catatan_admin = ${catatan}, updated_at = now()
-      WHERE id = ${id} AND status = 'MENUNGGU'
-    `;
-    
-    // Log activity
-    await logActivity(
-      session.id,
-      "REJECT_REQUEST",
-      "permintaan",
-      id,
-      { action: "rejected", status: "DITOLAK", catatan }
-    );
+    // RETURNING memastikan audit log dan notifikasi hanya terbit bila ada
+    // baris yang benar-benar berubah. Tanpa ini, menolak permintaan yang
+    // sudah disetujui admin lain tetap mengirim notifikasi "ditolak" yang
+    // keliru kepada pemohon.
+    const rows = (await sql`
+      WITH diubah AS (
+        UPDATE permintaan
+        SET status = 'DITOLAK', catatan_admin = ${catatan}, updated_at = now()
+        WHERE id = ${id} AND status = 'MENUNGGU'
+        RETURNING pengguna_id, barang_id, jumlah
+      )
+      SELECT d.pengguna_id, d.jumlah, b.nama AS barang_nama
+      FROM diubah d
+      JOIN barang b ON b.id = d.barang_id
+    `) as { pengguna_id: number; jumlah: number; barang_nama: string }[];
+
+    ditolak = rows[0] ?? null;
+
+    if (ditolak) {
+      await logActivity(session.id, "REJECT_REQUEST", "permintaan", id, {
+        status: "DITOLAK",
+        catatan,
+      });
+    }
   } catch (e) {
     console.error("tolakPermintaan gagal:", e);
   }
 
   revalidatePath("/admin/permintaan");
   revalidatePath("/admin");
-  
-  // Send notification to user
+
+  if (!ditolak) redirect("/admin/permintaan?err=status");
+
   try {
-    const sql = db();
-    const [request] = (await sql`
-      SELECT p.pengguna_id, p.jumlah, b.nama as barang_nama
-      FROM permintaan p
-      JOIN barang b ON b.id = p.barang_id
-      WHERE p.id = ${id}
-      LIMIT 1
-    `) as { pengguna_id: number; jumlah: number; barang_nama: string }[];
-    
-    if (request) {
-      const { notifyRequestRejected } = await import("./notifications");
-      await notifyRequestRejected(request.pengguna_id, request.barang_nama, request.jumlah, catatan || undefined);
-    }
+    const { notifyRequestRejected } = await import("./notifications");
+    await notifyRequestRejected(
+      ditolak.pengguna_id,
+      ditolak.barang_nama,
+      ditolak.jumlah,
+      catatan || undefined
+    );
   } catch (e) {
     console.error("Failed to send notification:", e);
   }
@@ -705,24 +748,8 @@ export async function ubahStok(id: number, formData: FormData): Promise<void> {
   revalidatePath("/admin/barang");
   revalidatePath("/barang");
   revalidatePath("/permintaan");
-  
-  // Check for low stock and notify admins
-  try {
-    const sql = db();
-    const [barang] = (await sql`
-      SELECT id, nama, stok, min_stok
-      FROM barang
-      WHERE id = ${id} AND stok <= min_stok
-      LIMIT 1
-    `) as { id: number; nama: string; stok: number; min_stok: number }[];
-    
-    if (barang && arah === "kurang") {
-      const { notifyAdminsLowStock } = await import("./notifications");
-      await notifyAdminsLowStock(barang.nama, barang.stok, barang.min_stok);
-    }
-  } catch (e) {
-    console.error("Failed to check low stock:", e);
-  }
+
+  if (arah === "kurang") await periksaStokMenipis([id]);
 }
 
 export async function hapusBarang(id: number, _formData: FormData): Promise<void> {

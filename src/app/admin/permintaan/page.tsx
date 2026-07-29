@@ -78,6 +78,13 @@ export default async function AdminPermintaanPage({
         </Alert>
       )}
 
+      {params.err === "status" && (
+        <Alert variant="error">
+          Permintaan itu sudah diproses admin lain, jadi tidak ada yang
+          berubah. Muat ulang halaman untuk melihat status terbarunya.
+        </Alert>
+      )}
+
       <PermintaanClient antrean={antrean} keputusan={keputusan} />
     </>
   );

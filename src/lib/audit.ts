@@ -58,6 +58,24 @@ export interface ActivityLog {
 }
 
 /**
+ * Alamat IP pemanggil, diambil dari header proksi.
+ *
+ * Import "next/headers" sengaja dinamis: berkas ini juga mengekspor
+ * ACTION_LABELS dan parseActionType, dan import statis akan menjadikan
+ * seluruh modul server-only sehingga konstanta itu tidak lagi bisa dipakai
+ * komponen klien di kemudian hari.
+ */
+async function ambilIp(): Promise<string | null> {
+  try {
+    const { headers } = await import("next/headers");
+    const h = await headers();
+    return h.get("x-forwarded-for")?.split(",")[0].trim() ?? null;
+  } catch {
+    return null; // dipanggil di luar cakupan request
+  }
+}
+
+/**
  * Log an activity
  */
 export async function logActivity(
@@ -70,15 +88,18 @@ export async function logActivity(
 ): Promise<void> {
   try {
     const sql = db();
+    // Parameter ipAddress tetap ada sebagai penimpa opsional; bila tidak
+    // diisi, alamatnya diambil sendiri dari header permintaan.
+    const ip = ipAddress ?? (await ambilIp());
     await sql`
       INSERT INTO activity_logs (user_id, action, entity_type, entity_id, details, ip_address)
       VALUES (
-        ${userId}, 
-        ${action}, 
-        ${entityType}, 
-        ${entityId || null}, 
+        ${userId},
+        ${action},
+        ${entityType},
+        ${entityId || null},
         ${details ? JSON.stringify(details) : null},
-        ${ipAddress || null}
+        ${ip}
       )
     `;
   } catch (e) {

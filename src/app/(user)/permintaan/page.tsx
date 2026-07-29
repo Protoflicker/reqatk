@@ -2,14 +2,7 @@
 import { PageHeader } from "@/components/page-header";
 import { PermintaanForm } from "@/components/permintaan-form";
 import { EmptyState } from "@/components/empty-state";
-import type { Barang } from "@/lib/definitions";
-
-function tanggalHariIniWIB(): string {
-  // format en-CA = YYYY-MM-DD, dievaluasi pada zona waktu Indonesia barat
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Jakarta",
-  }).format(new Date());
-}
+import { tanggalHariIniWIB, type Barang } from "@/lib/definitions";
 
 export default async function PermintaanPage() {
   const sql = db();

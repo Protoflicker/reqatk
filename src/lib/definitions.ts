@@ -64,6 +64,25 @@ export const STATUS_LIST: StatusPermintaan[] = [
   "DITOLAK",
 ];
 
+/** Tanggal hari ini di zona WIB, format YYYY-MM-DD. */
+export function tanggalHariIniWIB(): string {
+  // format en-CA = YYYY-MM-DD, dievaluasi pada zona waktu Indonesia barat
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+  }).format(new Date());
+}
+
+/**
+ * true hanya bila string benar-benar tanggal yang ada. Pemeriksaan pola saja
+ * meloloskan 2026-99-99, dan konstruktor Date diam-diam menggeser 2026-02-31
+ * menjadi 2026-03-03 — perbandingan balik ke ISO menolak keduanya.
+ */
+export function tanggalIsoValid(s: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const d = new Date(`${s}T00:00:00.000Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+}
+
 export function formatTanggal(value: string | null): string {
   if (!value) return "—";
   const d = new Date(value);

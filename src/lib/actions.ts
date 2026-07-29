@@ -10,7 +10,12 @@ import {
   requireAdmin,
   requireSession,
 } from "./auth";
-import type { ActionState, CekNipState, Role } from "./definitions";
+import {
+  tanggalIsoValid,
+  type ActionState,
+  type CekNipState,
+  type Role,
+} from "./definitions";
 import type { Notification } from "./notifications";
 import { logActivity } from "./audit";
 
@@ -307,27 +312,60 @@ export async function ajukanPermintaan(
   if (keperluan.length < 5) {
     return { error: "Keperluan wajib diisi (minimal 5 karakter)." };
   }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(tanggalPinjam)) {
+  if (!tanggalIsoValid(tanggalPinjam)) {
     return { error: "Tanggal pinjam tidak valid." };
   }
 
-  let barangNames: string[] = [];
-  
+  // Entri barang yang sama dijumlahkan supaya totalnya divalidasi terhadap
+  // stok. UI sudah menggabungkannya, tetapi Server Action adalah endpoint
+  // POST publik sehingga tidak boleh bergantung pada itu.
+  const gabungan = new Map<number, number>();
+  for (const item of cartItems) {
+    if (!Number.isInteger(item.barang_id) || item.barang_id <= 0) {
+      return { error: "ID Barang tidak valid." };
+    }
+    if (!Number.isInteger(item.jumlah) || item.jumlah <= 0) {
+      return { error: "Jumlah harus lebih dari nol." };
+    }
+    gabungan.set(
+      item.barang_id,
+      (gabungan.get(item.barang_id) ?? 0) + item.jumlah
+    );
+  }
+  const items = [...gabungan].map(([barang_id, jumlah]) => ({
+    barang_id,
+    jumlah,
+  }));
+
+  const barangNames: string[] = [];
+
   try {
     const sql = db();
-    
-    // Validasi stok semua barang terlebih dahulu
-    for (const item of cartItems) {
-      if (!Number.isInteger(item.barang_id) || item.barang_id <= 0) {
-        return { error: "ID Barang tidak valid." };
-      }
-      if (!Number.isInteger(item.jumlah) || item.jumlah <= 0) {
-        return { error: "Jumlah harus lebih dari nol." };
-      }
-      
+
+    // Rentang tanggal diperiksa di Postgres agar tidak meleset ketika zona
+    // waktu server berbeda dari WIB.
+    const [batas] = (await sql`
+      SELECT ${tanggalPinjam}::date >= (now() AT TIME ZONE 'Asia/Jakarta')::date
+               AS tidak_lampau,
+             ${tanggalPinjam}::date <= (now() AT TIME ZONE 'Asia/Jakarta')::date + 365
+               AS masuk_akal
+    `) as { tidak_lampau: boolean; masuk_akal: boolean }[];
+
+    if (!batas.tidak_lampau) {
+      return { error: "Tanggal pinjam tidak boleh di masa lalu." };
+    }
+    if (!batas.masuk_akal) {
+      return {
+        error: "Tanggal pinjam terlalu jauh ke depan (maksimal 1 tahun).",
+      };
+    }
+
+    // Satu pengambilan per barang, dipakai untuk validasi sekaligus insert.
+    const detail = new Map<number, { nama: string; stok: number }>();
+    for (const item of items) {
       const barang = (await sql`
-        SELECT id, nama, stok FROM barang WHERE id = ${item.barang_id} LIMIT 1
-      `) as { id: number; nama: string; stok: number }[];
+        SELECT nama, stok FROM barang WHERE id = ${item.barang_id} LIMIT 1
+      `) as { nama: string; stok: number }[];
 
       if (barang.length === 0) {
         return { error: "Ada barang yang tidak ditemukan." };
@@ -337,15 +375,11 @@ export async function ajukanPermintaan(
           error: `Stok ${barang[0].nama} tersisa ${barang[0].stok}. Kurangi jumlah permintaan.`,
         };
       }
+      detail.set(item.barang_id, barang[0]);
     }
-    
-    // Insert setiap item sebagai permintaan terpisah
-    for (const item of cartItems) {
-      const barang = (await sql`
-        SELECT id, nama, stok FROM barang WHERE id = ${item.barang_id} LIMIT 1
-      `) as { id: number; nama: string; stok: number }[];
-      
-      const barangNama = barang[0].nama;
+
+    for (const item of items) {
+      const barangNama = detail.get(item.barang_id)!.nama;
       barangNames.push(barangNama);
 
       const result = await sql`
@@ -353,16 +387,20 @@ export async function ajukanPermintaan(
         VALUES (${session.id}, ${item.barang_id}, ${item.jumlah}, ${keperluan}, ${tanggalPinjam})
         RETURNING id
       `;
-      
+
       const newRequestId = (result[0] as { id: number }).id;
-      
-      // Log activity per item
+
       await logActivity(
         session.id,
         "CREATE_REQUEST",
         "permintaan",
         newRequestId,
-        { barang_id: item.barang_id, barang_nama: barangNama, jumlah: item.jumlah, keperluan }
+        {
+          barang_id: item.barang_id,
+          barang_nama: barangNama,
+          jumlah: item.jumlah,
+          keperluan,
+        }
       );
     }
   } catch (e) {

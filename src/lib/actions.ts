@@ -934,68 +934,58 @@ export async function resetAktivasi(
   redirect(err ? `/admin/pengguna?err=${err}` : "/admin/pengguna?ok=reset");
 }
 
-export async function simpanPengguna(
-  _prevState: ActionState,
-  formData: FormData
-): Promise<ActionState> {
+/**
+ * Mengganti role pengguna. Satu-satunya data pengguna lain yang boleh diubah
+ * admin — nama dan kata sandi adalah milik pemilik NIP sendiri, diisi lewat
+ * alur aktivasi dan halaman Profil.
+ */
+export async function ubahRole(id: number, formData: FormData): Promise<void> {
   const session = await requireAdmin();
 
-  const id = Number(formData.get("id"));
-  const nip = String(formData.get("nip") ?? "").trim();
-  const nama = String(formData.get("nama") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
-  const role = String(formData.get("role") ?? "user");
+  const role = String(formData.get("role") ?? "");
+  let err: string | null = null;
 
-  if (!Number.isInteger(id) || id <= 0) {
-    return { error: "Pengguna baru didaftarkan lewat formulir NIP di atas." };
-  }
-  if (!/^\d{5,30}$/.test(nip)) {
-    return { error: "NIP harus berupa angka 5–30 digit." };
-  }
-  if (!nama) {
-    return { error: "Nama wajib diisi." };
-  }
   if (role !== "admin" && role !== "user") {
-    return { error: "Role tidak valid." };
-  }
-  if (password && password.length < 6) {
-    return { error: "Kata sandi baru minimal 6 karakter (kosongkan bila tidak diganti)." };
-  }
+    err = "gagal";
+  } else if (id === session.id) {
+    // Sistem ini hanya punya satu admin; menurunkan diri sendiri akan
+    // mengunci semua orang dari /admin tanpa jalan pulih lewat aplikasi.
+    err = "role-sendiri";
+  } else {
+    try {
+      const sql = db();
+      const target = (await sql`
+        SELECT nip, role, password_hash IS NOT NULL AS aktif
+        FROM pengguna
+        WHERE id = ${id} AND dihapus_pada IS NULL
+        LIMIT 1
+      `) as { nip: string; role: Role; aktif: boolean }[];
 
-  try {
-    const sql = db();
-    if (password) {
-      const hash = await bcrypt.hash(password, 10);
-      await sql`
-        UPDATE pengguna
-        SET nip = ${nip}, nama = ${nama}, role = ${role}, password_hash = ${hash}
-        WHERE id = ${id}
-      `;
-    } else {
-      await sql`
-        UPDATE pengguna
-        SET nip = ${nip}, nama = ${nama}, role = ${role}
-        WHERE id = ${id}
-      `;
+      if (target.length === 0) {
+        err = "gagal";
+      } else if (role === "admin" && !target[0].aktif) {
+        // Akun tanpa kata sandi bisa diklaim siapa pun yang tahu NIP-nya
+        // lewat alur aktivasi publik. Mempromosikannya sama dengan
+        // menyiapkan akun admin menganggur untuk diambil alih.
+        err = "role-nonaktif";
+      } else if (target[0].role !== role) {
+        await sql`
+          UPDATE pengguna SET role = ${role} WHERE id = ${id}
+        `;
+        await logActivity(session.id, "UPDATE_USER", "pengguna", id, {
+          nip: target[0].nip,
+          role_lama: target[0].role,
+          role_baru: role,
+        });
+      }
+    } catch (e) {
+      console.error("ubahRole gagal:", e);
+      err = "gagal";
     }
-
-    await logActivity(
-      session.id,
-      "UPDATE_USER",
-      "pengguna",
-      id,
-      { nip, nama, role, password_changed: !!password }
-    );
-  } catch (e: unknown) {
-    if (isUniqueViolation(e)) {
-      return { error: `NIP ${nip} sudah terdaftar.` };
-    }
-    console.error("simpanPengguna gagal:", e);
-    return { error: "Gagal menyimpan pengguna. Coba lagi." };
   }
 
   revalidatePath("/admin/pengguna");
-  redirect("/admin/pengguna?ok=ubah");
+  redirect(err ? `/admin/pengguna?err=${err}` : "/admin/pengguna?ok=role");
 }
 
 export async function hapusPengguna(

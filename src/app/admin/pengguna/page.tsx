@@ -1,9 +1,7 @@
-﻿import Link from "next/link";
-import { db } from "@/lib/db";
+﻿import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
-import { hapusPengguna, resetAktivasi } from "@/lib/actions";
+import { hapusPengguna, resetAktivasi, ubahRole } from "@/lib/actions";
 import { PageHeader } from "@/components/page-header";
-import { PenggunaForm } from "@/components/pengguna-form";
 import { DaftarNipForm } from "@/components/daftar-nip-form";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Alert } from "@/components/alert";
@@ -12,7 +10,7 @@ import { formatTanggal, type Pengguna } from "@/lib/definitions";
 
 const OK_MSG: Record<string, string> = {
   nip: "NIP berhasil didaftarkan. Pemilik NIP tinggal melakukan aktivasi saat login pertama.",
-  ubah: "Data pengguna berhasil diperbarui.",
+  role: "Role pengguna berhasil diperbarui.",
   reset:
     "Akun dinonaktifkan. Pemilik NIP harus mendaftarkan ulang nama dan kata sandi saat login berikutnya.",
 };
@@ -21,7 +19,11 @@ const ERR_MSG: Record<string, string> = {
   sendiri: "Anda tidak dapat menghapus akun yang sedang dipakai.",
   "reset-sendiri": "Anda tidak dapat menonaktifkan akun yang sedang dipakai.",
   "reset-admin":
-    "Akun admin tidak bisa dinonaktifkan (mencegah akun diambil alih). Ubah role-nya menjadi User lewat tombol Ubah bila ingin mencabut akses admin.",
+    "Akun admin tidak bisa dinonaktifkan (mencegah akun diambil alih). Jadikan User dulu bila ingin mencabut akses admin.",
+  "role-sendiri":
+    "Anda tidak dapat mengubah role akun yang sedang dipakai. Minta admin lain melakukannya.",
+  "role-nonaktif":
+    "Akun yang belum aktivasi tidak bisa dijadikan admin — akun tanpa kata sandi masih bisa diklaim siapa pun yang tahu NIP-nya. Tunggu pemiliknya aktivasi lebih dulu.",
   terpakai:
     "Pengguna tidak bisa dihapus karena punya riwayat permintaan. Gunakan Reset untuk mencabut aksesnya.",
   gagal: "Operasi gagal. Coba lagi.",
@@ -30,7 +32,7 @@ const ERR_MSG: Record<string, string> = {
 export default async function AdminPenggunaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ edit?: string; ok?: string; err?: string }>;
+  searchParams: Promise<{ ok?: string; err?: string }>;
 }) {
   const session = await requireAdmin();
   const params = await searchParams;
@@ -43,16 +45,13 @@ export default async function AdminPenggunaPage({
     ORDER BY role ASC, aktif ASC, nama ASC, nip ASC
   `) as unknown as Pengguna[];
 
-  const editId = params.edit ? Number(params.edit) : null;
-  const editData = editId ? (rows.find((u) => u.id === editId) ?? null) : null;
-
   const belumAktif = rows.filter((u) => !u.aktif).length;
 
   return (
     <>
       <PageHeader
         title="Kelola Pengguna"
-        description="Daftarkan NIP pegawai baru — pemilik NIP melengkapi nama dan kata sandi sendiri saat login pertama. Gunakan Reset untuk menonaktifkan akun agar aktivasi diulang."
+        description="Daftarkan NIP pegawai baru — pemilik NIP melengkapi nama dan kata sandi sendiri saat login pertama. Gunakan Reset untuk menonaktifkan akun, atau ubah role untuk memberi/mencabut akses admin."
       />
 
       {params.ok && OK_MSG[params.ok] && (
@@ -65,12 +64,6 @@ export default async function AdminPenggunaPage({
       <div className="mb-8">
         <DaftarNipForm />
       </div>
-
-      {editData && (
-        <div className="mb-8">
-          <PenggunaForm editData={editData} />
-        </div>
-      )}
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-display text-xl font-extrabold tracking-tight text-text">
@@ -143,13 +136,29 @@ export default async function AdminPenggunaPage({
                 </td>
                 <td>
                   <div className="flex flex-wrap gap-2">
-                    <Link
-                      href={`/admin/pengguna?edit=${u.id}`}
-                      className="btn px-2.5 py-1 text-xs"
-                    >
-                      <Icon name="pencil" />
-                      Ubah
-                    </Link>
+                    {u.id !== session.id && (
+                      <form
+                        action={ubahRole.bind(null, u.id)}
+                        className="contents"
+                      >
+                        <input
+                          type="hidden"
+                          name="role"
+                          value={u.role === "admin" ? "user" : "admin"}
+                        />
+                        <ConfirmButton
+                          message={
+                            u.role === "admin"
+                              ? `Jadikan ${u.nama || u.nip} sebagai User biasa? Akses admin-nya dicabut dan sesinya langsung berakhir.`
+                              : `Jadikan ${u.nama || u.nip} sebagai Admin? Ia akan bisa mengelola barang, permintaan, dan pengguna.`
+                          }
+                          className="btn px-2.5 py-1 text-xs"
+                        >
+                          <Icon name={u.role === "admin" ? "user" : "shield"} />
+                          {u.role === "admin" ? "Jadikan User" : "Jadikan Admin"}
+                        </ConfirmButton>
+                      </form>
+                    )}
                     {u.aktif && u.role !== "admin" && u.id !== session.id && (
                       <form action={resetAktivasi.bind(null, u.id)}>
                         <ConfirmButton

@@ -53,7 +53,9 @@ Task 1 sengaja **hanya aditif** — penghapusan kolom alur pengembalian ditunda 
 
 - [ ] **Step 1: Tambahkan migrasi ke `scripts/setup-db.mjs`**
 
-Sisipkan tepat setelah blok `DO $$` yang menambahkan kolom `jenis` (akhir baris 157), sebelum komentar `// Create notifications table`:
+Kedua migrasi ini **tidak boleh disisipkan di tempat yang sama** — `UPDATE notifications` menyentuh tabel yang baru dibuat lebih jauh ke bawah, sehingga pada database baru ia akan gagal bila diletakkan terlalu awal.
+
+Pertama, sisipkan tepat setelah blok `DO $$` yang menambahkan kolom `jenis`, sebelum komentar `// Create notifications table`:
 
 ```js
   // ---- soft delete pengguna ----
@@ -62,11 +64,15 @@ Sisipkan tepat setelah blok `DO $$` yang menambahkan kolom `jenis` (akhir baris 
   await sql`
     ALTER TABLE pengguna ADD COLUMN IF NOT EXISTS dihapus_pada TIMESTAMPTZ
   `;
+```
 
+Kedua, sisipkan setelah `CREATE INDEX IF NOT EXISTS idx_notifications_user`:
+
+```js
   // ---- tautan notifikasi dari sebelum rename peminjaman → permintaan ----
   // migrate-rename.mjs hanya mengurus tabel, constraint, index, dan sequence;
   // nilai kolom notifications.link terlewat sehingga baris lama menunjuk ke
-  // rute yang sudah tidak ada.
+  // rute yang sudah tidak ada. Harus dijalankan setelah tabelnya dibuat.
   await sql`
     UPDATE notifications
     SET link = replace(link, '/peminjaman', '/permintaan')

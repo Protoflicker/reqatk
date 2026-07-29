@@ -155,7 +155,14 @@ async function main() {
       END IF;
     END $$;
   `;
-  
+
+  // ---- soft delete pengguna ----
+  // Baris pengguna tidak pernah benar-benar dihapus supaya riwayat permintaan
+  // tetap memiliki nama dan NIP pemohonnya. NULL = akun masih aktif.
+  await sql`
+    ALTER TABLE pengguna ADD COLUMN IF NOT EXISTS dihapus_pada TIMESTAMPTZ
+  `;
+
   // Create notifications table
   await sql`
     CREATE TABLE IF NOT EXISTS notifications (
@@ -174,7 +181,17 @@ async function main() {
     CREATE INDEX IF NOT EXISTS idx_notifications_user
     ON notifications (user_id, read, created_at DESC)
   `;
-  
+
+  // ---- tautan notifikasi dari sebelum rename peminjaman → permintaan ----
+  // migrate-rename.mjs hanya mengurus tabel, constraint, index, dan sequence;
+  // nilai kolom notifications.link terlewat sehingga baris lama menunjuk ke
+  // rute yang sudah tidak ada. Harus dijalankan setelah tabelnya dibuat.
+  await sql`
+    UPDATE notifications
+    SET link = replace(link, '/peminjaman', '/permintaan')
+    WHERE link LIKE '%peminjaman%'
+  `;
+
   // Create activity_logs table for audit trail
   await sql`
     CREATE TABLE IF NOT EXISTS activity_logs (

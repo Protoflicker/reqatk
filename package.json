@@ -11,6 +11,7 @@
     "build": "next build",
     "start": "next start",
     "db:setup": "node scripts/setup-db.mjs",
+    "db:cek": "node scripts/cek-skema.mjs",
     "db:seed-excel": "node scripts/seed-from-excel.mjs"
   },
   "dependencies": {

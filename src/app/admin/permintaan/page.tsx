@@ -28,11 +28,7 @@ type BarisRiwayat = Pick<
   | "kode_barang"
   | "nama_barang"
   | "satuan"
-> & { 
-  status_return: string; 
-  tanggal_kembali: string | null;
-  barang_id: number;
-};
+>;
 
 export default async function AdminPermintaanPage({
   searchParams,
@@ -55,7 +51,6 @@ export default async function AdminPermintaanPage({
     `,
     sql`
       SELECT p.id, p.jumlah, p.status, p.tanggal_pinjam, p.catatan_admin,
-             p.status_return, p.tanggal_kembali, p.barang_id,
              u.nama AS nama_pengguna,
              b.kode AS kode_barang, b.nama AS nama_barang, b.satuan
       FROM permintaan p

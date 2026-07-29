@@ -100,9 +100,6 @@ async function main() {
       status          VARCHAR(15) NOT NULL DEFAULT 'MENUNGGU',
       tanggal_pinjam  DATE NOT NULL DEFAULT CURRENT_DATE,
       catatan_admin   TEXT,
-      status_return   VARCHAR(20) DEFAULT 'BELUM_DIKEMBALIKAN',
-      tanggal_kembali DATE,
-      catatan_kembali TEXT,
       created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
       updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
     )
@@ -216,32 +213,13 @@ async function main() {
     ON activity_logs (entity_type, entity_id, created_at DESC)
   `;
 
-  // Add return workflow columns to existing permintaan table if not exists
-  await sql`
-    DO $$ 
-    BEGIN
-      IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'permintaan' AND column_name = 'status_return'
-      ) THEN
-        ALTER TABLE permintaan ADD COLUMN status_return VARCHAR(20) DEFAULT 'BELUM_DIKEMBALIKAN';
-      END IF;
-
-      IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'permintaan' AND column_name = 'tanggal_kembali'
-      ) THEN
-        ALTER TABLE permintaan ADD COLUMN tanggal_kembali DATE;
-      END IF;
-
-      IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'permintaan' AND column_name = 'catatan_kembali'
-      ) THEN
-        ALTER TABLE permintaan ADD COLUMN catatan_kembali TEXT;
-      END IF;
-    END $$;
-  `;
+  // ---- alur pengembalian dibuang ----
+  // ATK bersifat habis pakai dan tidak dikembalikan; status 'DIKEMBALIKAN'
+  // sudah dipensiunkan lebih dulu di atas. Ketiga kolom ini terverifikasi
+  // nol isi sebelum dibuang.
+  await sql`ALTER TABLE permintaan DROP COLUMN IF EXISTS status_return`;
+  await sql`ALTER TABLE permintaan DROP COLUMN IF EXISTS tanggal_kembali`;
+  await sql`ALTER TABLE permintaan DROP COLUMN IF EXISTS catatan_kembali`;
 
   console.log("    Tabel siap: pengguna, barang, permintaan, notifications, activity_logs");
 

@@ -5,7 +5,6 @@ import { setujuiPermintaan, tolakPermintaan } from "@/lib/actions";
 import { StatusBadge } from "@/components/status-badge";
 import { BulkApproval } from "@/components/bulk-approval";
 import { Pagination } from "@/components/pagination";
-import { ReturnForm } from "@/components/return-form";
 import { EmptyState } from "@/components/empty-state";
 import { Icon } from "@/components/icon";
 import { formatTanggal, type PermintaanDetail } from "@/lib/definitions";
@@ -34,11 +33,7 @@ type BarisRiwayat = Pick<
   | "kode_barang"
   | "nama_barang"
   | "satuan"
-> & {
-  status_return: string;
-  tanggal_kembali: string | null;
-  barang_id: number;
-};
+>;
 
 interface PermintaanClientProps {
   antrean: BarisAntrean[];
@@ -228,9 +223,7 @@ export function PermintaanClient({ antrean, keputusan }: PermintaanClientProps) 
                     <th>Jumlah</th>
                     <th>Tgl. Pinjam</th>
                     <th>Status</th>
-                    <th>Status Kembali</th>
                     <th>Catatan</th>
-                    <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -255,54 +248,8 @@ export function PermintaanClient({ antrean, keputusan }: PermintaanClientProps) 
                       <td>
                         <StatusBadge status={r.status} />
                       </td>
-                      <td>
-                        {r.status === "DISETUJUI" && (
-                          <span
-                            className={`badge whitespace-nowrap ${
-                              r.status_return === "DIKEMBALIKAN"
-                                ? "badge-success"
-                                : r.status_return === "TIDAK_PERLU"
-                                ? "badge-muted"
-                                : "badge-warning"
-                            }`}
-                          >
-                            {r.status_return === "DIKEMBALIKAN" ? (
-                              <>
-                                <Icon name="check" />
-                                Dikembalikan
-                              </>
-                            ) : r.status_return === "TIDAK_PERLU" ? (
-                              "Tidak Perlu"
-                            ) : (
-                              <>
-                                <Icon name="clock" />
-                                Belum Kembali
-                              </>
-                            )}
-                          </span>
-                        )}
-                        {r.status === "DITOLAK" && (
-                          <span className="text-xs text-text-muted">—</span>
-                        )}
-                        {r.tanggal_kembali && (
-                          <div className="mt-1 font-mono text-[11px] text-text-muted">
-                            {formatTanggal(r.tanggal_kembali)}
-                          </div>
-                        )}
-                      </td>
                       <td className="max-w-[24ch] text-text-muted">
                         {r.catatan_admin ?? "—"}
-                      </td>
-                      <td>
-                        {r.status === "DISETUJUI" &&
-                          r.status_return === "BELUM_DIKEMBALIKAN" && (
-                            <ReturnForm
-                              permintaanId={r.id}
-                              barangNama={r.nama_barang}
-                              jumlah={r.jumlah}
-                              satuan={r.satuan}
-                            />
-                          )}
                       </td>
                     </tr>
                   ))}
